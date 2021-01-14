@@ -19,6 +19,22 @@ usethis::use_package( "thinkr" )
 usethis::use_package( "dplyr" )
 usethis::use_package( "tibble" )
 usethis::use_package( "ggplot2" )
+usethis::use_package( "purrr" )
+usethis::use_package( "tidyr" )
+usethis::use_package( "readr" )
+usethis::use_package( "stringr" )
+usethis::use_package( "forcats" )
+usethis::use_package( "reactable" )
+usethis::use_package( "tidytext" )
+
+usethis::use_package( "shinydashboard" )
+usethis::use_package( "dashboardthemes" )
+
+usethis::use_package( "shinyWidgets" )
+usethis::use_package( "waiter" )
+usethis::use_package( "shinyjqui" )
+
+usethis::use_package( "timevis" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
