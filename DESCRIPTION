@@ -40,3 +40,5 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/milanwiedemann/experiencesdashboard
 BugReports: https://github.com/milanwiedemann/experiencesdashboard/issues
+Depends: 
+    R (>= 2.10)

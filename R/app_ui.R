@@ -18,7 +18,7 @@ app_ui <- function(request) {
         
         
         
-        dashboardHeader(title = "Service User Experiences",
+        dashboardHeader(title = "Service Experiences",
                         titleWidth = 300),
         dashboardSidebar(width = 300,
                          sidebarMenu(
@@ -51,7 +51,11 @@ app_ui <- function(request) {
                                     badgeLabel = "planned", badgeColor = "orange"),
                            
                            menuItem("Info", tabName = "info", 
-                                    icon = icon("info-circle")))
+                                    icon = icon("info-circle")
+                                    
+                                    # , menuItem("Data", tabName = "info-data")
+                                    )
+                           )
                          ),
         dashboardBody(
           ### Changing theme
