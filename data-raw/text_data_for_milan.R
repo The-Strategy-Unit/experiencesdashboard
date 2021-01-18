@@ -1,10 +1,10 @@
 library(tidyverse)
 library(tidytext)
+library(here)
 
-load('cleanData.RData')
-text_blob_scores <- readr::read_csv('text_blob_scores.csv') # TextBlob's polarity scores (https://planspace.org/20150607-textblob_sentiment/)
-test_data <- readr::read_csv('y_pred_and_x_test_super.csv')
-index_test_data <- unlist(read.table("index_test_data_super.txt"))
+text_blob_scores <- readr::read_csv(here('data-raw/text_blob_scores.csv')) # TextBlob's polarity scores (https://planspace.org/20150607-textblob_sentiment/)
+test_data <- readr::read_csv(here('data-raw/y_pred_and_x_test_super.csv'))
+index_test_data <- unlist(read.table(here("data-raw/index_test_data_super.txt")))
 
 # Add "Couldn't be improved" class
 categoriesTable <- categoriesTable %>% 
@@ -25,7 +25,7 @@ pipeline_data <- trustData %>%
   janitor::clean_names() %>%
   select(super, date, division2, directorate2, improve) %>%
   filter(across(c("super", "improve"), ~ !is.na(.x))) %>%
-  as_tibble
+  as_tibble()
 
 # Put all sentiment types of the NRC dictionary in a character vector for later use.
 nrc_sentiments <- tidytext::get_sentiments("nrc") %>%
@@ -76,3 +76,17 @@ pipeline_data <- pipeline_data %>%
 
 pipeline_data$super_predicted <- NA
 pipeline_data$super_predicted[index_test_data] <- test_data$pred
+
+
+# Check out data
+pipeline_data %>% 
+  head() %>% 
+  View()
+
+#looks good, save!
+saveRDS(pipeline_data, file = here("data-raw/sentiment_txt_data.rds"))
+
+library(tidyverse)
+
+sentiment_txt_data %>% 
+  mutate(date = lubridate::date(date))

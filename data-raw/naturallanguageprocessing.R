@@ -21,4 +21,8 @@ use_data <- use_data %>%
 
 ## Load results from Andreas
 
-usethis::use_data(my_dataset, overwrite = TRUE)
+
+
+
+sentiment_txt_data <- readRDS(file = here("data-raw/sentiment_txt_data.rds"))
+usethis::use_data(sentiment_txt_data, overwrite = TRUE)
