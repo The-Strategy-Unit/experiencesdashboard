@@ -24,29 +24,29 @@ app_ui <- function(request) {
                          sidebarMenu(
                            
                            menuItem("Service User Experiences", 
-                                    tabName = "dashboard-aggregated-experiences-user",
+                                    tabName = "experiences-user",
                                     icon = shiny::icon("comment"),
                                     badgeLabel = "dev", badgeColor = "green"),
                            
                            # red, yellow, aqua, blue, light-blue, green, navy, teal, olive, lime, orange, fuchsia, purple, maroon, black
                            
                            menuItem("Service User Sentiment Analysis", 
-                                    tabName = "dashboard-aggregated-experiences-sentiment",
+                                    tabName = "experiences-user-sentiment",
                                     icon = shiny::icon("smile"),
                                     badgeLabel = "dev", badgeColor = "green"), 
                           
                            menuItem("Staff Experiences", 
-                                    tabName = "dashboard-aggregated-experiences-staff",
+                                    tabName = "experiences-staff",
                                     icon = shiny::icon("comment-medical"),
                                     badgeLabel = "planned", badgeColor = "orange"),
                            
                            menuItem("Complaints and Compliments", 
-                                    tabName = "dashboard-aggregated-complaints-compliments",
+                                    tabName = "complaints-compliments",
                                     icon = shiny::icon("exclamation-triangle"),
                                     badgeLabel = "planned", badgeColor = "orange"),
                            
                            menuItem("Generate Report",
-                                    tabName = "dashboard-aggregated-report",
+                                    tabName = "generate-report",
                                     icon = shiny::icon("file-alt"),
                                     badgeLabel = "planned", badgeColor = "orange"),
                            
@@ -65,18 +65,32 @@ app_ui <- function(request) {
           
           tabItems(
             # First tab content
-            tabItem(tabName = "dashboard-aggregated-overview",
-                    h1("Aggregated Overview"),
+            tabItem(tabName = "experiences-user",
+                    h1("Service User Experiences"),
                     
-                    dateRangeInput("dateRange",
-                                   label = h5("Select Date Range:"),
-                                   start = Sys.Date() - 2, end = Sys.Date() + 2),
-                    
-                    selectInput("select", label = h5("Select Division"),
-                                choices = list("Choice 1" = 1, "Choice 2" = 2, "Choice 3" = 3),
-                                selected = 1)
-            )
+
+            ),
             
+            tabItem(tabName = "experiences-user-sentiment",
+                    h1("Sentiment Analysis of Service User Experiences"),
+                    mod_sentiment_ui("plot_sentiment_ui_1")
+                    ),
+            
+            tabItem(tabName = "experiences-staff",
+                    h1("Staff Experiences")
+            ),
+            
+            tabItem(tabName = "complaints-compliments",
+                    h1("Complaints and Compliments")
+            ),
+            
+            tabItem(tabName = "generate-report",
+                    h1("Generate Report of Service Experiences")
+            ),
+            
+            tabItem(tabName = "info",
+                    h1("Further Information")
+            )
             
             )
             
