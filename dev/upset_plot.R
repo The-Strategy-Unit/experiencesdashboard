@@ -3,24 +3,30 @@ library(tidyverse)
 library(UpSetR)
 library(ggupset)
 library(lubridate)
+library(ComplexHeatmap)
+
 # Prepare data for UpSetR package
+# https://jokergoo.github.io/ComplexHeatmap-reference/book/upset-plot.html
+
 sentiment_txt_data_upset <- sentiment_txt_data %>% 
-  mutate(date = lubridate::date(date),
+  dplyr::mutate(date = lubridate::date(date),
          year = lubridate::year(date),
          month = lubridate::month(date),
          id = 1:nrow(sentiment_txt_data),
          all_sentimtents_unnest = all_sentiments) %>% 
-  group_by(year, month) %>% 
-  mutate(date = date(floor_date(date))) %>% 
-  ungroup() %>% 
-  select(id, date, improve, all_sentiments, polarity, all_sentimtents_unnest) %>% 
-  unnest(cols = all_sentimtents_unnest) %>% 
-  distinct() %>% 
-  mutate(value = TRUE) %>% 
-  pivot_wider(id_cols = c("id", "date", "improve", "all_sentiments", "polarity"), names_from = all_sentimtents_unnest, values_from = value) %>% 
+  dplyr::group_by(year, month) %>% 
+  dplyr::mutate(date = lubridate::date(floor_date(date))) %>% 
+  dplyr::ungroup() %>% 
+  dplyr::select(id, date, super, division2, improve, all_sentiments, polarity, all_sentimtents_unnest) %>% 
+  tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+  dplyr::distinct() %>% 
+  dplyr::mutate(value = TRUE) %>% 
+  tidyr::pivot_wider(id_cols = c("id", "date", "super", "division2", "improve", "all_sentiments", "polarity"), 
+                     names_from = all_sentimtents_unnest, 
+                     values_from = value) %>% 
   janitor::clean_names() %>% 
-  select(-na) %>%
-  replace_na(list(trust = FALSE, 
+  dplyr::select(-na) %>%
+  tidyr::replace_na(list(trust = FALSE, 
                   anticipation = FALSE, 
                   positive = FALSE, 
                   negative = FALSE, 
@@ -30,12 +36,9 @@ sentiment_txt_data_upset <- sentiment_txt_data %>%
                   anger = FALSE, 
                   disgust = FALSE, 
                   surprise = FALSE)
-             ) %>% 
-  mutate_if(is.logical, as.numeric)
+  ) %>% 
+  dplyr::mutate_if(is.logical, as.numeric)
 
-
-sentiment_txt_data_upset %>% 
-  mutate(date = lubridate::floor_date(date))
 
 
 sentiment_txt_data_upset_plot <- sentiment_txt_data_upset %>% 
@@ -49,7 +52,8 @@ upset(data = sentiment_txt_data_upset_plot,
       #                     params = list("positive"), 
       #                     color = "green", 
       #                     active = F)),
-      order.by = "freq", text.scale = 1.3
+      order.by = "freq", 
+      text.scale = 1.3
       # empty.intersections = "on",
       # boxplot.summary = c("polarity")
       
