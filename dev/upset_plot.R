@@ -43,29 +43,53 @@ sentiment_txt_data_upset <- sentiment_txt_data %>%
 
 sentiment_txt_data_upset_plot <- sentiment_txt_data_upset %>% 
   select(date, polarity, c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust")) %>% 
+  mutate(date = as.integer(year(date))) %>% 
   as.data.frame()
 
 upset(data = sentiment_txt_data_upset_plot, 
-      nintersects  = 25,
+      nintersects  = 40,
       sets = c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust"),
-      # queries = list(list(query = intersects, 
-      #                     params = list("positive"), 
-      #                     color = "green", 
-      #                     active = F)),
+      queries = list(list(query = intersects,
+                          params = list(c("anticipation")),
+                          color = "orange",
+                          active = F)),
       order.by = "freq", 
-      text.scale = 1.3
-      # empty.intersections = "on",
-      # boxplot.summary = c("polarity")
-      
-      # attribute.plots = list(gridrows = 50, 
-      #                        plots = list(list(plot = histogram, 
-      #                                          x = "date",
-      #                                          queries = F), 
-      #                                     list(plot = scatter_plot,
-      #                                          x = "date", 
-      #                                          y = "polarity",
-      #                                          queries = T)), 
-      #                        ncols = 1)
+      text.scale = 1.3,
+
+      attribute.plots = list(gridrows = 50,
+                             plots = list(plot = UpSetR::histogram(),
+                                               x = "date",
+                                               queries = T),
+                             ncols = 1)
       )
 
 
+
+
+sentiment_txt_data_upset$super %>% unique()
+sentiment_txt_data_upset$division2 %>% unique()
+
+sentiment_txt_data_upset_plot[,  c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust")]
+
+
+
+
+upset(movies, main.bar.color = "black", queries = list(list(query = intersects, 
+                                                            params = list("Drama"), active = T)), 
+      attribute.plots = list(gridrows = 50, 
+                             plots = list(list(plot = histogram, x = "ReleaseDate", queries = F), list(plot = histogram, 
+                                                                                                       x = "AvgRating", queries = T)), ncols = 2))
+
+
+
+
+
+
+
+library(grid)
+library(plyr)
+movies <- read.csv(system.file("extdata", "movies.csv", package = "UpSetR"), 
+                   header = T, sep = ";")
+
+
+str(movies)

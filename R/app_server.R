@@ -7,6 +7,6 @@
 app_server <- function( input, output, session ) {
   # List the first level callModules here
   
-  mod_sentiment_server("plot_sentiment_ui_1")
+  mod_sentiment_server("mod_sentiment_ui_1")
 
 }
