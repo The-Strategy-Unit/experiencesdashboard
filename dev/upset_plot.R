@@ -4,6 +4,7 @@ library(UpSetR)
 library(ggupset)
 library(lubridate)
 library(ComplexHeatmap)
+library(ComplexUpset)
 
 # Prepare data for UpSetR package
 # https://jokergoo.github.io/ComplexHeatmap-reference/book/upset-plot.html
@@ -39,57 +40,21 @@ sentiment_txt_data_upset <- sentiment_txt_data %>%
   ) %>% 
   dplyr::mutate_if(is.logical, as.numeric)
 
+sentiments_ordered <- c("positive", "trust", "joy", "anticipation", "surprise", "fear", "sadness", "disgust", "anger", "negative")
 
+sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
 
-sentiment_txt_data_upset_plot <- sentiment_txt_data_upset %>% 
-  select(date, polarity, c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust")) %>% 
-  mutate(date = as.integer(year(date))) %>% 
-  as.data.frame()
-
-upset(data = sentiment_txt_data_upset_plot, 
-      nintersects  = 40,
-      sets = c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust"),
-      queries = list(list(query = intersects,
-                          params = list(c("anticipation")),
-                          color = "orange",
-                          active = F)),
-      order.by = "freq", 
-      text.scale = 1.3,
-
-      attribute.plots = list(gridrows = 50,
-                             plots = list(plot = UpSetR::histogram(),
-                                               x = "date",
-                                               queries = T),
-                             ncols = 1)
-      )
-
-
-
-
-sentiment_txt_data_upset$super %>% unique()
-sentiment_txt_data_upset$division2 %>% unique()
-
-sentiment_txt_data_upset_plot[,  c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust")]
-
-
-
-
-upset(movies, main.bar.color = "black", queries = list(list(query = intersects, 
-                                                            params = list("Drama"), active = T)), 
-      attribute.plots = list(gridrows = 50, 
-                             plots = list(list(plot = histogram, x = "ReleaseDate", queries = F), list(plot = histogram, 
-                                                                                                       x = "AvgRating", queries = T)), ncols = 2))
-
-
-
-
-
-
-
-library(grid)
-library(plyr)
-movies <- read.csv(system.file("extdata", "movies.csv", package = "UpSetR"), 
-                   header = T, sep = ";")
-
-
-str(movies)
+sentiment_txt_data_upset %>%
+  dplyr::filter(date > "2013-01-01", date < "2018-01-01") %>% 
+  tidyr::unnest(cols = all_sentiments) %>% 
+  dplyr::mutate(all_sentiments = factor(x = all_sentiments, 
+                                        levels = sentiments_ordered,
+                                        labels = sentiments_ordered_sentence)) %>% 
+  ggplot2::ggplot(ggplot2::aes(date, fill = all_sentiments)) +
+  # geom_density(position = "fill") +
+  ggplot2::geom_histogram(position = "fill") +
+  ggplot2::scale_x_date() +
+  ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  ggplot2::scale_fill_viridis_d(direction = -1) +
+  ggplot2::labs(x = "Date", y = "Density", fill = "Sentiments")
+ 
