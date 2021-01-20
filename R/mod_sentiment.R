@@ -214,8 +214,10 @@ mod_sentiment_server <- function(id){
                     )}
        # PLOT END
          
-      # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)           
-       # , height = function() {session$clientData$output_sentiment_plot_width} / 1.5
+      # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
+      , height = function() {
+        session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 3
+        }
       
       )
     
