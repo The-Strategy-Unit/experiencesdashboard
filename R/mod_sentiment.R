@@ -46,13 +46,43 @@ mod_sentiment_ui <- function(id) {
         3,
         selectInput(
           ns("select_super"),
-          label = h5("Tag:"),
+          label = h5("Category:"),
           choices = list(
-            "Choice 1" = 1,
-            "Choice 2" = 2,
-            "Choice 3" = 3
+            "Communication" = "Communication",
+            "Staff/Staff Attitude" = "Staff/Staff Attitude",
+            "Environment/Facilities" = "Environment/Facilities",
+            "Access to Services" = "Access to Services",
+            "Care/ Treatment" = "Care/ Treatment",
+            "Couldn't be improved" = "Couldn't be improved",
+            "Service Quality/Outcomes" = "Service Quality/Outcomes",
+            "Involvement" = "Involvement",
+            "Food" = "Food",
+            "Privacy and Dignity" = "Privacy and Dignity",
+            "MHA" = "MHA",
+            "Equality/Diversity" = "Equality/Diversity",
+            "Smoking" = "Smoking",
+            "Leave" = "Leave",
+            "Safety" = "Safety",
+            "Physical Health" = "Physical Health",
+            "Record Keeping" = "Record Keeping"
           ),
-          selected = 1,
+          selected = c("Communication", 
+                       "Staff/Staff Attitude", 
+                       "Environment/Facilities", 
+                       "Access to Services", 
+                       "Care/ Treatment", 
+                       "Couldn't be improved", 
+                       "Service Quality/Outcomes", 
+                       "Involvement", 
+                       "Food", 
+                       "Privacy and Dignity", 
+                       "MHA", 
+                       "Equality/Diversity", 
+                       "Smoking", 
+                       "Leave", 
+                       "Safety", 
+                       "Physical Health", 
+                       "Record Keeping"),
           multiple = TRUE
         )
       ),
@@ -152,7 +182,8 @@ mod_sentiment_server <- function(id){
       
       sentiment_txt_data_upset %>% 
         dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>% 
-        dplyr::filter(division2 %in% input$select_division)
+        dplyr::filter(division2 %in% input$select_division) %>% 
+        dplyr::filter(super %in% input$select_super)
       
     })
     
@@ -163,14 +194,16 @@ mod_sentiment_server <- function(id){
       
       # PLOT START
       UpSetR::upset(data = as.data.frame(sentiment_txt_data_r()[, c("year", "anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust")]), 
-                    nintersects = 25,
+                    # MAYBE LET USER PICK NUMBER OF INTERSECTIONS
+                    nintersects = 15,
                     sets = c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust"),
                     order.by = "freq",
                     text.scale = 1.5,
-                    queries = list(list(query = UpSetR::intersects,
-                                        params = list(c(input$select_sentiment)),
-                                        color = "orange",
-                                        active = F))
+                    # ADD THE QUERY AT A LATER POINT
+                    # queries = list(list(query = UpSetR::intersects,
+                    #                     params = list(c(input$select_sentiment)),
+                    #                     color = "orange",
+                    #                     active = F))
                     # COMMENTING OUT AttRIBUTE PLOT BECAUSE OF THE SCALING ISSUE
                     # ALSO I'm CURRENTLUY NOT HAPPY WITH THE DESIGN OF IT!
                     # , attribute.plots = list(gridrows = 50,
@@ -199,7 +232,9 @@ mod_sentiment_server <- function(id){
         ggplot2::scale_x_date() +
         ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
         ggplot2::scale_fill_viridis_d(direction = -1) +
-        ggplot2::labs(x = "Date", y = "Density", fill = "Sentiments") +
+        ggplot2::labs(x = "Date", 
+                      y = "Density", 
+                      fill = "Sentiments") +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
     })
       
@@ -209,9 +244,21 @@ mod_sentiment_server <- function(id){
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
-      reactable::reactable(sentiment_txt_data_r()[, c("improve"
-                                                      # , "super", "all_sentiments"
-                                                      )],
+      filtered_comments <- sentiment_txt_data_r() %>% 
+        dplyr::select(id, all_sentiments, improve) %>% 
+        dplyr::mutate(length = lengths(all_sentiments),
+                      all_sentimtents_unnest = all_sentiments) %>%
+        dplyr::filter(length == length(input$select_sentiment)) %>%
+        tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+        dplyr::group_by(id) %>% 
+        dplyr::mutate(test_sentiment = dplyr::case_when(all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
+                      sum_temp = sum(test_sentiment)) %>% 
+        dplyr::ungroup() %>% 
+        dplyr::filter(is.na(sum_temp) == FALSE) %>% 
+        dplyr::select(improve) %>%
+        dplyr::distinct()
+      
+      reactable::reactable(filtered_comments,
                            # pagination = FALSE
                            # height = 500
                            # bordered = TRUE,
@@ -219,6 +266,9 @@ mod_sentiment_server <- function(id){
                            highlight = TRUE,
                            showSortIcon = FALSE,
                            filterable = TRUE,
+                           showPageSizeOptions = TRUE, 
+                           pageSizeOptions = c(10, 15, 20, 25, 30), 
+                           defaultPageSize = 15,
                            columns = list(
                              improve = reactable::colDef(minWidth = 200, sortable = FALSE, name = " ")   # 50% width, 200px minimum
                              # ,super = reactable::colDef(minWidth = 50)   # 25% width, 100px minimum
