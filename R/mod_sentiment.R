@@ -16,7 +16,7 @@ mod_sentiment_ui <- function(id) {
         3,
         dateRangeInput(
           ns("date_range"),
-          label = h5("Date Range:"),
+          label = h5("Select date range:"),
           min = "2013-01-01",
           start = "2013-01-01",
           end = "2019-02-11"
@@ -27,7 +27,7 @@ mod_sentiment_ui <- function(id) {
         3,
         selectInput(
           ns("select_division"),
-          label = h5("Division:"),
+          label = h5("Select divisions:"),
           choices = list(
             "Local partnerships- MH" = "Local partnerships- MH",
             "Forensic services" = "Forensic services",
@@ -43,10 +43,10 @@ mod_sentiment_ui <- function(id) {
       ),
       
       column(
-        3,
+        6,
         selectInput(
           ns("select_super"),
-          label = h5("Category:"),
+          label = h5("Select categories:"),
           choices = list(
             "Communication" = "Communication",
             "Staff/Staff Attitude" = "Staff/Staff Attitude",
@@ -85,47 +85,47 @@ mod_sentiment_ui <- function(id) {
                        "Record Keeping"),
           multiple = TRUE
         )
-      ),
-      
-      column(
-        3,
-        selectInput(
-          ns("select_sentiment"),
-          label = h5("Sentiment:"),
-          choices = list(
-            "anger" = "anger",
-            "anticipation" = "anticipation",
-            "disgust" = "disgust",
-            "fear" = "fear",
-            "joy" = "joy",
-            "negative" = "negative",
-            "positive" = "positive",
-            "sadness" = "sadness",
-            "surprise" = "surprise",
-            "trust" = "trust"
-          ),
-          multiple = TRUE,
-          selected = "positive"
-        )
       )
     ),
     style = "padding: 5px;"),
     
     tabsetPanel(
       type = "tabs",
-      tabPanel("Sentiment intersections",
+      tabPanel("Combination of sentiments",
                plotOutput(ns("sentiment_plot_upset")
                           # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
                           # MPRE CODE COMMENTED OUT BELOW IN SERVER
                           # , height = "auto"
                           )),
       
-      tabPanel("Change in sentiment over time",
+      tabPanel("Change in sentiments over time",
                plotOutput(ns("sentiment_plot_time"))
 
                ),
       
-      tabPanel("Feedback comments",
+      tabPanel("Show comments",
+               br(),
+               fluidRow(
+               wellPanel(
+                 selectInput(
+                   ns("select_sentiment"),
+                   label = h5("Select combination of sentiments:"),
+                   choices = list(
+                     "anger" = "anger",
+                     "anticipation" = "anticipation",
+                     "disgust" = "disgust",
+                     "fear" = "fear",
+                     "joy" = "joy",
+                     "negative" = "negative",
+                     "positive" = "positive",
+                     "sadness" = "sadness",
+                     "surprise" = "surprise",
+                     "trust" = "trust"
+                   ),
+                   multiple = TRUE,
+                   selected = "positive"
+                 )
+               )),
                fluidRow(
                  column(12,
                         reactable::reactableOutput(ns(
@@ -154,11 +154,13 @@ mod_sentiment_server <- function(id){
                     year = lubridate::year(date),
                     id = 1:nrow(sentiment_txt_data),
                     all_sentimtents_unnest = all_sentiments) %>% 
-      dplyr::select(id, date, year, super, division2, improve, all_sentiments, all_sentimtents_unnest) %>% 
+      dplyr::select(id, date, year, super, division2, improve, all_sentiments, 
+                    all_sentimtents_unnest) %>% 
       tidyr::unnest(cols = all_sentimtents_unnest) %>% 
       dplyr::distinct() %>% 
       dplyr::mutate(value = TRUE) %>% 
-      tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", "improve", "all_sentiments"), 
+      tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", 
+                                     "improve", "all_sentiments"), 
                          names_from = all_sentimtents_unnest, 
                          values_from = value) %>% 
       janitor::clean_names() %>% 
@@ -193,10 +195,15 @@ mod_sentiment_server <- function(id){
     output$sentiment_plot_upset <- renderPlot({
       
       # PLOT START
-      UpSetR::upset(data = as.data.frame(sentiment_txt_data_r()[, c("year", "anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust")]), 
+      UpSetR::upset(data = as.data.frame(sentiment_txt_data_r()
+                                         [, c("year", "anger", "anticipation", 
+                                              "disgust", "fear", "joy", "negative", 
+                                              "positive", "sadness", "surprise", 
+                                              "trust")]), 
                     # MAYBE LET USER PICK NUMBER OF INTERSECTIONS
                     nintersects = 15,
-                    sets = c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust"),
+                    sets = c("anger", "anticipation", "disgust", "fear", "joy", 
+                             "negative", "positive", "sadness", "surprise", "trust"),
                     order.by = "freq",
                     text.scale = 1.5,
                     # ADD THE QUERY AT A LATER POINT
@@ -216,12 +223,24 @@ mod_sentiment_server <- function(id){
          
       # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
       , height = function() {
-        session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 3
+        session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
         }
       
       )
     
     output$sentiment_plot_time <- renderPlot({
+      
+      # Uncomment if I only want to highlight the sentiments that were selected
+      # sentiments_ordered <- stringr::str_sort(input$select_sentiment)
+      # sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+      
+      # This always shows all sentiments
+      sentiments_ordered <- stringr::str_sort(c("anger", "anticipation", "disgust", "fear", "joy", 
+                                                "negative", "positive", "sadness", "surprise", "trust"))
+      
+      sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+      
+
       
       sentiment_txt_data_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
@@ -235,9 +254,11 @@ mod_sentiment_server <- function(id){
         ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
         ggplot2::scale_fill_viridis_d(direction = -1) +
         ggplot2::labs(x = "Date", 
-                      y = "Density", 
+                      y = NULL, 
                       fill = "Sentiments") +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
+    }, height = function() {
+      session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
     })
       
     
