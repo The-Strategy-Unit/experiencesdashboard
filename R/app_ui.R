@@ -23,29 +23,34 @@ app_ui <- function(request) {
         dashboardSidebar(width = 300,
                          sidebarMenu(
                            
-                           menuItem("Service User Experiences", 
+                           menuItem("Overview", 
+                                    tabName = "overview",
+                                    icon = shiny::icon("dashboard"),
+                                    badgeLabel = "planned", badgeColor = "orange"),
+                           
+                           menuItem("Service user experiences", 
                                     tabName = "experiences-user",
                                     icon = shiny::icon("comment"),
                                     badgeLabel = "dev", badgeColor = "green"),
                            
                            # red, yellow, aqua, blue, light-blue, green, navy, teal, olive, lime, orange, fuchsia, purple, maroon, black
                            
-                           menuItem("Service User Sentiment Analysis", 
+                           menuItem("Service user sentiment analysis", 
                                     tabName = "experiences-user-sentiment",
                                     icon = shiny::icon("smile"),
                                     badgeLabel = "dev", badgeColor = "green"), 
                           
-                           menuItem("Staff Experiences", 
+                           menuItem("Staff experiences", 
                                     tabName = "experiences-staff",
                                     icon = shiny::icon("comment-medical"),
                                     badgeLabel = "planned", badgeColor = "orange"),
                            
-                           menuItem("Complaints and Compliments", 
+                           menuItem("Complaints and compliments", 
                                     tabName = "complaints-compliments",
                                     icon = shiny::icon("exclamation-triangle"),
                                     badgeLabel = "planned", badgeColor = "orange"),
                            
-                           menuItem("Generate Report",
+                           menuItem("Generate report",
                                     tabName = "generate-report",
                                     icon = shiny::icon("file-alt"),
                                     badgeLabel = "planned", badgeColor = "orange"),
@@ -65,6 +70,12 @@ app_ui <- function(request) {
           
           tabItems(
             # First tab content
+            tabItem(tabName = "overview",
+                    h1("Overview"),
+                    
+                    
+            ),
+            
             tabItem(tabName = "experiences-user",
                     h1("Service User Experiences"),
                     
@@ -72,7 +83,7 @@ app_ui <- function(request) {
             ),
             
             tabItem(tabName = "experiences-user-sentiment",
-                    h1("Sentiment Analysis of Service User Experiences"),
+                    # h1("Sentiment Analysis of Service User Experiences"),
                     mod_sentiment_ui("mod_sentiment_ui_1")
                     ),
             
