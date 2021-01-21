@@ -104,9 +104,8 @@ mod_sentiment_ui <- function(id) {
                ),
       
       tabPanel("Show comments",
-               br(),
                fluidRow(
-               wellPanel(
+               column(6,
                  selectInput(
                    ns("select_sentiment"),
                    label = h5("Select combination of sentiments:"),
@@ -269,19 +268,25 @@ mod_sentiment_server <- function(id){
       
       filtered_comments <- sentiment_txt_data_r() %>% 
         dplyr::select(id, all_sentiments, improve) %>% 
+        # First get number of total sentiments in all comments
         dplyr::mutate(length = lengths(all_sentiments),
                       all_sentimtents_unnest = all_sentiments) %>%
+        # Now filter for number of selected sentiments
         dplyr::filter(length == length(input$select_sentiment)) %>%
+        # Unnest to create long version of data
         tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+        # Group by comment id so that every computation is now for each comment
         dplyr::group_by(id) %>% 
+        # Sum up number of selected sentiments that match sentiments for each comment
         dplyr::mutate(test_sentiment = dplyr::case_when(all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
                       sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
+        # Filter comments that macth the selected sentiments
         dplyr::filter(is.na(sum_temp) == FALSE) %>% 
-        dplyr::select(improve) %>%
+        dplyr::select(id, improve) %>%
         dplyr::distinct()
       
-      reactable::reactable(filtered_comments,
+      reactable::reactable(filtered_comments[, "improve"],
                            # pagination = FALSE
                            # height = 500
                            # bordered = TRUE,
@@ -289,9 +294,10 @@ mod_sentiment_server <- function(id){
                            highlight = TRUE,
                            showSortIcon = FALSE,
                            filterable = TRUE,
+                           # searchable = TRUE,
                            showPageSizeOptions = TRUE, 
                            pageSizeOptions = c(10, 15, 20, 25, 30), 
-                           defaultPageSize = 15,
+                           defaultPageSize = 10,
                            columns = list(
                              improve = reactable::colDef(minWidth = 200, sortable = FALSE, name = " ")   # 50% width, 200px minimum
                              # ,super = reactable::colDef(minWidth = 50)   # 25% width, 100px minimum
