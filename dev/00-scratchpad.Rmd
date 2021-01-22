@@ -1,0 +1,154 @@
+---
+title: "explore-ideas"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+
+    
+    # Fist, tidy entire data for upset plot
+    sentiment_txt_data_upset <- sentiment_txt_data %>% 
+      dplyr::mutate(date = lubridate::date(date),
+                    year = lubridate::year(date),
+                    id = 1:nrow(sentiment_txt_data),
+                    all_sentimtents_unnest = all_sentiments) %>% 
+      dplyr::select(id, date, year, super, division2, improve, all_sentiments, 
+                    all_sentimtents_unnest) %>% 
+      tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+      dplyr::distinct() %>% 
+      dplyr::mutate(value = TRUE) %>% 
+      tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", 
+                                     "improve", "all_sentiments"), 
+                         names_from = all_sentimtents_unnest, 
+                         values_from = value) %>% 
+      janitor::clean_names() %>% 
+      dplyr::select(-na) %>%
+      tidyr::replace_na(list(trust = FALSE, 
+                             anticipation = FALSE, 
+                             positive = FALSE, 
+                             negative = FALSE, 
+                             sadness = FALSE, 
+                             fear = FALSE, 
+                             joy = FALSE,
+                             anger = FALSE, 
+                             disgust = FALSE, 
+                             surprise = FALSE)
+      ) %>% 
+      dplyr::mutate_if(is.logical, as.numeric)
+
+
+sentiment_txt_data_upset %>% 
+  select(id, date, all_sentiments) %>% 
+  unnest(all_sentiments) %>% 
+  mutate(all_sentiments = case_when(all_sentiments %in% c("trust") ~ all_sentiments))
+```
+
+
+```{r}
+# Load data ----
+## Load naturallanguageprocessing data from Chris
+load(url("https://raw.github.com/ChrisBeeley/naturallanguageprocessing/master/cleanData.Rdata"))
+
+categoriesTable <- categoriesTable %>% 
+  as_tibble()
+
+improve_words <- improve_words %>% 
+  as_tibble()
+
+trustData <- trustData %>% 
+  as_tibble()
+
+use_data <- use_data %>% 
+  as_tibble()
+```
+
+
+
+```{r}
+
+
+df_temp <- trustData %>%
+  filter(!is.na(Improve),
+         Optout == "No") %>%
+  left_join(categoriesTable, by = c("Imp1" = "Number")) %>%
+  # left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+  select(Date, TeamN, Directorate2, Division2, Improve, ImpCrit, Category, Super, type)
+
+df_temp
+
+df_temp %>% names
+
+df_temp <- df_temp %>% 
+  mutate(id = 1:nrow(df_temp))
+
+
+
+df_temp %>% 
+  select(id, Improve, Super, ImpCrit, Best, BestCrit)
+pivot_longer(cols = c(Improve, Best))
+
+trustData %>% 
+  names
+```
+
+```{r}
+
+df_temp$Date %>% range()
+df_temp$TeamN %>% factor() %>% unique()
+df_temp$Directorate2 %>% factor() %>% unique()
+df_temp$Division2 %>% factor() %>% unique()
+df_temp$Super %>% factor() %>% unique()
+df_temp$ImpCrit %>% factor() %>% unique()
+
+
+
+df_temp %>% 
+  group_by(TeamN) %>% 
+  tally() %>% 
+  arrange(desc(n)) %>% 
+  # filter(n > 10) %>% 
+  ggplot() +
+  geom_bar(aes(factor(n))) +
+  scale_x_discrete(breaks = seq(0, 100, by = 10))
+
+```
+
+
+```{r}
+
+filter_date_start <- "2018-01-02"
+filter_date_end <- "2020-12-02"
+
+filter_TeamN <- c("CAMHS Crisis", "The Orion Unit")
+filter_Directorate2 <- c("Adult mental health")
+filter_Division2 <- c("Local partnerships- MH")
+
+df_filtered <- df_temp %>% 
+  filter(between(x = Date, 
+                 left = as.Date(filter_date_start), 
+                 right = as.Date(filter_date_end)))# %>% 
+  # filter(TeamN %in% c(filter_TeamN)) %>% 
+  # filter(Directorate2 %in% c(filter_Directorate2)) %>% 
+  # filter(Division2 %in% c(filter_Division2))
+```
+
+
+```{r}
+df_filtered %>% 
+  group_by(Super) %>% 
+  summarise(n = n(),
+            crit_mean = mean(ImpCrit, na.rm = T),
+            crit_sd = sd(ImpCrit, na.rm = T))
+
+
+df_filtered %>% 
+  ggplot(aes(x = Date, y = ImpCrit, colour = Super)) +
+  geom_jitter(alpha = .2, height = .2) +
+  scale_colour_viridis_d()
+
+# what are meaningful time periods of the year in case I need to categorise
+# what does 1 to 3 mean again 
+
+```
+
