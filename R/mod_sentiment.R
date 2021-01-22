@@ -19,7 +19,8 @@ mod_sentiment_ui <- function(id) {
           label = h5("Select date range:"),
           min = "2013-01-01",
           start = "2013-01-01",
-          end = "2019-02-11"
+          end = "2018-12-31",
+          max = "2019-02-11"
         )
       ),
       
@@ -66,23 +67,10 @@ mod_sentiment_ui <- function(id) {
             "Physical Health" = "Physical Health",
             "Record Keeping" = "Record Keeping"
           ),
-          selected = c("Communication", 
-                       "Staff/Staff Attitude", 
-                       "Environment/Facilities", 
-                       "Access to Services", 
+          selected = c("Staff/Staff Attitude", 
                        "Care/ Treatment", 
-                       "Couldn't be improved", 
                        "Service Quality/Outcomes", 
-                       "Involvement", 
-                       "Food", 
-                       "Privacy and Dignity", 
-                       "MHA", 
-                       "Equality/Diversity", 
-                       "Smoking", 
-                       "Leave", 
-                       "Safety", 
-                       "Physical Health", 
-                       "Record Keeping"),
+                       "Food"),
           multiple = TRUE
         )
       )
@@ -99,6 +87,34 @@ mod_sentiment_ui <- function(id) {
                           )),
       
       tabPanel("Change in sentiments over time",
+               fluidRow(
+                 column(4,
+                        checkboxInput(ns("select_sentiment_plot_facet"), 
+                                      label = "Seperate plot for each category", 
+                                      value = FALSE)
+                 ),
+                 column(4,
+                        selectInput(
+                          ns("select_sentiment_plot"),
+                          label = h5("Select sentiments:"),
+                          choices = list(
+                            "anger" = "anger",
+                            "anticipation" = "anticipation",
+                            "disgust" = "disgust",
+                            "fear" = "fear",
+                            "joy" = "joy",
+                            "negative" = "negative",
+                            "positive" = "positive",
+                            "sadness" = "sadness",
+                            "surprise" = "surprise",
+                            "trust" = "trust"
+                          ),
+                          multiple = TRUE,
+                          selected = c("negative", "sadness", "positive", "joy")
+                        )
+                 )
+                 ),
+
                plotOutput(ns("sentiment_plot_time"))
 
                ),
@@ -107,7 +123,7 @@ mod_sentiment_ui <- function(id) {
                fluidRow(
                column(6,
                  selectInput(
-                   ns("select_sentiment"),
+                   ns("select_sentiment_txt"),
                    label = h5("Select combination of sentiments:"),
                    choices = list(
                      "anger" = "anger",
@@ -122,7 +138,7 @@ mod_sentiment_ui <- function(id) {
                      "trust" = "trust"
                    ),
                    multiple = TRUE,
-                   selected = "positive"
+                   selected = c("negative", "sadness")
                  )
                )),
                fluidRow(
@@ -207,7 +223,7 @@ mod_sentiment_server <- function(id){
                     text.scale = 1.5,
                     # ADD THE QUERY AT A LATER POINT
                     # queries = list(list(query = UpSetR::intersects,
-                    #                     params = list(c(input$select_sentiment)),
+                    #                     params = list(c(input$select_sentiment_txt)),
                     #                     color = "orange",
                     #                     active = F))
                     # COMMENTING OUT AttRIBUTE PLOT BECAUSE OF THE SCALING ISSUE
@@ -227,35 +243,55 @@ mod_sentiment_server <- function(id){
       
       )
     
+    
+    # Create sentiment plot over time ----
     output$sentiment_plot_time <- renderPlot({
       
       # Uncomment if I only want to highlight the sentiments that were selected
-      # sentiments_ordered <- stringr::str_sort(input$select_sentiment)
-      # sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
-      
-      # This always shows all sentiments
-      sentiments_ordered <- stringr::str_sort(c("anger", "anticipation", "disgust", "fear", "joy", 
-                                                "negative", "positive", "sadness", "surprise", "trust"))
-      
+      sentiments_ordered <- stringr::str_sort(input$select_sentiment_plot)
       sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+
+      # This always shows all sentiments
+      # sentiments_ordered <- c("negative", "anger", "disgust", "fear", "sadness",
+      #                         "anticipation", "surprise", "joy",  "trust", "positive")
+      # 
+      # sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
       
 
       
-      sentiment_txt_data_r() %>% 
+      sentiment_plot_time_temp <- sentiment_txt_data_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
-        dplyr::mutate(all_sentiments = factor(x = all_sentiments, 
+        dplyr::mutate(all_sentiments = factor(x = all_sentiments,
                                               levels = sentiments_ordered,
-                                              labels = sentiments_ordered_sentence)) %>% 
+                                              labels = sentiments_ordered_sentence)) %>%
+        # dplyr::mutate(all_sentiments = dplyr::case_when(all_sentiments %in% input$select_sentiment_plot ~ all_sentiments,
+        #                                                 TRUE ~ NA_character_),
+        #               all_sentiments = stringr::str_to_sentence(all_sentiments)) %>% 
         ggplot2::ggplot(ggplot2::aes(date, fill = all_sentiments)) +
-        # geom_density(position = "fill") +
+        # ggplot2::geom_density(position = "fill") +
         ggplot2::geom_histogram(position = "fill") +
         ggplot2::scale_x_date() +
         ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
         ggplot2::scale_fill_viridis_d(direction = -1) +
         ggplot2::labs(x = "Date", 
                       y = NULL, 
-                      fill = "Sentiments") +
+                      fill = "Selected\nsentiments") +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
+      
+      
+      
+      if (input$select_sentiment_plot_facet == TRUE){
+        
+        sentiment_plot_time_temp +
+          ggplot2::facet_wrap(~super)
+        
+      } else if (input$select_sentiment_plot_facet == FALSE) {
+        
+        sentiment_plot_time_temp
+        
+      }
+      
+      
     }, height = function() {
       session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
     })
@@ -272,13 +308,13 @@ mod_sentiment_server <- function(id){
         dplyr::mutate(length = lengths(all_sentiments),
                       all_sentimtents_unnest = all_sentiments) %>%
         # Now filter for number of selected sentiments
-        dplyr::filter(length == length(input$select_sentiment)) %>%
+        dplyr::filter(length == length(input$select_sentiment_txt)) %>%
         # Unnest to create long version of data
         tidyr::unnest(cols = all_sentimtents_unnest) %>% 
         # Group by comment id so that every computation is now for each comment
         dplyr::group_by(id) %>% 
         # Sum up number of selected sentiments that match sentiments for each comment
-        dplyr::mutate(test_sentiment = dplyr::case_when(all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
+        dplyr::mutate(test_sentiment = dplyr::case_when(all_sentimtents_unnest %in% input$select_sentiment_txt ~ TRUE),
                       sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
         # Filter comments that macth the selected sentiments
