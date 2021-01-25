@@ -55,7 +55,7 @@ tidy_trust_data <- trustData %>%
   # only keep comments that are within possible range or NA
   filter(crit %in% c(1:3) | is.na(crit) == TRUE) %>% 
   # Drop comments with missing values
-  drop_na(comment_txt)
+  tidyr::drop_na(comment_txt)
 
 
 usethis::use_data(tidy_trust_data, overwrite = TRUE)

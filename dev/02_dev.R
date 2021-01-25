@@ -38,8 +38,8 @@ usethis::use_package( "timevis" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
-golem::add_module( name = "tab_sentiment" ) # Name of the module
-golem::add_module( name = "name_of_module2" ) # Name of the module
+golem::add_module( name = "sentiment" ) # Name of the module
+golem::add_module( name = "category_criticality" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
