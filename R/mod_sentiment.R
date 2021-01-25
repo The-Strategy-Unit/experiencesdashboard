@@ -11,7 +11,8 @@ mod_sentiment_ui <- function(id) {
   ns <- NS(id)
   
   tagList(
-    wellPanel(fluidRow(
+    wellPanel(
+      fluidRow(
       column(
         3,
         dateRangeInput(
@@ -80,6 +81,14 @@ mod_sentiment_ui <- function(id) {
     tabsetPanel(
       type = "tabs",
       tabPanel("Combination of sentiments",
+               br(),
+               fluidRow(
+                 column(12,
+                        box(
+                          width = NULL, background = "light-blue",
+                          # textOutput(ns("addtextbox"))
+                        )
+                 )),
                plotOutput(ns("sentiment_plot_upset")
                           # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
                           # MPRE CODE COMMENTED OUT BELOW IN SERVER
@@ -87,6 +96,14 @@ mod_sentiment_ui <- function(id) {
                           )),
       
       tabPanel("Change in sentiments over time",
+               br(),
+               fluidRow(
+                 column(12,
+                        box(
+                          width = NULL, background = "light-blue",
+                          # textOutput(ns("addtextbox"))
+                        )
+                 )),
                fluidRow(
                  column(4,
                         checkboxInput(ns("select_sentiment_plot_facet"), 
@@ -120,6 +137,14 @@ mod_sentiment_ui <- function(id) {
                ),
       
       tabPanel("Show comments",
+               br(),
+               fluidRow(
+                 column(12,
+                        box(
+                          width = NULL, background = "light-blue",
+                          # textOutput(ns("addtextbox"))
+                        )
+                 )),
                fluidRow(
                column(6,
                  selectInput(
@@ -143,10 +168,7 @@ mod_sentiment_ui <- function(id) {
                )),
                fluidRow(
                  column(12,
-                        reactable::reactableOutput(ns(
-                          "sentiment_table"
-                          )
-                          )
+                        reactable::reactableOutput(ns("sentiment_table"))
                         )
                  )
                )
@@ -335,7 +357,7 @@ mod_sentiment_server <- function(id){
                            pageSizeOptions = c(10, 15, 20, 25, 30), 
                            defaultPageSize = 10,
                            columns = list(
-                             improve = reactable::colDef(minWidth = 200, sortable = FALSE, name = " ")   # 50% width, 200px minimum
+                             improve = reactable::colDef(minWidth = 200, sortable = FALSE, name = "What could we do better?")   # 50% width, 200px minimum
                              # ,super = reactable::colDef(minWidth = 50)   # 25% width, 100px minimum
                              # ,all_sentiments = reactable::colDef(minWidth = 50)  # 25% width, 100px minimum
                            )
