@@ -86,7 +86,7 @@ mod_sentiment_ui <- function(id) {
                  column(12,
                         box(
                           width = NULL, background = "light-blue",
-                          # textOutput(ns("addtextbox"))
+                          textOutput(ns("combination_sentiments_txt"))
                         )
                  )),
                plotOutput(ns("sentiment_plot_upset")
@@ -101,7 +101,7 @@ mod_sentiment_ui <- function(id) {
                  column(12,
                         box(
                           width = NULL, background = "light-blue",
-                          # textOutput(ns("addtextbox"))
+                          textOutput(ns("change_time_sentiments_txt"))
                         )
                  )),
                fluidRow(
@@ -142,7 +142,7 @@ mod_sentiment_ui <- function(id) {
                  column(12,
                         box(
                           width = NULL, background = "light-blue",
-                          # textOutput(ns("addtextbox"))
+                          textOutput(ns("show_comments_box"))
                         )
                  )),
                fluidRow(
@@ -362,6 +362,26 @@ mod_sentiment_server <- function(id){
                              # ,all_sentiments = reactable::colDef(minWidth = 50)  # 25% width, 100px minimum
                            )
       )
+      
+    })
+    
+    # ADD ALL TEXT BOXES HERE
+    
+    output$combination_sentiments_txt <- renderText({
+      
+      paste0("NOTE: ADD combination_sentiments_txt")
+      
+    })
+    
+    output$change_time_sentiments_txt <- renderText({
+      
+      paste0("NOTE: ADD change_time_sentiments_txt")
+      
+    })
+    
+    output$show_comments_box <- renderText({
+      
+      paste0("NOTE: ADD show_comments_box")
       
     })
     

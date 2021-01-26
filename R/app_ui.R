@@ -25,12 +25,14 @@ app_ui <- function(request) {
                            
                            menuItem("Overview", 
                                     tabName = "overview",
-                                    icon = shiny::icon("dashboard"),
-                                    badgeLabel = "planned", badgeColor = "orange"),
+                                    icon = shiny::icon("dashboard")
+                                    # , badgeLabel = "planned", badgeColor = "orange"
+                                    ),
                            
                            menuItem("Service user experiences", 
                                     tabName = "experiences-user",
                                     icon = shiny::icon("comment"),
+                                    selected = TRUE,
                                     badgeLabel = "dev", badgeColor = "green"),
                            
                            # red, yellow, aqua, blue, light-blue, green, navy, teal, olive, lime, orange, fuchsia, purple, maroon, black
@@ -42,18 +44,21 @@ app_ui <- function(request) {
                           
                            menuItem("Staff experiences", 
                                     tabName = "experiences-staff",
-                                    icon = shiny::icon("comment-medical"),
-                                    badgeLabel = "planned", badgeColor = "orange"),
+                                    icon = shiny::icon("comment-medical")
+                                    # , badgeLabel = "planned", badgeColor = "orange"
+                                    ),
                            
                            menuItem("Complaints and compliments", 
                                     tabName = "complaints-compliments",
-                                    icon = shiny::icon("exclamation-triangle"),
-                                    badgeLabel = "planned", badgeColor = "orange"),
+                                    icon = shiny::icon("exclamation-triangle")
+                                    # , badgeLabel = "planned", badgeColor = "orange"
+                                    ),
                            
                            menuItem("Generate report",
                                     tabName = "generate-report",
-                                    icon = shiny::icon("file-alt"),
-                                    badgeLabel = "planned", badgeColor = "orange"),
+                                    icon = shiny::icon("file-alt")
+                                    # , badgeLabel = "planned", badgeColor = "orange"
+                                    ),
                            
                            menuItem("Info", tabName = "info", 
                                     icon = icon("info-circle")
@@ -72,12 +77,13 @@ app_ui <- function(request) {
             # First tab content
             tabItem(tabName = "overview",
                     h1("Overview"),
+                    h2("NOTE: WORK IN PROGRESS")
                     
                     
             ),
             
             tabItem(tabName = "experiences-user",
-                    h1("Service User Experiences"),
+                    # h1("Service User Experiences"),
                     mod_category_criticality_ui("category_criticality_ui_1")
 
             ),
@@ -88,19 +94,23 @@ app_ui <- function(request) {
                     ),
             
             tabItem(tabName = "experiences-staff",
-                    h1("Staff Experiences")
+                    h1("Staff experiences"),
+                    h2("NOTE: WORK IN PROGRESS")
             ),
             
             tabItem(tabName = "complaints-compliments",
-                    h1("Complaints and Compliments")
+                    h1("Complaints and compliments"),
+                    h2("NOTE: WORK IN PROGRESS")
             ),
             
             tabItem(tabName = "generate-report",
-                    h1("Generate Report of Service Experiences")
+                    h1("Generate report of service experiences"),
+                    h2("NOTE: WORK IN PROGRESS")
             ),
             
             tabItem(tabName = "info",
-                    h1("Further Information")
+                    h1("Further Information"),
+                    h2("NOTE: WORK IN PROGRESS")
             )
             
             )
