@@ -139,8 +139,10 @@ mod_category_criticality_server <- function(id){
         ggplot2::ggplot(ggplot2::aes(x = date, fill = factor(crit))) +
         ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram) +
         ggplot2::facet_grid(super_category ~ factor(comment_type, 
-                                           levels = c("best", "improve"),
-                                           labels = c("What was good?", "What could we do better?"))) +
+                                                    levels = c("best", 
+                                                               "improve"),
+                                                    labels = c("What was good?", 
+                                                               "What could we do better?"))) +
         ggplot2::scale_fill_viridis_d() +
         ggplot2::labs(x = "Date", 
              y = "Number of responses", 
@@ -178,25 +180,32 @@ mod_category_criticality_server <- function(id){
       
       
       reactable::reactable(dplyr::sample_n(best_comments, n_table_best),
+                           # groupBy = "super_category",
                            borderless = TRUE,
                            highlight = TRUE,
                            showSortIcon = FALSE,
-                           filterable = TRUE,
-                           showPageSizeOptions = TRUE, 
-                           pageSizeOptions = c(10, 15, 20, 25, 30), 
+                           showPageSizeOptions = TRUE,
+                           pageSizeOptions = c(10, 15, 20, 25, 30),
                            defaultPageSize = 10,
                            columns = list(
+                             # super_category = reactable::colDef(minWidth = 2, 
+                             #                                    sortable = FALSE,
+                             #                                    filterable = FALSE,
+                             #                                    name = "Category"),
                              comment_txt = reactable::colDef(minWidth = 5.5, 
                                                              sortable = FALSE, 
+                                                             filterable = TRUE,
                                                              name = "What was good?"),
                              crit = reactable::colDef(minWidth = 1, 
+                                                      filterable = TRUE,
                                                       name = "Criticality",
                                                       cell = function(value) {
                                                         class <- paste0("tag crit-best-", value)
                                                         htmltools::div(class = class, value)
                                                       }
                              )
-                           ))
+                           )
+                           )
       
     })
     
@@ -219,6 +228,7 @@ mod_category_criticality_server <- function(id){
     
       
       reactable::reactable(dplyr::sample_n(improve_comments, n_table_imp),
+                           # groupBy = "super_category",
                            borderless = TRUE,
                            highlight = TRUE,
                            showSortIcon = FALSE,
@@ -227,6 +237,9 @@ mod_category_criticality_server <- function(id){
                            pageSizeOptions = c(10, 15, 20, 25, 30), 
                            defaultPageSize = 10,
                            columns = list(
+                             # super_category = reactable::colDef(minWidth = 2, 
+                             #                                 sortable = FALSE, 
+                             #                                 name = "Category"),
                              comment_txt = reactable::colDef(minWidth = 5.5, 
                                                              sortable = FALSE, 
                                                              name = "What could we do better?"),

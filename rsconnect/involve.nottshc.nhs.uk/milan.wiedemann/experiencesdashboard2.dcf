@@ -1,0 +1,12 @@
+name: experiencesdashboard2
+title: experiencesdashboard
+username: milan.wiedemann
+account: milan.wiedemann
+server: involve.nottshc.nhs.uk
+hostUrl: https://involve.nottshc.nhs.uk:8443/__api__
+appId: 56
+bundleId: 1314
+url: https://involve.nottshc.nhs.uk:8443/content/56/
+when: 1611744978.41502
+asMultiple: FALSE
+asStatic: FALSE

@@ -26,6 +26,7 @@ usethis::use_package( "stringr" )
 usethis::use_package( "forcats" )
 usethis::use_package( "reactable" )
 usethis::use_package( "tidytext" )
+usethis::use_package( "janitor" )
 
 usethis::use_package( "shinydashboard" )
 usethis::use_package( "dashboardthemes" )

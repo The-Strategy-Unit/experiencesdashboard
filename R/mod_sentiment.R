@@ -270,34 +270,37 @@ mod_sentiment_server <- function(id){
     output$sentiment_plot_time <- renderPlot({
       
       # Uncomment if I only want to highlight the sentiments that were selected
-      sentiments_ordered <- stringr::str_sort(input$select_sentiment_plot)
-      sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+      # sentiments_ordered <- stringr::str_sort(input$select_sentiment_plot)
+      # sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
 
       # This always shows all sentiments
-      # sentiments_ordered <- c("negative", "anger", "disgust", "fear", "sadness",
-      #                         "anticipation", "surprise", "joy",  "trust", "positive")
-      # 
-      # sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+      sentiments_ordered <- c("negative", "anger", "disgust", "fear", "sadness",
+                              "anticipation", "surprise", "joy",  "trust", "positive")
+
+      sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
       
 
       
       sentiment_plot_time_temp <- sentiment_txt_data_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
+        dplyr::filter(all_sentiments %in% input$select_sentiment_plot) %>% 
+        dplyr::select(date, all_sentiments, super) %>% 
+        tidyr::drop_na() %>% 
         dplyr::mutate(all_sentiments = factor(x = all_sentiments,
                                               levels = sentiments_ordered,
                                               labels = sentiments_ordered_sentence)) %>%
-        # dplyr::mutate(all_sentiments = dplyr::case_when(all_sentiments %in% input$select_sentiment_plot ~ all_sentiments,
-        #                                                 TRUE ~ NA_character_),
-        #               all_sentiments = stringr::str_to_sentence(all_sentiments)) %>% 
-        ggplot2::ggplot(ggplot2::aes(date, fill = all_sentiments)) +
-        # ggplot2::geom_density(position = "fill") +
-        ggplot2::geom_histogram(position = "fill") +
+        ggplot2::ggplot(ggplot2::aes(date, 
+                                     fill = all_sentiments,
+                                     colour = all_sentiments)) +
+        ggplot2::geom_density(alpha = .3, 
+                              size = 1) +
         ggplot2::scale_x_date() +
-        ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
         ggplot2::scale_fill_viridis_d(direction = -1) +
+        ggplot2::scale_colour_viridis_d(direction = -1) +
         ggplot2::labs(x = "Date", 
                       y = NULL, 
-                      fill = "Selected\nsentiments") +
+                      fill = "Selected\nsentiments",
+                      colour = "Selected\nsentiments") +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
       
       
