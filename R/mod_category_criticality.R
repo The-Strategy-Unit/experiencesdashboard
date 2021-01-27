@@ -82,8 +82,8 @@ mod_category_criticality_ui <- function(id){
                  column(4,
                         selectInput(ns("category_crit_time_facet"), 
                                     label = h5("Divide plot by:"), 
-                                    choices = list("comment and category" = 1, 
-                                                   "comment and division" = 2), 
+                                    choices = list("Comment and category" = 1, 
+                                                   "Comment and division" = 2), 
                                     selected = 1)
                         ),
                  column(4,

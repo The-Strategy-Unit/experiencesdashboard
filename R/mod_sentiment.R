@@ -107,9 +107,9 @@ mod_sentiment_ui <- function(id) {
                  column(4,
                         selectInput(ns("select_sentiment_plot_facet"), 
                                     label = h5("Divide plot by:"), 
-                                    choices = list("category" = 1, 
-                                                   "division" = 2, 
-                                                   "division and category" = 3), 
+                                    choices = list("Category" = 1, 
+                                                   "Division" = 2, 
+                                                   "Division and category" = 3), 
                                     selected = 1),
                  ),
                  column(4,
@@ -138,7 +138,6 @@ mod_sentiment_ui <- function(id) {
                ),
                plotOutput(ns("sentiment_plot_time"))
       ),
-      
       tabPanel("Show comments",
                br(),
                fluidRow(
