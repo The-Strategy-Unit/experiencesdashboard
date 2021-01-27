@@ -13,70 +13,68 @@ mod_sentiment_ui <- function(id) {
   tagList(
     wellPanel(
       fluidRow(
-      column(
-        3,
-        dateRangeInput(
-          ns("date_range"),
-          label = h5("Select date range:"),
-          min = "2013-01-01",
-          start = "2013-01-01",
-          end = "2018-12-31",
-          max = "2019-02-11"
-        )
-      ),
-      
-      column(
-        3,
-        selectInput(
-          ns("select_division"),
-          label = h5("Select divisions:"),
-          choices = list(
-            "Local partnerships- MH" = "Local partnerships- MH",
-            "Forensic services" = "Forensic services",
-            "Local partnerships- CH" = "Local partnerships- CH"
-          ),
-          multiple = TRUE,
-          selected = c(
-            "Local partnerships- MH",
-            "Forensic services",
-            "Local partnerships- CH"
+        column(
+          3,
+          dateRangeInput(
+            ns("date_range"),
+            label = h5("Select date range:"),
+            min = "2013-01-01",
+            start = "2013-01-01",
+            end = "2018-12-31",
+            max = "2019-02-11"
+          )
+        ),
+        column(
+          3,
+          selectInput(
+            ns("select_division"),
+            label = h5("Select divisions:"),
+            choices = list(
+              "Local partnerships- MH" = "Local partnerships- MH",
+              "Forensic services" = "Forensic services",
+              "Local partnerships- CH" = "Local partnerships- CH"
+            ),
+            multiple = TRUE,
+            selected = c(
+              "Local partnerships- MH",
+              "Forensic services",
+              "Local partnerships- CH"
+            )
+          )
+        ),
+        column(
+          6,
+          selectInput(
+            ns("select_super"),
+            label = h5("Select categories:"),
+            choices = list(
+              "Communication" = "Communication",
+              "Staff/Staff Attitude" = "Staff/Staff Attitude",
+              "Environment/Facilities" = "Environment/Facilities",
+              "Access to Services" = "Access to Services",
+              "Care/ Treatment" = "Care/ Treatment",
+              "Couldn't be improved" = "Couldn't be improved",
+              "Service Quality/Outcomes" = "Service Quality/Outcomes",
+              "Involvement" = "Involvement",
+              "Food" = "Food",
+              "Privacy and Dignity" = "Privacy and Dignity",
+              "MHA" = "MHA",
+              "Equality/Diversity" = "Equality/Diversity",
+              "Smoking" = "Smoking",
+              "Leave" = "Leave",
+              "Safety" = "Safety",
+              "Physical Health" = "Physical Health",
+              "Record Keeping" = "Record Keeping"
+            ),
+            selected = c("Staff/Staff Attitude", 
+                         "Care/ Treatment", 
+                         "Service Quality/Outcomes", 
+                         "Food"),
+            multiple = TRUE
           )
         )
       ),
-      
-      column(
-        6,
-        selectInput(
-          ns("select_super"),
-          label = h5("Select categories:"),
-          choices = list(
-            "Communication" = "Communication",
-            "Staff/Staff Attitude" = "Staff/Staff Attitude",
-            "Environment/Facilities" = "Environment/Facilities",
-            "Access to Services" = "Access to Services",
-            "Care/ Treatment" = "Care/ Treatment",
-            "Couldn't be improved" = "Couldn't be improved",
-            "Service Quality/Outcomes" = "Service Quality/Outcomes",
-            "Involvement" = "Involvement",
-            "Food" = "Food",
-            "Privacy and Dignity" = "Privacy and Dignity",
-            "MHA" = "MHA",
-            "Equality/Diversity" = "Equality/Diversity",
-            "Smoking" = "Smoking",
-            "Leave" = "Leave",
-            "Safety" = "Safety",
-            "Physical Health" = "Physical Health",
-            "Record Keeping" = "Record Keeping"
-          ),
-          selected = c("Staff/Staff Attitude", 
-                       "Care/ Treatment", 
-                       "Service Quality/Outcomes", 
-                       "Food"),
-          multiple = TRUE
-        )
-      )
-    ),
-    style = "padding: 5px;"),
+      style = "padding: 5px;"),
     
     tabsetPanel(
       type = "tabs",
@@ -85,30 +83,34 @@ mod_sentiment_ui <- function(id) {
                fluidRow(
                  column(12,
                         box(
-                          width = NULL, background = "light-blue",
+                          width = NULL, 
+                          background = "light-blue",
                           textOutput(ns("combination_sentiments_txt"))
                         )
-                 )),
+                 )
+               ),
                plotOutput(ns("sentiment_plot_upset")
-                          # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
-                          # MPRE CODE COMMENTED OUT BELOW IN SERVER
-                          # , height = "auto"
-                          )),
-      
+               )
+      ),
       tabPanel("Change in sentiments over time",
                br(),
                fluidRow(
                  column(12,
                         box(
-                          width = NULL, background = "light-blue",
+                          width = NULL, 
+                          background = "light-blue",
                           textOutput(ns("change_time_sentiments_txt"))
                         )
-                 )),
+                 )
+               ),
                fluidRow(
                  column(4,
-                        checkboxInput(ns("select_sentiment_plot_facet"), 
-                                      label = "Seperate plot for each category", 
-                                      value = FALSE)
+                        selectInput(ns("select_sentiment_plot_facet"), 
+                                    label = h5("Divide plot by:"), 
+                                    choices = list("category" = 1, 
+                                                   "division" = 2, 
+                                                   "division and category" = 3), 
+                                    selected = 1),
                  ),
                  column(4,
                         selectInput(
@@ -127,54 +129,58 @@ mod_sentiment_ui <- function(id) {
                             "trust" = "trust"
                           ),
                           multiple = TRUE,
-                          selected = c("negative", "sadness", "positive", "joy")
+                          selected = c("anger", 
+                                       "fear", 
+                                       "negative",
+                                       "sadness")
                         )
                  )
-                 ),
-
-               plotOutput(ns("sentiment_plot_time"))
-
                ),
+               plotOutput(ns("sentiment_plot_time"))
+      ),
       
       tabPanel("Show comments",
                br(),
                fluidRow(
                  column(12,
                         box(
-                          width = NULL, background = "light-blue",
+                          width = NULL, 
+                          background = "light-blue",
                           textOutput(ns("show_comments_box"))
                         )
-                 )),
-               fluidRow(
-               column(6,
-                 selectInput(
-                   ns("select_sentiment_txt"),
-                   label = h5("Select combination of sentiments:"),
-                   choices = list(
-                     "anger" = "anger",
-                     "anticipation" = "anticipation",
-                     "disgust" = "disgust",
-                     "fear" = "fear",
-                     "joy" = "joy",
-                     "negative" = "negative",
-                     "positive" = "positive",
-                     "sadness" = "sadness",
-                     "surprise" = "surprise",
-                     "trust" = "trust"
-                   ),
-                   multiple = TRUE,
-                   selected = c("negative", "sadness")
                  )
-               )),
+               ),
+               fluidRow(
+                 column(6,
+                        selectInput(
+                          ns("select_sentiment_txt"),
+                          label = h5("Select combination of sentiments:"),
+                          choices = list(
+                            "anger" = "anger",
+                            "anticipation" = "anticipation",
+                            "disgust" = "disgust",
+                            "fear" = "fear",
+                            "joy" = "joy",
+                            "negative" = "negative",
+                            "positive" = "positive",
+                            "sadness" = "sadness",
+                            "surprise" = "surprise",
+                            "trust" = "trust"
+                          ),
+                          multiple = TRUE,
+                          selected = c("negative", "sadness")
+                        )
+                 )
+               ),
                fluidRow(
                  column(12,
                         reactable::reactableOutput(ns("sentiment_table"))
-                        )
                  )
                )
       )
+    )
   )
-  }
+}
 
 #' mod_sentiment Server Function
 #'
@@ -215,76 +221,46 @@ mod_sentiment_server <- function(id){
       ) %>% 
       dplyr::mutate_if(is.logical, as.numeric)
     
-    
     # Create reactive dataframe ----
-    sentiment_txt_data_r <- reactive( {
-      
+    # Filter data based on user selections
+    sentiment_txt_data_r <- reactive({
       sentiment_txt_data_upset %>% 
         dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>% 
         dplyr::filter(division2 %in% input$select_division) %>% 
         dplyr::filter(super %in% input$select_super)
-      
     })
-    
-    
     
     # Create upset plot ----
     output$sentiment_plot_upset <- renderPlot({
       
-      # PLOT START
       UpSetR::upset(data = as.data.frame(sentiment_txt_data_r()
                                          [, c("year", "anger", "anticipation", 
                                               "disgust", "fear", "joy", "negative", 
                                               "positive", "sadness", "surprise", 
                                               "trust")]), 
-                    # MAYBE LET USER PICK NUMBER OF INTERSECTIONS
                     nintersects = 15,
                     sets = c("anger", "anticipation", "disgust", "fear", "joy", 
                              "negative", "positive", "sadness", "surprise", "trust"),
                     order.by = "freq",
-                    text.scale = 1.5,
-                    # ADD THE QUERY AT A LATER POINT
-                    # queries = list(list(query = UpSetR::intersects,
-                    #                     params = list(c(input$select_sentiment_txt)),
-                    #                     color = "orange",
-                    #                     active = F))
-                    # COMMENTING OUT AttRIBUTE PLOT BECAUSE OF THE SCALING ISSUE
-                    # ALSO I'm CURRENTLUY NOT HAPPY WITH THE DESIGN OF IT!
-                    # , attribute.plots = list(gridrows = 50,
-                    #                        plots = list(list(plot = UpSetR::histogram,
-                    #                                          x = "year",
-                    #                                          queries = T)),
-                    # ncols = 1)
-                    )}
-       # PLOT END
-         
-      # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
+                    text.scale = 1.5
+      )}
       , height = function() {
         session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
-        }
-      
-      )
-    
+      }
+    )
     
     # Create sentiment plot over time ----
     output$sentiment_plot_time <- renderPlot({
-      
-      # Uncomment if I only want to highlight the sentiments that were selected
-      # sentiments_ordered <- stringr::str_sort(input$select_sentiment_plot)
-      # sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
 
-      # This always shows all sentiments
       sentiments_ordered <- c("negative", "anger", "disgust", "fear", "sadness",
                               "anticipation", "surprise", "joy",  "trust", "positive")
-
-      sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
       
-
+      sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
       
       sentiment_plot_time_temp <- sentiment_txt_data_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
         dplyr::filter(all_sentiments %in% input$select_sentiment_plot) %>% 
-        dplyr::select(date, all_sentiments, super) %>% 
+        dplyr::select(date, all_sentiments, super, division2) %>% 
         tidyr::drop_na() %>% 
         dplyr::mutate(all_sentiments = factor(x = all_sentiments,
                                               levels = sentiments_ordered,
@@ -303,26 +279,20 @@ mod_sentiment_server <- function(id){
                       colour = "Selected\nsentiments") +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
       
-      
-      
-      if (input$select_sentiment_plot_facet == TRUE){
-        
+      # Add facet ----
+      if (input$select_sentiment_plot_facet == 1){
         sentiment_plot_time_temp +
-          ggplot2::facet_wrap(~super)
-        
-      } else if (input$select_sentiment_plot_facet == FALSE) {
-        
-        sentiment_plot_time_temp
-        
+          ggplot2::facet_grid(~super)
+      } else if (input$select_sentiment_plot_facet == 2) {
+        sentiment_plot_time_temp +
+          ggplot2::facet_grid(~division2)
+      } else if (input$select_sentiment_plot_facet == 3) {
+        sentiment_plot_time_temp +
+          ggplot2::facet_grid(division2~super)
       }
-      
-      
     }, height = function() {
       session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
     })
-      
-    
-    
     
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
@@ -342,50 +312,38 @@ mod_sentiment_server <- function(id){
         dplyr::mutate(test_sentiment = dplyr::case_when(all_sentimtents_unnest %in% input$select_sentiment_txt ~ TRUE),
                       sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
-        # Filter comments that macth the selected sentiments
+        # Filter comments that match the selected sentiments
         dplyr::filter(is.na(sum_temp) == FALSE) %>% 
         dplyr::select(id, improve) %>%
         dplyr::distinct()
       
       reactable::reactable(filtered_comments[, "improve"],
-                           # pagination = FALSE
-                           # height = 500
-                           # bordered = TRUE,
                            borderless = TRUE,
                            highlight = TRUE,
                            showSortIcon = FALSE,
                            filterable = TRUE,
-                           # searchable = TRUE,
                            showPageSizeOptions = TRUE, 
                            pageSizeOptions = c(10, 15, 20, 25, 30), 
                            defaultPageSize = 10,
                            columns = list(
-                             improve = reactable::colDef(minWidth = 200, sortable = FALSE, name = "What could we do better?")   # 50% width, 200px minimum
-                             # ,super = reactable::colDef(minWidth = 50)   # 25% width, 100px minimum
-                             # ,all_sentiments = reactable::colDef(minWidth = 50)  # 25% width, 100px minimum
+                             improve = reactable::colDef(minWidth = 200, 
+                                                         sortable = FALSE, 
+                                                         name = "What could we do better?")
                            )
       )
-      
     })
     
-    # ADD ALL TEXT BOXES HERE
-    
+    # Write output text for text boxes
     output$combination_sentiments_txt <- renderText({
-      
       paste0("NOTE: ADD combination_sentiments_txt")
-      
     })
     
     output$change_time_sentiments_txt <- renderText({
-      
       paste0("NOTE: ADD change_time_sentiments_txt")
-      
     })
     
     output$show_comments_box <- renderText({
-      
       paste0("NOTE: ADD show_comments_box")
-      
     })
     
   })

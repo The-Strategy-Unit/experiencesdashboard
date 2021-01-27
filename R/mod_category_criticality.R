@@ -11,12 +11,12 @@ mod_category_criticality_ui <- function(id){
   ns <- NS(id)
   tagList(
     
+    # Add css file for table ----
     includeCSS("www/crit-table.css"), 
     
     wellPanel(
       fluidRow(
-        column(
-          3,
+        column(3,
           dateRangeInput(
             ns("date_range"),
             label = h5("Select date range:"),
@@ -26,9 +26,7 @@ mod_category_criticality_ui <- function(id){
             max = "2019-02-11"
           )
         ),
-        
-        column(
-          3,
+        column(3,
           selectInput(
             ns("select_division"),
             label = h5("Select divisions:"),
@@ -45,9 +43,7 @@ mod_category_criticality_ui <- function(id){
             )
           )
         ),
-        
-        column(
-          6,
+        column(6,
           selectInput(
             ns("select_super"),
             label = h5("Select categories:"),
@@ -80,35 +76,39 @@ mod_category_criticality_ui <- function(id){
     
     tabsetPanel(
       type = "tabs",
-      
-      
-      
       tabPanel("Distribution over time",
-               
                br(),
-               
-               radioButtons(ns("category_crit_time_geom_histogram"), 
-                            label = NULL,
-                            choices = list("Show total number of responses" = "stack", 
-                                           "Show percentage of respondes" = "fill"), 
-                            selected = "stack"),
-               
+               fluidRow(
+                 column(4,
+                        selectInput(ns("category_crit_time_facet"), 
+                                    label = h5("Divide plot by:"), 
+                                    choices = list("comment and category" = 1, 
+                                                   "comment and division" = 2), 
+                                    selected = 1)
+                        ),
+                 column(4,
+                        selectInput(ns("category_crit_time_geom_histogram"), 
+                                    label = h5("Select y-axis:"), 
+                                    choices = list("Show total number of responses" = "stack", 
+                                                   "Show proportion of respondes" = "fill"), 
+                                    selected = "stack")
+                 )
+                 
+               ),
                plotOutput(ns("category_crit_time_plot"))
-               ), 
-      
+      ), 
       tabPanel("Show comments",
-    
-    fluidRow(
-      column(6,
-             reactable::reactableOutput(ns("best_table"))
-      ),
-      column(6,
-             reactable::reactableOutput(ns("improve_table"))
-             )
-      )
+               fluidRow(
+                 column(6,
+                        reactable::reactableOutput(ns("best_table"))
+                 ),
+                 column(6,
+                        reactable::reactableOutput(ns("improve_table"))
+                 )
+               )
       )
     )
- 
+    
   )
 }
     
@@ -119,65 +119,70 @@ mod_category_criticality_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
-    
+    # Create reactive data ----
     tidy_trust_data_r <- reactive( {
-      
       tidy_trust_data %>%
       dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>%
       dplyr::filter(division2 %in% input$select_division) %>%
       dplyr::filter(super_category %in% input$select_super)
-      
     })
-    
-    
     
     # Create sentiment plot over time ----
     output$category_crit_time_plot <- renderPlot({
-      
-      tidy_trust_data_r() %>% 
+      category_crit_time_plot <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
         ggplot2::ggplot(ggplot2::aes(x = date, fill = factor(crit))) +
         ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram) +
+        ggplot2::scale_fill_viridis_d() +
+        ggplot2::theme(text = ggplot2::element_text(size = 16))
+      
+      ## Add labels ----
+      if (input$category_crit_time_geom_histogram == "stack") {
+        category_crit_time_plot <- category_crit_time_plot + 
+          ggplot2::labs(x = "Date", 
+                        y = "Total number of responses", 
+                        fill = "Criticality")
+      } else if (input$category_crit_time_geom_histogram == "fill") {
+        category_crit_time_plot <- category_crit_time_plot + 
+          ggplot2::labs(x = "Date", 
+                        y = "Proportion of responses", 
+                        fill = "Criticality")
+      }
+      
+      # Add facet ----
+      if (input$category_crit_time_facet == 1) {
+        category_crit_time_plot +
         ggplot2::facet_grid(super_category ~ factor(comment_type, 
                                                     levels = c("best", 
                                                                "improve"),
                                                     labels = c("What was good?", 
-                                                               "What could we do better?"))) +
-        ggplot2::scale_fill_viridis_d() +
-        ggplot2::labs(x = "Date", 
-             y = "Number of responses", 
-             fill = "Criticality") +
-        ggplot2::theme(text = ggplot2::element_text(size = 16))
-      
-      
-    
+                                                               "What could we do better?")))
+        } else if (input$category_crit_time_facet == 2) {
+        category_crit_time_plot +
+        ggplot2::facet_grid(division2 ~ factor(comment_type, 
+                                                    levels = c("best", 
+                                                               "improve"),
+                                                    labels = c("What was good?", 
+                                                               "What could we do better?")))
+      }
     }, height = function() {
       session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
     })
     
-    
-
-    
-    
-    
-    # Create reactive table ----
+    # Create reactive table (best) ----
     output$best_table <- reactable::renderReactable({
       
-
-      
-
       best_comments <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
         dplyr::filter(comment_type == "best") %>% 
         dplyr::select(comment_txt, crit)
       
-      
+      # Trick so table is max 1000 rows, otherwise takes ages to load
       if (nrow(best_comments) >= 1000) {
         n_table_best <- 1000
       } else if (nrow(best_comments) < 1000) {
         n_table_best <- nrow(best_comments)
       }
-      
       
       reactable::reactable(dplyr::sample_n(best_comments, n_table_best),
                            # groupBy = "super_category",
@@ -205,27 +210,24 @@ mod_category_criticality_server <- function(id){
                                                       }
                              )
                            )
-                           )
+      )
       
     })
     
-    
+    # Create reactive table (improve) ----
     output$improve_table <- reactable::renderReactable({
-      
-      
       
       improve_comments <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
         dplyr::filter(comment_type == "improve") %>% 
         dplyr::select(comment_txt, crit)
       
-      
+      # Trick so table is max 1000 rows, otherwise takes ages to load
       if (nrow(improve_comments) >= 1000) {
         n_table_imp <- 1000
       } else if (nrow(improve_comments) < 1000) {
         n_table_imp <- nrow(improve_comments)
       }
-    
       
       reactable::reactable(dplyr::sample_n(improve_comments, n_table_imp),
                            # groupBy = "super_category",
@@ -249,12 +251,10 @@ mod_category_criticality_server <- function(id){
                                                         class <- paste0("tag crit-imp-", value)
                                                         htmltools::div(class = class, value)
                                                       }
-                                                      )
+                             )
                            )
       )
-      
     })
- 
   })
 }
     
