@@ -17,7 +17,7 @@ mod_sentiment_ui <- function(id) {
           3,
           dateRangeInput(
             ns("date_range"),
-            label = h5("Select date range:"),
+            label = h5(strong("Select date range:")),
             min = "2013-01-01",
             start = "2013-01-01",
             end = "2018-12-31",
@@ -28,7 +28,7 @@ mod_sentiment_ui <- function(id) {
           3,
           selectInput(
             ns("select_division"),
-            label = h5("Select divisions:"),
+            label = h5(strong("Select divisions:")),
             choices = list(
               "Local partnerships- MH" = "Local partnerships- MH",
               "Forensic services" = "Forensic services",
@@ -46,7 +46,7 @@ mod_sentiment_ui <- function(id) {
           6,
           selectInput(
             ns("select_super"),
-            label = h5("Select categories:"),
+            label = h5(strong("Select categories:")),
             choices = list(
               "Communication" = "Communication",
               "Staff/Staff Attitude" = "Staff/Staff Attitude",
@@ -104,18 +104,18 @@ mod_sentiment_ui <- function(id) {
                  )
                ),
                fluidRow(
-                 column(4,
+                 column(3,
                         selectInput(ns("select_sentiment_plot_facet"), 
-                                    label = h5("Divide plot by:"), 
+                                    label = h5(strong("Divide plot by:")), 
                                     choices = list("Category" = 1, 
                                                    "Division" = 2, 
                                                    "Division and category" = 3), 
                                     selected = 1),
                  ),
-                 column(4,
+                 column(3,
                         selectInput(
                           ns("select_sentiment_plot"),
-                          label = h5("Select sentiments:"),
+                          label = h5(strong("Select sentiments:")),
                           choices = list(
                             "anger" = "anger",
                             "anticipation" = "anticipation",
@@ -153,7 +153,7 @@ mod_sentiment_ui <- function(id) {
                  column(6,
                         selectInput(
                           ns("select_sentiment_txt"),
-                          label = h5("Select combination of sentiments:"),
+                          label = h5(strong("Select combination of sentiments:")),
                           choices = list(
                             "anger" = "anger",
                             "anticipation" = "anticipation",
@@ -332,17 +332,17 @@ mod_sentiment_server <- function(id){
       )
     })
     
-    # Write output text for text boxes
+    # Write output text for text boxes ----
     output$combination_sentiments_txt <- renderText({
-      paste0("NOTE: ADD combination_sentiments_txt")
+      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FIGURES.")
     })
     
     output$change_time_sentiments_txt <- renderText({
-      paste0("NOTE: ADD change_time_sentiments_txt")
+      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FIGURES.")
     })
     
     output$show_comments_box <- renderText({
-      paste0("NOTE: ADD show_comments_box")
+      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF TABLE.")
     })
     
   })

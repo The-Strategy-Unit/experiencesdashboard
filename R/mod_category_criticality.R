@@ -19,7 +19,7 @@ mod_category_criticality_ui <- function(id){
         column(3,
           dateRangeInput(
             ns("date_range"),
-            label = h5("Select date range:"),
+            label = h5(strong("Select date range:")),
             min = "2013-01-01",
             start = "2013-01-01",
             end = "2018-12-31",
@@ -29,7 +29,7 @@ mod_category_criticality_ui <- function(id){
         column(3,
           selectInput(
             ns("select_division"),
-            label = h5("Select divisions:"),
+            label = h5(strong("Select divisions:")),
             choices = list(
               "Local partnerships- MH" = "Local partnerships- MH",
               "Forensic services" = "Forensic services",
@@ -46,7 +46,7 @@ mod_category_criticality_ui <- function(id){
         column(6,
           selectInput(
             ns("select_super"),
-            label = h5("Select categories:"),
+            label = h5(strong("Select categories:")),
             choices = list(
               "Communication" = "Communication",
               "Staff/Staff Attitude" = "Staff/Staff Attitude",
@@ -79,16 +79,25 @@ mod_category_criticality_ui <- function(id){
       tabPanel("Distribution over time",
                br(),
                fluidRow(
-                 column(4,
+                 column(12,
+                        box(
+                          width = NULL,
+                          background = "light-blue",
+                          textOutput(ns("category_crit_time_plot_txt"))
+                        )
+                 )
+               ),
+               fluidRow(
+                 column(3,
                         selectInput(ns("category_crit_time_facet"), 
-                                    label = h5("Divide plot by:"), 
+                                    label = h5(strong("Divide plot by:")), 
                                     choices = list("Comment and category" = 1, 
                                                    "Comment and division" = 2), 
                                     selected = 1)
                         ),
-                 column(4,
+                 column(3,
                         selectInput(ns("category_crit_time_geom_histogram"), 
-                                    label = h5("Select y-axis:"), 
+                                    label = h5(strong("Select y-axis:")), 
                                     choices = list("Show total number of responses" = "stack", 
                                                    "Show proportion of respondes" = "fill"), 
                                     selected = "stack")
@@ -98,6 +107,16 @@ mod_category_criticality_ui <- function(id){
                plotOutput(ns("category_crit_time_plot"))
       ), 
       tabPanel("Show comments",
+               br(),
+               fluidRow(
+                 column(12,
+                        box(
+                          width = NULL,
+                          background = "light-blue",
+                          textOutput(ns("category_crit_tab_txt"))
+                        )
+                 )
+               ),
                fluidRow(
                  column(6,
                         reactable::reactableOutput(ns("best_table"))
@@ -131,7 +150,12 @@ mod_category_criticality_server <- function(id){
     output$category_crit_time_plot <- renderPlot({
       category_crit_time_plot <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
-        ggplot2::ggplot(ggplot2::aes(x = date, fill = factor(crit))) +
+        ggplot2::ggplot(ggplot2::aes(x = date, 
+                                     fill = factor(crit, 
+                                                   levels = c(1:3),
+                                                   labels = c("Mildly", 
+                                                              "Fairly", 
+                                                              "Highly")))) +
         ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram) +
         ggplot2::scale_fill_viridis_d() +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
@@ -144,6 +168,7 @@ mod_category_criticality_server <- function(id){
                         fill = "Criticality")
       } else if (input$category_crit_time_geom_histogram == "fill") {
         category_crit_time_plot <- category_crit_time_plot + 
+          ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
           ggplot2::labs(x = "Date", 
                         y = "Proportion of responses", 
                         fill = "Criticality")
@@ -254,6 +279,17 @@ mod_category_criticality_server <- function(id){
                              )
                            )
       )
+    })
+    
+    
+    
+    # Write output text for text boxes ----
+    output$category_crit_time_plot_txt <- renderText({
+      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FEEDBACK.")
+    })
+    
+    output$category_crit_tab_txt <- renderText({
+      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FIGURES.")
     })
   })
 }
