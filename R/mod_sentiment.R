@@ -123,6 +123,9 @@ mod_sentiment_ui <- function(id) {
                
       ),
       
+      tabPanel("Change in sentiment",
+               plotOutput(ns("sentiment_line_graph"))),
+      
       tabPanel("Feedback comments",
                fluidRow(
                  column(12,
@@ -251,6 +254,45 @@ mod_sentiment_server <- function(id){
         
         return(p + ggplot2::geom_histogram(binwidth = 5))
       }
+      
+    })
+    
+    output$sentiment_line_graph <- renderPlot({
+      
+      mean_data <- purrr::map(c("anger", "anticipation", "disgust", "fear", "joy", "negative", 
+                         "positive", "sadness", "surprise", "trust"), function(x) {
+                           
+                           sentiment_txt_data_r() %>% 
+                             dplyr::group_by(date) %>%
+                             dplyr::summarise(var_sum = sum(.data[[x]], na.rm = TRUE)) %>% 
+                             dplyr::ungroup() %>%  
+                             tsibble::tsibble(index = date) %>% 
+                             tsibble::fill_gaps(var_sum = 0) %>% 
+                             as.data.frame() %>% 
+                             dplyr::mutate(roll_var = rolling_mean(var_sum)) %>% 
+                             dplyr::select(roll_var) %>% 
+                             purrr::set_names(x)
+                         }) %>% do.call(cbind, .)
+      
+      to_plot <- dplyr::bind_cols(
+        sentiment_txt_data_r() %>% 
+          dplyr::group_by(date) %>%
+          dplyr::summarise(var_sum = sum(anger, na.rm = TRUE)) %>% 
+          dplyr::ungroup() %>%  
+          tsibble::tsibble(index = date) %>% 
+          tsibble::fill_gaps(var_sum = 0) %>% 
+          as.data.frame() %>% 
+          dplyr::select(date),
+        
+        as.data.frame(prop.table(as.matrix(mean_data), 1) * 100)
+      )
+      
+      to_plot %>% 
+        tidyr::drop_na() %>% 
+        tidyr::pivot_longer(-date) %>% 
+        ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = name, 
+                                     group = name)) +
+        ggplot2::geom_line()
       
     })
 
