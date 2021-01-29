@@ -246,10 +246,10 @@ mod_sentiment_server <- function(id){
       
       if(input$proportion){
         
-        return(p + ggplot2::geom_histogram(position = "fill"))
+        return(p + ggplot2::geom_histogram(position = "fill", binwidth = 5))
       } else {
         
-        return(p + ggplot2::geom_histogram())
+        return(p + ggplot2::geom_histogram(binwidth = 5))
       }
       
     })
