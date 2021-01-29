@@ -144,18 +144,14 @@ mod_sentiment_server <- function(id){
   
   moduleServer( id, function(input, output, session){
     
-    sentiments_ordered <- c("positive", "trust", "joy", "anticipation", 
-                            "surprise", "fear", "sadness", "disgust", "anger", 
-                            "negative")
-    
-    sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
-    
     ns <- session$ns
     
     sentiments_ordered <- c("positive", "trust", "joy", "anticipation", 
                             "surprise", "fear", "sadness", "disgust", "anger", 
                             "negative")
     
+    sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+        
     # Fist, tidy entire data for upset plot
     sentiment_txt_data_upset <- sentiment_txt_data %>% 
       dplyr::mutate(date = lubridate::date(date),
