@@ -114,30 +114,31 @@ mod_sentiment_ui <- function(id) {
     tabsetPanel(
       type = "tabs",
       tabPanel("Sentiment intersections",
-               plotOutput(ns("sentiment_plot_upset")
-                          # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
-                          # MPRE CODE COMMENTED OUT BELOW IN SERVER
-                          # , height = "auto"
-                          )),
+               plotOutput(ns("sentiment_plot_upset"))),
       
       tabPanel("Change in sentiment over time",
+               checkboxInput(ns("proportion"), 
+                             "Show proportions of sentiments"),
                plotOutput(ns("sentiment_plot_time"))
-
-               ),
+               
+      ),
+      
+      tabPanel("Change in sentiment",
+               plotOutput(ns("sentiment_line_graph"))),
       
       tabPanel("Feedback comments",
                fluidRow(
                  column(12,
                         reactable::reactableOutput(ns(
                           "sentiment_table"
-                          )
-                          )
+                        )
                         )
                  )
                )
       )
+    )
   )
-  }
+}
 
 #' mod_sentiment Server Function
 #'
@@ -148,17 +149,25 @@ mod_sentiment_server <- function(id){
     
     ns <- session$ns
     
+    sentiments_ordered <- c("positive", "trust", "joy", "anticipation", 
+                            "surprise", "fear", "sadness", "disgust", "anger", 
+                            "negative")
+    
+    sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+        
     # Fist, tidy entire data for upset plot
     sentiment_txt_data_upset <- sentiment_txt_data %>% 
       dplyr::mutate(date = lubridate::date(date),
                     year = lubridate::year(date),
                     id = 1:nrow(sentiment_txt_data),
                     all_sentimtents_unnest = all_sentiments) %>% 
-      dplyr::select(id, date, year, super, division2, improve, all_sentiments, all_sentimtents_unnest) %>% 
+      dplyr::select(id, date, year, super, division2, improve, all_sentiments, 
+                    all_sentimtents_unnest) %>% 
       tidyr::unnest(cols = all_sentimtents_unnest) %>% 
       dplyr::distinct() %>% 
       dplyr::mutate(value = TRUE) %>% 
-      tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", "improve", "all_sentiments"), 
+      tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", 
+                                     "improve", "all_sentiments"), 
                          names_from = all_sentimtents_unnest, 
                          values_from = value) %>% 
       janitor::clean_names() %>% 
@@ -187,50 +196,49 @@ mod_sentiment_server <- function(id){
       
     })
     
-    
-    
     # Create upset plot ----
     output$sentiment_plot_upset <- renderPlot({
       
       # PLOT START
-      UpSetR::upset(data = as.data.frame(sentiment_txt_data_r()[, c("year", "anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust")]), 
-                    # MAYBE LET USER PICK NUMBER OF INTERSECTIONS
-                    nintersects = 15,
-                    sets = c("anger", "anticipation", "disgust", "fear", "joy", "negative", "positive", "sadness", "surprise", "trust"),
-                    order.by = "freq",
-                    text.scale = 1.5,
-                    # ADD THE QUERY AT A LATER POINT
-                    # queries = list(list(query = UpSetR::intersects,
-                    #                     params = list(c(input$select_sentiment)),
-                    #                     color = "orange",
-                    #                     active = F))
-                    # COMMENTING OUT AttRIBUTE PLOT BECAUSE OF THE SCALING ISSUE
-                    # ALSO I'm CURRENTLUY NOT HAPPY WITH THE DESIGN OF IT!
-                    # , attribute.plots = list(gridrows = 50,
-                    #                        plots = list(list(plot = UpSetR::histogram,
-                    #                                          x = "year",
-                    #                                          queries = T)),
-                    # ncols = 1)
-                    )}
-       # PLOT END
-         
+      UpSetR::upset(data = as.data.frame(
+        sentiment_txt_data_r()[, c("year", "anger", "anticipation", "disgust",
+                                   "fear", "joy", "negative", "positive",
+                                   "sadness", "surprise", "trust")]),
+        # MAYBE LET USER PICK NUMBER OF INTERSECTIONS
+        nintersects = 15,
+        sets = c("anger", "anticipation", "disgust", "fear", "joy",
+                 "negative", "positive", "sadness", "surprise", "trust"),
+        order.by = "freq",
+        text.scale = 1.5,
+        # ADD THE QUERY AT A LATER POINT
+        # queries = list(list(query = UpSetR::intersects,
+        #                     params = list(c(input$select_sentiment)),
+        #                     color = "orange",
+        #                     active = F))
+        # COMMENTING OUT AttRIBUTE PLOT BECAUSE OF THE SCALING ISSUE
+        # ALSO I'm CURRENTLUY NOT HAPPY WITH THE DESIGN OF IT!
+        # , attribute.plots = list(gridrows = 50,
+        #                        plots = list(list(plot = UpSetR::histogram,
+        #                                          x = "year",
+        #                                          queries = T)),
+        # ncols = 1)
+      )}
+      # PLOT END
+
       # TRYING TO CHANGE PLOT SIZE HERE (see https://github.com/rstudio/shiny/issues/650)
       , height = function() {
         session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 3
-        }
-      
-      )
+      }
+    )
     
     output$sentiment_plot_time <- renderPlot({
       
-      sentiment_txt_data_r() %>% 
+      p <- sentiment_txt_data_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
         dplyr::mutate(all_sentiments = factor(x = all_sentiments, 
                                               levels = sentiments_ordered,
                                               labels = sentiments_ordered_sentence)) %>% 
         ggplot2::ggplot(ggplot2::aes(date, fill = all_sentiments)) +
-        # geom_density(position = "fill") +
-        ggplot2::geom_histogram(position = "fill") +
         ggplot2::scale_x_date() +
         ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
         ggplot2::scale_fill_viridis_d(direction = -1) +
@@ -238,11 +246,56 @@ mod_sentiment_server <- function(id){
                       y = "Density", 
                       fill = "Sentiments") +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
-    })
       
+      if(input$proportion){
+        
+        return(p + ggplot2::geom_histogram(position = "fill", binwidth = 5))
+      } else {
+        
+        return(p + ggplot2::geom_histogram(binwidth = 5))
+      }
+      
+    })
     
-    
-    
+    output$sentiment_line_graph <- renderPlot({
+      
+      mean_data <- purrr::map(c("anger", "anticipation", "disgust", "fear", "joy", "negative", 
+                         "positive", "sadness", "surprise", "trust"), function(x) {
+                           
+                           sentiment_txt_data_r() %>% 
+                             dplyr::group_by(date) %>%
+                             dplyr::summarise(var_sum = sum(.data[[x]], na.rm = TRUE)) %>% 
+                             dplyr::ungroup() %>%  
+                             tsibble::tsibble(index = date) %>% 
+                             tsibble::fill_gaps(var_sum = 0) %>% 
+                             as.data.frame() %>% 
+                             dplyr::mutate(roll_var = rolling_mean(var_sum)) %>% 
+                             dplyr::select(roll_var) %>% 
+                             purrr::set_names(x)
+                         }) %>% do.call(cbind, .)
+      
+      to_plot <- dplyr::bind_cols(
+        sentiment_txt_data_r() %>% 
+          dplyr::group_by(date) %>%
+          dplyr::summarise(var_sum = sum(anger, na.rm = TRUE)) %>% 
+          dplyr::ungroup() %>%  
+          tsibble::tsibble(index = date) %>% 
+          tsibble::fill_gaps(var_sum = 0) %>% 
+          as.data.frame() %>% 
+          dplyr::select(date),
+        
+        as.data.frame(prop.table(as.matrix(mean_data), 1) * 100)
+      )
+      
+      to_plot %>% 
+        tidyr::drop_na() %>% 
+        tidyr::pivot_longer(-date) %>% 
+        ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = name, 
+                                     group = name)) +
+        ggplot2::geom_line()
+      
+    })
+
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
@@ -253,29 +306,31 @@ mod_sentiment_server <- function(id){
         dplyr::filter(length == length(input$select_sentiment)) %>%
         tidyr::unnest(cols = all_sentimtents_unnest) %>% 
         dplyr::group_by(id) %>% 
-        dplyr::mutate(test_sentiment = dplyr::case_when(all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
-                      sum_temp = sum(test_sentiment)) %>% 
+        dplyr::mutate(test_sentiment = dplyr::case_when(
+          all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
+          sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
         dplyr::filter(is.na(sum_temp) == FALSE) %>% 
         dplyr::select(improve) %>%
         dplyr::distinct()
       
-      reactable::reactable(filtered_comments,
-                           # pagination = FALSE
-                           # height = 500
-                           # bordered = TRUE,
-                           borderless = TRUE,
-                           highlight = TRUE,
-                           showSortIcon = FALSE,
-                           filterable = TRUE,
-                           showPageSizeOptions = TRUE, 
-                           pageSizeOptions = c(10, 15, 20, 25, 30), 
-                           defaultPageSize = 15,
-                           columns = list(
-                             improve = reactable::colDef(minWidth = 200, sortable = FALSE, name = " ")   # 50% width, 200px minimum
-                             # ,super = reactable::colDef(minWidth = 50)   # 25% width, 100px minimum
-                             # ,all_sentiments = reactable::colDef(minWidth = 50)  # 25% width, 100px minimum
-                           )
+      reactable::reactable(
+        filtered_comments,
+        # pagination = FALSE
+        # height = 500
+        # bordered = TRUE,
+        borderless = TRUE,
+        highlight = TRUE,
+        showSortIcon = FALSE,
+        filterable = TRUE,
+        showPageSizeOptions = TRUE, 
+        pageSizeOptions = c(10, 15, 20, 25, 30), 
+        defaultPageSize = 15,
+        columns = list(
+          improve = reactable::colDef(minWidth = 200, sortable = FALSE, name = " ")   # 50% width, 200px minimum
+          # ,super = reactable::colDef(minWidth = 50)   # 25% width, 100px minimum
+          # ,all_sentiments = reactable::colDef(minWidth = 50)  # 25% width, 100px minimum
+        )
       )
       
     })
