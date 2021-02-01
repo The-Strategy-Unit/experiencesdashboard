@@ -32,7 +32,8 @@ Imports:
     magrittr,
     pkgload,
     janitor,
-    UpSetR
+    UpSetR,
+    tibbletime
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1

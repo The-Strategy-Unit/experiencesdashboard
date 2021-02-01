@@ -136,7 +136,11 @@ mod_sentiment_ui <- function(id) {
                         )
                  )
                ),
-               plotOutput(ns("sentiment_plot_time"))
+               selectInput(ns("proportion"), "Show proportion or total",
+                           choices = c("Proportion" = "fill",
+                                       "Totals" = "stack")),
+               plotOutput(ns("sentiment_plot_time")),
+               plotOutput(ns("sentiment_line_graph"))
       ),
       tabPanel("Show comments",
                br(),
@@ -190,6 +194,14 @@ mod_sentiment_server <- function(id){
     
     ns <- session$ns
     
+    rolling_mean <- tibbletime::rollify(mean, window = 30)
+    
+    sentiments_ordered <- c("positive", "trust", "joy", "anticipation", 
+                            "surprise", "fear", "sadness", "disgust", "anger", 
+                            "negative")
+    
+    sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
+        
     # Fist, tidy entire data for upset plot
     sentiment_txt_data_upset <- sentiment_txt_data %>% 
       dplyr::mutate(date = lubridate::date(date),
@@ -267,8 +279,7 @@ mod_sentiment_server <- function(id){
         ggplot2::ggplot(ggplot2::aes(date, 
                                      fill = all_sentiments,
                                      colour = all_sentiments)) +
-        ggplot2::geom_density(alpha = .3, 
-                              size = 1) +
+        ggplot2::geom_histogram(position = input$proportion, binwidth = 5) +
         ggplot2::scale_x_date() +
         ggplot2::scale_fill_viridis_d(direction = -1) +
         ggplot2::scale_colour_viridis_d(direction = -1) +
@@ -293,6 +304,46 @@ mod_sentiment_server <- function(id){
       session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
     })
     
+
+    output$sentiment_line_graph <- renderPlot({
+      
+      mean_data <- purrr::map(c("anger", "anticipation", "disgust", "fear", "joy", "negative", 
+                         "positive", "sadness", "surprise", "trust"), function(x) {
+                           
+                           sentiment_txt_data_r() %>% 
+                             dplyr::group_by(date) %>%
+                             dplyr::summarise(var_sum = sum(.data[[x]], na.rm = TRUE)) %>% 
+                             dplyr::ungroup() %>%  
+                             tsibble::tsibble(index = date) %>% 
+                             tsibble::fill_gaps(var_sum = 0) %>% 
+                             as.data.frame() %>% 
+                             dplyr::mutate(roll_var = rolling_mean(var_sum)) %>% 
+                             dplyr::select(roll_var) %>% 
+                             purrr::set_names(x)
+                         }) %>% do.call(cbind, .)
+      
+      to_plot <- dplyr::bind_cols(
+        sentiment_txt_data_r() %>% 
+          dplyr::group_by(date) %>%
+          dplyr::summarise(var_sum = sum(anger, na.rm = TRUE)) %>% 
+          dplyr::ungroup() %>%  
+          tsibble::tsibble(index = date) %>% 
+          tsibble::fill_gaps(var_sum = 0) %>% 
+          as.data.frame() %>% 
+          dplyr::select(date),
+        
+        as.data.frame(prop.table(as.matrix(mean_data), 1) * 100)
+      )
+      
+      to_plot %>% 
+        tidyr::drop_na() %>% 
+        tidyr::pivot_longer(-date) %>% 
+        ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = name, 
+                                     group = name)) +
+        ggplot2::geom_line()
+      
+    })
+
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
@@ -307,9 +358,9 @@ mod_sentiment_server <- function(id){
         tidyr::unnest(cols = all_sentimtents_unnest) %>% 
         # Group by comment id so that every computation is now for each comment
         dplyr::group_by(id) %>% 
-        # Sum up number of selected sentiments that match sentiments for each comment
-        dplyr::mutate(test_sentiment = dplyr::case_when(all_sentimtents_unnest %in% input$select_sentiment_txt ~ TRUE),
-                      sum_temp = sum(test_sentiment)) %>% 
+        dplyr::mutate(test_sentiment = dplyr::case_when(
+          all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
+          sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
         # Filter comments that match the selected sentiments
         dplyr::filter(is.na(sum_temp) == FALSE) %>% 
