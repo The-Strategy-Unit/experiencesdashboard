@@ -76,7 +76,27 @@ mod_category_criticality_ui <- function(id){
     
     tabsetPanel(
       type = "tabs",
-      tabPanel("Distribution over time",
+      tabPanel("Comments",
+               br(),
+               fluidRow(
+                 column(12,
+                        box(
+                          width = NULL,
+                          background = "light-blue",
+                          textOutput(ns("category_crit_tab_txt"))
+                        )
+                 )
+               ),
+               fluidRow(
+                 column(6,
+                        reactable::reactableOutput(ns("best_table"))
+                 ),
+                 column(6,
+                        reactable::reactableOutput(ns("improve_table"))
+                 )
+               )
+      ),
+      tabPanel("Timeline",
                br(),
                fluidRow(
                  column(12,
@@ -97,34 +117,13 @@ mod_category_criticality_ui <- function(id){
                         ),
                  column(3,
                         selectInput(ns("category_crit_time_geom_histogram"), 
-                                    label = h5(strong("Select y-axis:")), 
-                                    choices = list("Show total number of responses" = "stack", 
-                                                   "Show proportion of respondes" = "fill"), 
+                                    label = h5(strong("Show proportion or total:")), 
+                                    choices = list("Proportion" = "fill",
+                                                   "Total" = "stack"), 
                                     selected = "stack")
                  )
-                 
                ),
                plotOutput(ns("category_crit_time_plot"))
-      ), 
-      tabPanel("Show comments",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL,
-                          background = "light-blue",
-                          textOutput(ns("category_crit_tab_txt"))
-                        )
-                 )
-               ),
-               fluidRow(
-                 column(6,
-                        reactable::reactableOutput(ns("best_table"))
-                 ),
-                 column(6,
-                        reactable::reactableOutput(ns("improve_table"))
-                 )
-               )
       )
     )
     
@@ -181,18 +180,21 @@ mod_category_criticality_server <- function(id){
                                                     levels = c("best", 
                                                                "improve"),
                                                     labels = c("What was good?", 
-                                                               "What could we do better?")))
+                                                               "What could we do better?"))
+                            )
         } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
         ggplot2::facet_grid(division2 ~ factor(comment_type, 
                                                     levels = c("best", 
                                                                "improve"),
                                                     labels = c("What was good?", 
-                                                               "What could we do better?")))
-      }
-    }, height = function() {
-      session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
-    })
+                                                               "What could we do better?"))
+                            )
+      }}
+      # , height = function() {
+    #   session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2
+    # }
+    )
     
     # Create reactive table (best) ----
     output$best_table <- reactable::renderReactable({

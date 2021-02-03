@@ -5,13 +5,210 @@ output: html_document
 
 ```{r}
 library(tidyverse)
-
-
 experiencesdashboard::sentiment_txt_data
+
+rolling_mean <- tibbletime::rollify(mean, window = 30)
+
+sentiment_txt_data_tidy <- experiencesdashboard::sentiment_txt_data %>% 
+  dplyr::mutate(date = lubridate::date(date),
+                year = lubridate::year(date),
+                id = 1:nrow(sentiment_txt_data),
+                all_sentimtents_unnest = all_sentiments) %>% 
+  dplyr::select(id, date, year, super, division2, improve, all_sentiments, 
+                all_sentimtents_unnest) %>% 
+  tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+  dplyr::distinct() %>% 
+  dplyr::mutate(value = TRUE) %>% 
+  tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", 
+                                 "improve", "all_sentiments"), 
+                     names_from = all_sentimtents_unnest, 
+                     values_from = value) %>% 
+  janitor::clean_names() %>% 
+  dplyr::select(-na) %>%
+  tidyr::replace_na(list(trust = FALSE, 
+                         anticipation = FALSE, 
+                         positive = FALSE, 
+                         negative = FALSE, 
+                         sadness = FALSE, 
+                         fear = FALSE, 
+                         joy = FALSE,
+                         anger = FALSE, 
+                         disgust = FALSE, 
+                         surprise = FALSE)
+  ) %>% 
+  dplyr::mutate_if(is.logical, as.numeric)
+
+mean_data <- purrr::map(c("anger", "anticipation", "disgust", "fear", "joy", "negative", 
+                          "positive", "sadness", "surprise", "trust"), function(x) {
+                            
+                            tidydata %>% 
+                              dplyr::group_by(date) %>%
+                              dplyr::summarise(var_sum = sum(.data[[x]], na.rm = TRUE)) %>% 
+                              dplyr::ungroup() %>%  
+                              tsibble::tsibble(index = date) %>% 
+                              tsibble::fill_gaps(var_sum = 0) %>% 
+                              as.data.frame() %>% 
+                              dplyr::mutate(roll_var = rolling_mean(var_sum)) %>% 
+                              dplyr::select(roll_var) %>% 
+                              purrr::set_names(x)
+                          }) %>% 
+  do.call(cbind, .)
+```
+
+
+```{r}
+to_plot <- dplyr::bind_cols(
+        tidydata %>% 
+          dplyr::group_by(date) %>%
+          dplyr::summarise(var_sum = sum(anger, na.rm = TRUE)) %>% 
+          dplyr::ungroup() %>%  
+          tsibble::tsibble(index = date) %>% 
+          tsibble::fill_gaps(var_sum = 0) %>% 
+          as.data.frame() %>% 
+          dplyr::select(date),
+        as.data.frame(prop.table(as.matrix(mean_data), 1) * 100)
+        )
+      
+whats_this <- to_plot %>% 
+        tidyr::drop_na() %>% 
+        tidyr::pivot_longer(-date)
+        ggplot2::ggplot(ggplot2::aes(x = date, 
+                                     y = value, 
+                                     colour = name, 
+                                     group = name)) +
+        ggplot2::geom_line()
+
+
 experiencesdashboard::tidy_trust_data
 
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(tidyverse)
+
+sentiments <- c("anticipation", "positive", "negative", "sadness", "fear", "joy", "anger", "disgust", "surprise")
+
+sentiment_txt_data_tidy %>% 
+  select(date, super, division2, 
+         anticipation, positive, negative, sadness, fear, joy, anger, disgust, surprise) %>% 
+  pivot_longer(cols = c(sentiments), 
+               names_to = "sentiment_name", 
+               values_to = "sentiment_check") %>% 
+  group_by(date, super, division2) %>% 
+  mutate(sum_sentiments = sum(sentiment_check))
+
+
+sentiment_txt_data_tidy %>% 
+        tidyr::unnest(cols = all_sentiments) %>% 
+        # dplyr::filter(all_sentiments %in% input$select_sentiment_plot) %>% 
+        dplyr::select(date, all_sentiments, super, division2) %>% 
+        tidyr::drop_na() %>% 
+  dplyr::arrange(date, super, division2) %>% 
+  dplyr::group_by(date) %>% 
+  dplyr::mutate(n_sent_distinct = n_distinct(all_sentiments))
+```
+
+
+
+
+
+```{r}
+filtered_comments <- sentiment_txt_data_tidy %>% 
+        dplyr::select(id, all_sentiments, improve) %>% 
+        # First get number of total sentiments in all comments
+        dplyr::mutate(length = lengths(all_sentiments),
+                      all_sentimtents_unnest = all_sentiments) %>%
+        # Now filter for number of selected sentiments
+        dplyr::filter(length == length(input$select_sentiment_txt)) %>%
+        # Unnest to create long version of data
+        tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+        # Group by comment id so that every computation is now for each comment
+        dplyr::group_by(id) %>% 
+        dplyr::mutate(test_sentiment = dplyr::case_when(
+          all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
+          sum_temp = sum(test_sentiment)) %>% 
+        dplyr::ungroup() %>% 
+        # Filter comments that match the selected sentiments
+        dplyr::filter(is.na(sum_temp) == FALSE) %>% 
+        dplyr::select(id, improve) %>%
+        dplyr::distinct()
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+#ADD CHRIS ROLLING MEAN LINE GRAPH HERE
+
+    
+    # Define rolling mean function
+    # rolling_mean <- tibbletime::rollify(mean, window = 30)
+    # 
+    # output$sentiment_line_graph <- renderPlot({
+    #   
+    #   mean_data <- purrr::map(c("anger", "anticipation", "disgust", "fear", "joy", "negative", 
+    #                             "positive", "sadness", "surprise", "trust"), function(x) {
+    #                               
+    #                               sentiment_txt_data_tidy_r() %>% 
+    #                                 dplyr::group_by(date) %>%
+    #                                 dplyr::summarise(var_sum = sum(.data[[x]], na.rm = TRUE)) %>% 
+    #                                 dplyr::ungroup() %>%  
+    #                                 tsibble::tsibble(index = date) %>% 
+    #                                 tsibble::fill_gaps(var_sum = 0) %>% 
+    #                                 as.data.frame() %>% 
+    #                                 dplyr::mutate(roll_var = rolling_mean(var_sum)) %>% 
+    #                                 dplyr::select(roll_var) %>% 
+    #                                 purrr::set_names(x)
+    #                             }) %>% 
+    #     do.call(cbind, .)
+    #   
+    #   to_plot <- dplyr::bind_cols(
+    #     sentiment_txt_data_tidy_r() %>% 
+    #       dplyr::group_by(date) %>%
+    #       dplyr::summarise(var_sum = sum(anger, na.rm = TRUE)) %>% 
+    #       dplyr::ungroup() %>%  
+    #       tsibble::tsibble(index = date) %>% 
+    #       tsibble::fill_gaps(var_sum = 0) %>% 
+    #       as.data.frame() %>% 
+    #       dplyr::select(date),
+    #     as.data.frame(prop.table(as.matrix(mean_data), 1) * 100)
+    #     )
+    #   
+    #   to_plot %>% 
+    #     tidyr::drop_na() %>% 
+    #     tidyr::pivot_longer(-date) %>% 
+    #     ggplot2::ggplot(ggplot2::aes(x = date, 
+    #                                  y = value, 
+    #                                  colour = name, 
+    #                                  group = name)) +
+    #     ggplot2::geom_line()
+    #   
+    # })
+```
+
+
+
+
+
 ```{r}
 experiencesdashboard::sentiment_txt_data %>% 
   mutate(date = lubridate::as_date(date)) %>% 

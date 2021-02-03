@@ -68,8 +68,7 @@ mod_sentiment_ui <- function(id) {
             ),
             selected = c("Staff/Staff Attitude", 
                          "Care/ Treatment", 
-                         "Service Quality/Outcomes", 
-                         "Food"),
+                         "Service Quality/Outcomes"),
             multiple = TRUE
           )
         )
@@ -78,71 +77,7 @@ mod_sentiment_ui <- function(id) {
     
     tabsetPanel(
       type = "tabs",
-      tabPanel("Combination of sentiments",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL, 
-                          background = "light-blue",
-                          textOutput(ns("combination_sentiments_txt"))
-                        )
-                 )
-               ),
-               plotOutput(ns("sentiment_plot_upset")
-               )
-      ),
-      tabPanel("Change in sentiments over time",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL, 
-                          background = "light-blue",
-                          textOutput(ns("change_time_sentiments_txt"))
-                        )
-                 )
-               ),
-               fluidRow(
-                 column(3,
-                        selectInput(ns("select_sentiment_plot_facet"), 
-                                    label = h5(strong("Divide plot by:")), 
-                                    choices = list("Category" = 1, 
-                                                   "Division" = 2, 
-                                                   "Division and category" = 3), 
-                                    selected = 1),
-                 ),
-                 column(3,
-                        selectInput(
-                          ns("select_sentiment_plot"),
-                          label = h5(strong("Select sentiments:")),
-                          choices = list(
-                            "anger" = "anger",
-                            "anticipation" = "anticipation",
-                            "disgust" = "disgust",
-                            "fear" = "fear",
-                            "joy" = "joy",
-                            "negative" = "negative",
-                            "positive" = "positive",
-                            "sadness" = "sadness",
-                            "surprise" = "surprise",
-                            "trust" = "trust"
-                          ),
-                          multiple = TRUE,
-                          selected = c("anger", 
-                                       "fear", 
-                                       "negative",
-                                       "sadness")
-                        )
-                 )
-               ),
-               selectInput(ns("proportion"), "Show proportion or total",
-                           choices = c("Proportion" = "fill",
-                                       "Totals" = "stack")),
-               plotOutput(ns("sentiment_plot_time")),
-               plotOutput(ns("sentiment_line_graph"))
-      ),
-      tabPanel("Show comments",
+      tabPanel("Comments",
                br(),
                fluidRow(
                  column(12,
@@ -180,6 +115,74 @@ mod_sentiment_ui <- function(id) {
                         reactable::reactableOutput(ns("sentiment_table"))
                  )
                )
+      ),
+      tabPanel("Timeline",
+               br(),
+               fluidRow(
+                 column(12,
+                        box(
+                          width = NULL, 
+                          background = "light-blue",
+                          textOutput(ns("change_time_sentiments_txt"))
+                        )
+                 )
+               ),
+               fluidRow(
+                 column(3,
+                        selectInput(ns("select_sentiment_plot_facet"), 
+                                    label = h5(strong("Divide plot by:")), 
+                                    choices = list("Category" = 1, 
+                                                   "Division" = 2, 
+                                                   "Division and category" = 3), 
+                                    selected = 1),
+                 ),
+                 column(3,
+                        selectInput(ns("select_sentiment_plot_position"), 
+                                    label = h5(strong("Show proportion or total:")),
+                                    choices = c("Proportion" = "fill",
+                                                "Totals" = "stack"),
+                                    selected = "stack"
+                                    )
+                        ),
+                 column(3,
+                        selectInput(
+                          ns("select_sentiment_plot"),
+                          label = h5(strong("Select sentiments:")),
+                          choices = list(
+                            "anger" = "anger",
+                            "anticipation" = "anticipation",
+                            "disgust" = "disgust",
+                            "fear" = "fear",
+                            "joy" = "joy",
+                            "negative" = "negative",
+                            "positive" = "positive",
+                            "sadness" = "sadness",
+                            "surprise" = "surprise",
+                            "trust" = "trust"
+                          ),
+                          multiple = TRUE,
+                          selected = c("anger", 
+                                       "fear", 
+                                       "negative",
+                                       "sadness")
+                        )
+                 )
+               ),
+               plotOutput(ns("sentiment_plot_time"))
+      ),
+      tabPanel("Sentiment combinations",
+               br(),
+               fluidRow(
+                 column(12,
+                        box(
+                          width = NULL, 
+                          background = "light-blue",
+                          textOutput(ns("combination_sentiments_txt"))
+                        )
+                 )
+               ),
+               plotOutput(ns("sentiment_plot_upset")
+               )
       )
     )
   )
@@ -194,16 +197,8 @@ mod_sentiment_server <- function(id){
     
     ns <- session$ns
     
-    rolling_mean <- tibbletime::rollify(mean, window = 30)
-    
-    sentiments_ordered <- c("positive", "trust", "joy", "anticipation", 
-                            "surprise", "fear", "sadness", "disgust", "anger", 
-                            "negative")
-    
-    sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
-        
     # Fist, tidy entire data for upset plot
-    sentiment_txt_data_upset <- sentiment_txt_data %>% 
+    sentiment_txt_data_tidy <- sentiment_txt_data %>% 
       dplyr::mutate(date = lubridate::date(date),
                     year = lubridate::year(date),
                     id = 1:nrow(sentiment_txt_data),
@@ -234,8 +229,8 @@ mod_sentiment_server <- function(id){
     
     # Create reactive dataframe ----
     # Filter data based on user selections
-    sentiment_txt_data_r <- reactive({
-      sentiment_txt_data_upset %>% 
+    sentiment_txt_data_tidy_r <- reactive({
+      sentiment_txt_data_tidy %>% 
         dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>% 
         dplyr::filter(division2 %in% input$select_division) %>% 
         dplyr::filter(super %in% input$select_super)
@@ -244,7 +239,7 @@ mod_sentiment_server <- function(id){
     # Create upset plot ----
     output$sentiment_plot_upset <- renderPlot({
       
-      UpSetR::upset(data = as.data.frame(sentiment_txt_data_r()
+      UpSetR::upset(data = as.data.frame(sentiment_txt_data_tidy_r()
                                          [, c("year", "anger", "anticipation", 
                                               "disgust", "fear", "joy", "negative", 
                                               "positive", "sadness", "surprise", 
@@ -256,11 +251,11 @@ mod_sentiment_server <- function(id){
                     text.scale = 1.5
       )}
       , height = function() {
-        session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
+        session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.8
       }
     )
     
-    # Create sentiment plot over time ----
+    # Create timeline ----
     output$sentiment_plot_time <- renderPlot({
 
       sentiments_ordered <- c("negative", "anger", "disgust", "fear", "sadness",
@@ -268,7 +263,7 @@ mod_sentiment_server <- function(id){
       
       sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
       
-      sentiment_plot_time_temp <- sentiment_txt_data_r() %>% 
+      sentiment_plot_time_temp <- sentiment_txt_data_tidy_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
         dplyr::filter(all_sentiments %in% input$select_sentiment_plot) %>% 
         dplyr::select(date, all_sentiments, super, division2) %>% 
@@ -279,7 +274,7 @@ mod_sentiment_server <- function(id){
         ggplot2::ggplot(ggplot2::aes(date, 
                                      fill = all_sentiments,
                                      colour = all_sentiments)) +
-        ggplot2::geom_histogram(position = input$proportion, binwidth = 5) +
+        ggplot2::geom_histogram(position = input$select_sentiment_plot_position) +
         ggplot2::scale_x_date() +
         ggplot2::scale_fill_viridis_d(direction = -1) +
         ggplot2::scale_colour_viridis_d(direction = -1) +
@@ -299,55 +294,17 @@ mod_sentiment_server <- function(id){
       } else if (input$select_sentiment_plot_facet == 3) {
         sentiment_plot_time_temp +
           ggplot2::facet_grid(division2~super)
+        }
       }
-    }, height = function() {
-      session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
-    })
+      , height = function() {
+      session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.8
+    }
+    )
     
-
-    output$sentiment_line_graph <- renderPlot({
-      
-      mean_data <- purrr::map(c("anger", "anticipation", "disgust", "fear", "joy", "negative", 
-                         "positive", "sadness", "surprise", "trust"), function(x) {
-                           
-                           sentiment_txt_data_r() %>% 
-                             dplyr::group_by(date) %>%
-                             dplyr::summarise(var_sum = sum(.data[[x]], na.rm = TRUE)) %>% 
-                             dplyr::ungroup() %>%  
-                             tsibble::tsibble(index = date) %>% 
-                             tsibble::fill_gaps(var_sum = 0) %>% 
-                             as.data.frame() %>% 
-                             dplyr::mutate(roll_var = rolling_mean(var_sum)) %>% 
-                             dplyr::select(roll_var) %>% 
-                             purrr::set_names(x)
-                         }) %>% do.call(cbind, .)
-      
-      to_plot <- dplyr::bind_cols(
-        sentiment_txt_data_r() %>% 
-          dplyr::group_by(date) %>%
-          dplyr::summarise(var_sum = sum(anger, na.rm = TRUE)) %>% 
-          dplyr::ungroup() %>%  
-          tsibble::tsibble(index = date) %>% 
-          tsibble::fill_gaps(var_sum = 0) %>% 
-          as.data.frame() %>% 
-          dplyr::select(date),
-        
-        as.data.frame(prop.table(as.matrix(mean_data), 1) * 100)
-      )
-      
-      to_plot %>% 
-        tidyr::drop_na() %>% 
-        tidyr::pivot_longer(-date) %>% 
-        ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = name, 
-                                     group = name)) +
-        ggplot2::geom_line()
-      
-    })
-
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
-      filtered_comments <- sentiment_txt_data_r() %>% 
+      filtered_comments <- sentiment_txt_data_tidy_r() %>% 
         dplyr::select(id, all_sentiments, improve) %>% 
         # First get number of total sentiments in all comments
         dplyr::mutate(length = lengths(all_sentiments),
@@ -359,7 +316,7 @@ mod_sentiment_server <- function(id){
         # Group by comment id so that every computation is now for each comment
         dplyr::group_by(id) %>% 
         dplyr::mutate(test_sentiment = dplyr::case_when(
-          all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
+          all_sentimtents_unnest %in% input$select_sentiment_txt ~ TRUE),
           sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
         # Filter comments that match the selected sentiments
@@ -385,7 +342,7 @@ mod_sentiment_server <- function(id){
     
     # Write output text for text boxes ----
     output$combination_sentiments_txt <- renderText({
-      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FIGURES.")
+      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF UPSET PLOT")
     })
     
     output$change_time_sentiments_txt <- renderText({

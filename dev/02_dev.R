@@ -28,6 +28,7 @@ usethis::use_package( "reactable" )
 usethis::use_package( "tidytext" )
 usethis::use_package( "janitor" )
 usethis::use_package( "UpSetR" )
+usethis::use_package( "tibbletime" )
 
 usethis::use_package( "shinydashboard" )
 usethis::use_package( "dashboardthemes" )
