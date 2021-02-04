@@ -197,35 +197,10 @@ mod_sentiment_server <- function(id){
     
     ns <- session$ns
     
+
+    
     # Fist, tidy entire data for upset plot
-    sentiment_txt_data_tidy <- sentiment_txt_data %>% 
-      dplyr::mutate(date = lubridate::date(date),
-                    year = lubridate::year(date),
-                    id = 1:nrow(sentiment_txt_data),
-                    all_sentimtents_unnest = all_sentiments) %>% 
-      dplyr::select(id, date, year, super, division2, improve, all_sentiments, 
-                    all_sentimtents_unnest) %>% 
-      tidyr::unnest(cols = all_sentimtents_unnest) %>% 
-      dplyr::distinct() %>% 
-      dplyr::mutate(value = TRUE) %>% 
-      tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", 
-                                     "improve", "all_sentiments"), 
-                         names_from = all_sentimtents_unnest, 
-                         values_from = value) %>% 
-      janitor::clean_names() %>% 
-      dplyr::select(-na) %>%
-      tidyr::replace_na(list(trust = FALSE, 
-                             anticipation = FALSE, 
-                             positive = FALSE, 
-                             negative = FALSE, 
-                             sadness = FALSE, 
-                             fear = FALSE, 
-                             joy = FALSE,
-                             anger = FALSE, 
-                             disgust = FALSE, 
-                             surprise = FALSE)
-      ) %>% 
-      dplyr::mutate_if(is.logical, as.numeric)
+    sentiment_txt_data_tidy <- tidy_sentiment_txt(sentiment_txt_data)
     
     # Create reactive dataframe ----
     # Filter data based on user selections
@@ -251,7 +226,7 @@ mod_sentiment_server <- function(id){
                     text.scale = 1.5
       )}
       , height = function() {
-        session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.8
+        session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
       }
     )
     
@@ -274,7 +249,8 @@ mod_sentiment_server <- function(id){
         ggplot2::ggplot(ggplot2::aes(date, 
                                      fill = all_sentiments,
                                      colour = all_sentiments)) +
-        ggplot2::geom_histogram(position = input$select_sentiment_plot_position) +
+        ggplot2::geom_histogram(position = input$select_sentiment_plot_position, 
+                                binwidth = 20) +
         ggplot2::scale_x_date() +
         ggplot2::scale_fill_viridis_d(direction = -1) +
         ggplot2::scale_colour_viridis_d(direction = -1) +
@@ -297,7 +273,7 @@ mod_sentiment_server <- function(id){
         }
       }
       , height = function() {
-      session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.8
+      session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_time_width` / 2.3
     }
     )
     
@@ -342,15 +318,15 @@ mod_sentiment_server <- function(id){
     
     # Write output text for text boxes ----
     output$combination_sentiments_txt <- renderText({
-      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF UPSET PLOT")
+      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF UPSET PLOT. EXPLAIN DIFFERENCE BETWEEN SET SIZE AND INTERSECTION SIZE.")
     })
     
     output$change_time_sentiments_txt <- renderText({
-      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FIGURES.")
+      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF CHANGE IN SENTIMENT OVER TIME. ADD INFORMATION EXPLAINING THE DIFFERENCE BETWEEEN TOTALS AND PROPORTIONS.")
     })
     
     output$show_comments_box <- renderText({
-      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF TABLE.")
+      paste0("TODO NOTE: ADD INFORMATION EXPLAINING HOW TO FILTER FOR SENTIMENTS IN THE COMMENTS.")
     })
     
   })

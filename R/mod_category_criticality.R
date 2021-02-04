@@ -83,7 +83,7 @@ mod_category_criticality_ui <- function(id){
                         box(
                           width = NULL,
                           background = "light-blue",
-                          textOutput(ns("category_crit_tab_txt"))
+                          textOutput(ns("category_crit_table_txt"))
                         )
                  )
                ),
@@ -155,7 +155,8 @@ mod_category_criticality_server <- function(id){
                                                    labels = c("Mildly", 
                                                               "Fairly", 
                                                               "Highly")))) +
-        ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram) +
+        ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram,
+                                binwidth = 20) +
         ggplot2::scale_fill_viridis_d() +
         ggplot2::theme(text = ggplot2::element_text(size = 16))
       
@@ -191,9 +192,9 @@ mod_category_criticality_server <- function(id){
                                                                "What could we do better?"))
                             )
       }}
-      # , height = function() {
-    #   session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2
-    # }
+    , height = function() {
+      session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
+    }
     )
     
     # Create reactive table (best) ----
@@ -287,11 +288,11 @@ mod_category_criticality_server <- function(id){
     
     # Write output text for text boxes ----
     output$category_crit_time_plot_txt <- renderText({
-      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FEEDBACK.")
+      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF CHANGE IN SENTIMENT OVER TIME. EXPLAIN CRITICALITY. ADD INFORMATION EXPLAINING THE DIFFERENCE BETWEEEN TOTALS AND PROPORTIONS.")
     })
     
-    output$category_crit_tab_txt <- renderText({
-      paste0("NOTE: ADD HELPFUL INFORMATION TO GUIDE INTERPRETATION OF FIGURES.")
+    output$category_crit_table_txt <- renderText({
+      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF FEEDBACK COMMENTS. EXPLAIN CRITICALITY.")
     })
   })
 }
