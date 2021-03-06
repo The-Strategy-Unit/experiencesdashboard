@@ -16,60 +16,33 @@ mod_category_criticality_ui <- function(id){
     
     wellPanel(
       fluidRow(
-        column(3,
-          dateRangeInput(
-            ns("date_range"),
-            label = h5(strong("Select date range:")),
-            min = "2013-01-01",
-            start = "2013-01-01",
-            end = "2018-12-31",
-            max = "2019-02-11"
-          )
-        ),
-        column(3,
-          selectInput(
-            ns("select_division"),
-            label = h5(strong("Select divisions:")),
-            choices = list(
-              "Local partnerships- MH" = "Local partnerships- MH",
-              "Forensic services" = "Forensic services",
-              "Local partnerships- CH" = "Local partnerships- CH"
-            ),
-            multiple = TRUE,
-            selected = c(
-              "Local partnerships- MH",
-              "Forensic services",
-              "Local partnerships- CH"
-            )
-          )
-        ),
         column(6,
-          selectInput(
-            ns("select_super"),
-            label = h5(strong("Select categories:")),
-            choices = list(
-              "Communication" = "Communication",
-              "Staff/Staff Attitude" = "Staff/Staff Attitude",
-              "Environment/Facilities" = "Environment/Facilities",
-              "Access to Services" = "Access to Services",
-              "Care/ Treatment" = "Care/ Treatment",
-              "Couldn't be improved" = "Couldn't be improved",
-              "Service Quality/Outcomes" = "Service Quality/Outcomes",
-              "Involvement" = "Involvement",
-              "Food" = "Food",
-              "Privacy and Dignity" = "Privacy and Dignity",
-              "MHA" = "MHA",
-              "Equality/Diversity" = "Equality/Diversity",
-              "Smoking" = "Smoking",
-              "Leave" = "Leave",
-              "Safety" = "Safety",
-              "Physical Health" = "Physical Health",
-              "Record Keeping" = "Record Keeping"
-            ),
-            selected = c("Staff/Staff Attitude", 
-                         "Care/ Treatment"),
-            multiple = TRUE
-          )
+               selectInput(
+                 ns("select_super"),
+                 label = h5(strong("Select categories:")),
+                 choices = list(
+                   "Communication" = "Communication",
+                   "Staff/Staff Attitude" = "Staff/Staff Attitude",
+                   "Environment/Facilities" = "Environment/Facilities",
+                   "Access to Services" = "Access to Services",
+                   "Care/ Treatment" = "Care/ Treatment",
+                   "Couldn't be improved" = "Couldn't be improved",
+                   "Service Quality/Outcomes" = "Service Quality/Outcomes",
+                   "Involvement" = "Involvement",
+                   "Food" = "Food",
+                   "Privacy and Dignity" = "Privacy and Dignity",
+                   "MHA" = "MHA",
+                   "Equality/Diversity" = "Equality/Diversity",
+                   "Smoking" = "Smoking",
+                   "Leave" = "Leave",
+                   "Safety" = "Safety",
+                   "Physical Health" = "Physical Health",
+                   "Record Keeping" = "Record Keeping"
+                 ),
+                 selected = c("Staff/Staff Attitude", 
+                              "Care/ Treatment"),
+                 multiple = TRUE
+               )
         )
       ),
       style = "padding: 5px;"),
@@ -114,7 +87,7 @@ mod_category_criticality_ui <- function(id){
                                     choices = list("Comment and category" = 1, 
                                                    "Comment and division" = 2), 
                                     selected = 1)
-                        ),
+                 ),
                  column(3,
                         selectInput(ns("category_crit_time_geom_histogram"), 
                                     label = h5(strong("Show proportion or total:")), 
@@ -129,20 +102,22 @@ mod_category_criticality_ui <- function(id){
     
   )
 }
-    
+
 #' category_criticality Server Functions
 #'
 #' @noRd 
-mod_category_criticality_server <- function(id){
+mod_category_criticality_server <- function(id, all_inputs){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
     # Create reactive data ----
-    tidy_trust_data_r <- reactive( {
+    tidy_trust_data_r <- reactive({
+      
+      cat(str(all_inputs()))
       tidy_trust_data %>%
-      dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>%
-      dplyr::filter(division2 %in% input$select_division) %>%
-      dplyr::filter(super_category %in% input$select_super)
+        dplyr::filter(date > all_inputs()$date_range[1], date < all_inputs()$date_range[2]) %>%
+        dplyr::filter(division2 %in% all_inputs()$select_division) %>%
+        dplyr::filter(super_category %in% input$select_super)
     })
     
     # Create sentiment plot over time ----
@@ -177,24 +152,24 @@ mod_category_criticality_server <- function(id){
       # Add facet ----
       if (input$category_crit_time_facet == 1) {
         category_crit_time_plot +
-        ggplot2::facet_grid(super_category ~ factor(comment_type, 
-                                                    levels = c("best", 
-                                                               "improve"),
-                                                    labels = c("What was good?", 
-                                                               "What could we do better?"))
-                            )
-        } else if (input$category_crit_time_facet == 2) {
+          ggplot2::facet_grid(super_category ~ factor(comment_type, 
+                                                      levels = c("best", 
+                                                                 "improve"),
+                                                      labels = c("What was good?", 
+                                                                 "What could we do better?"))
+          )
+      } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
-        ggplot2::facet_grid(division2 ~ factor(comment_type, 
-                                                    levels = c("best", 
-                                                               "improve"),
-                                                    labels = c("What was good?", 
-                                                               "What could we do better?"))
-                            )
+          ggplot2::facet_grid(division2 ~ factor(comment_type, 
+                                                 levels = c("best", 
+                                                            "improve"),
+                                                 labels = c("What was good?", 
+                                                            "What could we do better?"))
+          )
       }}
-    , height = function() {
-      session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
-    }
+      , height = function() {
+        session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
+      }
     )
     
     # Create reactive table (best) ----
@@ -296,9 +271,9 @@ mod_category_criticality_server <- function(id){
     })
   })
 }
-    
+
 ## To be copied in the UI
 # mod_category_criticality_ui("category_criticality_ui_1")
-    
+
 ## To be copied in the server
 # mod_category_criticality_server("category_criticality_ui_1")

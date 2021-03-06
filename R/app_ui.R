@@ -45,6 +45,29 @@ app_ui <- function(request) {
                            menuItem("Info", tabName = "info", 
                                     icon = icon("info-circle"), 
                                     menuItem("Data", tabName = "info-data")
+                           ),
+                           dateRangeInput(
+                             "date_range",
+                             label = h5(strong("Select date range:")),
+                             min = "2013-01-01",
+                             start = "2013-01-01",
+                             end = "2018-12-31",
+                             max = "2019-02-11"
+                           ),
+                           selectInput(
+                             "select_division",
+                             label = h5(strong("Select divisions:")),
+                             choices = list(
+                               "Local partnerships- MH" = "Local partnerships- MH",
+                               "Forensic services" = "Forensic services",
+                               "Local partnerships- CH" = "Local partnerships- CH"
+                             ),
+                             multiple = TRUE,
+                             selected = c(
+                               "Local partnerships- MH",
+                               "Forensic services",
+                               "Local partnerships- CH"
+                             )
                            )
                          )
         ),
@@ -61,7 +84,7 @@ app_ui <- function(request) {
                     h2("NOTE: WORK IN PROGRESS"),
                     p("This tab will contain information that summarises all available data- 
                     staff and patient experience, clinical outcomes, and risk")
-
+                    
             ),
             
             tabItem(tabName = "experiences-user",
