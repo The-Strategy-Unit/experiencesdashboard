@@ -89,8 +89,7 @@ app_ui <- function(request) {
             
             tabItem(tabName = "experiences-user",
                     # h1("Service User Experiences"),
-                    mod_category_criticality_ui("category_criticality_ui_1")
-                    
+                    mod_patient_experience_ui("patient_experience_ui_1")
             ),
             
             tabItem(tabName = "experiences-staff",
