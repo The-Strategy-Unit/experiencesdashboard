@@ -70,11 +70,6 @@ app_ui <- function(request) {
                     
             ),
             
-            tabItem(tabName = "experiences-user-sentiment",
-                    # h1("Sentiment Analysis of Service User Experiences"),
-                    mod_sentiment_ui("mod_sentiment_ui_1")
-            ),
-            
             tabItem(tabName = "experiences-staff",
                     h1("Staff experiences"),
                     h2("NOTE: WORK IN PROGRESS")
