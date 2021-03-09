@@ -79,7 +79,7 @@ mod_category_criticality_ui <- function(id){
 #' category_criticality Server Functions
 #'
 #' @noRd 
-mod_category_criticality_server <- function(id, all_inputs){
+mod_category_criticality_server <- function(id, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
@@ -101,11 +101,8 @@ mod_category_criticality_server <- function(id, all_inputs){
     # Create reactive data ----
     tidy_trust_data_r <- reactive({
       
-      tidy_trust_data %>%
-        dplyr::filter(date > all_inputs()$date_range[1], 
-                      date < all_inputs()$date_range[2]) %>%
-        dplyr::filter(division %in% all_inputs()$select_division) #%>%
-      #   dplyr::filter(super_category %in% input$select_super)
+      filter_data() %>%
+        dplyr::filter(super_category %in% input$select_super)
     })
     
     # Create sentiment plot over time ----
