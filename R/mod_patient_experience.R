@@ -21,7 +21,7 @@ mod_patient_experience_ui <- function(id){
       ),
       tabPanel(
         "FFT",
-        p("This module will summarise scores- FFT and scores +ve/ -ve assigned to comments")
+        mod_fft_ui("fft_ui_1")
       ),
       tabPanel(
         "Themes",
