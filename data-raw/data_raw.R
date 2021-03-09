@@ -48,7 +48,8 @@ tidy_trust_data <- trustData %>%
                 improve, imp_crit, 
                 imp_category = subcategory_imp, imp_super = category_imp, 
                 best, best_crit, 
-                best_category = subcategory_best, best_super = category_best) %>% 
+                best_category = subcategory_best, best_super = category_best,
+                service) %>% 
   dplyr::arrange(date) %>% 
   dplyr::na_if(9) %>% 
   dplyr::mutate(across(where(is.character), ~na_if(., "Unknown"))) %>% 
@@ -65,7 +66,8 @@ tidy_trust_data <- trustData %>%
                                            comment_type == "best" ~ best_super)) %>% 
   dplyr::mutate(key_comment = paste0(key_user, "_", comment_type)) %>% 
   dplyr::select(key_user, key_comment, date, team_n, directorate, division, 
-                comment_type, comment_txt, crit, category, super_category) %>%
+                comment_type, comment_txt, crit, category, super_category,
+                service) %>%
   # only keep comments that are within possible range or NA
   filter(crit %in% -5 : 5 | is.na(crit) == TRUE) %>% 
   # Drop comments with missing values
