@@ -18,58 +18,37 @@ app_ui <- function(request) {
         
         dashboardHeader(title = "Patient experience",
                         titleWidth = 300),
-        dashboardSidebar(width = 300,
-                         sidebarMenu(
-                           
-                           menuItem("Summary", 
-                                    tabName = "overview",
-                                    icon = shiny::icon("dashboard")
-                                    # , badgeLabel = "planned", badgeColor = "orange"
-                           ),
-                           
-                           menuItem("Patient experience", 
-                                    tabName = "experiences-user",
-                                    icon = shiny::icon("comment"),
-                                    selected = TRUE,
-                                    badgeLabel = "dev", badgeColor = "green"),
-                           
-                           # red, yellow, aqua, blue, light-blue, green, navy, teal, 
-                           # olive, lime, orange, fuchsia, purple, maroon, black
-                           
-                           menuItem("Staff experience", 
-                                    tabName = "experiences-staff",
-                                    icon = shiny::icon("comment-medical"),
-                                    badgeLabel = "planned", badgeColor = "orange"
-                           ),
-                           
-                           menuItem("Info", tabName = "info", 
-                                    icon = icon("info-circle"), 
-                                    menuItem("Data", tabName = "info-data")
-                           ),
-                           dateRangeInput(
-                             "date_range",
-                             label = h5(strong("Select date range:")),
-                             min = "2013-01-01",
-                             start = "2013-01-01",
-                             end = "2018-12-31",
-                             max = "2019-02-11"
-                           ),
-                           selectInput(
-                             "select_division",
-                             label = h5(strong("Select divisions:")),
-                             choices = list(
-                               "Local partnerships- MH" = "Local partnerships- MH",
-                               "Forensic services" = "Forensic services",
-                               "Local partnerships- CH" = "Local partnerships- CH"
-                             ),
-                             multiple = TRUE,
-                             selected = c(
-                               "Local partnerships- MH",
-                               "Forensic services",
-                               "Local partnerships- CH"
-                             )
-                           )
-                         )
+        dashboardSidebar(
+          width = 300,
+          sidebarMenu(
+            
+            menuItem("Summary", 
+                     tabName = "overview",
+                     icon = shiny::icon("dashboard")
+                     # , badgeLabel = "planned", badgeColor = "orange"
+            ),
+            
+            menuItem("Patient experience", 
+                     tabName = "experiences-user",
+                     icon = shiny::icon("comment"),
+                     selected = TRUE,
+                     badgeLabel = "dev", badgeColor = "green"),
+            
+            # red, yellow, aqua, blue, light-blue, green, navy, teal, 
+            # olive, lime, orange, fuchsia, purple, maroon, black
+            
+            menuItem("Staff experience", 
+                     tabName = "experiences-staff",
+                     icon = shiny::icon("comment-medical"),
+                     badgeLabel = "planned", badgeColor = "orange"
+            ),
+            
+            menuItem("Info", tabName = "info", 
+                     icon = icon("info-circle"), 
+                     menuItem("Data", tabName = "info-data")
+            ),
+            uiOutput("filter_data")
+          )
         ),
         dashboardBody(
           ### Changing theme
