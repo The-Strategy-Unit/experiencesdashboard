@@ -23,7 +23,7 @@ pipeline_data <- trustData %>%
     by = c('imp1' = 'Number')
   ) %>%
   janitor::clean_names() %>%
-  select(super, date, division2, directorate2, improve) %>%
+  select(super, date, division, directorate, improve) %>%
   filter(across(c("super", "improve"), ~ !is.na(.x))) %>%
   as_tibble()
 
@@ -67,7 +67,7 @@ net_sentiment_nrc <- pipeline_data %>%
 pipeline_data <- pipeline_data %>%
   bind_cols(
     net_sentiment_nrc %>%
-      select(-improve, -linenumber, -super, -date, -division2, -directorate2)
+      select(-improve, -linenumber, -super, -date, -division, -directorate)
   ) %>%
   bind_cols(
     text_blob_scores %>%

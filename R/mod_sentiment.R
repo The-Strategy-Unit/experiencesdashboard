@@ -207,7 +207,7 @@ mod_sentiment_server <- function(id){
     sentiment_txt_data_tidy_r <- reactive({
       sentiment_txt_data_tidy %>% 
         dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>% 
-        dplyr::filter(division2 %in% input$select_division) %>% 
+        dplyr::filter(division %in% input$select_division) %>% 
         dplyr::filter(super %in% input$select_super)
     })
     
@@ -241,7 +241,7 @@ mod_sentiment_server <- function(id){
       sentiment_plot_time_temp <- sentiment_txt_data_tidy_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
         dplyr::filter(all_sentiments %in% input$select_sentiment_plot) %>% 
-        dplyr::select(date, all_sentiments, super, division2) %>% 
+        dplyr::select(date, all_sentiments, super, division) %>% 
         tidyr::drop_na() %>% 
         dplyr::mutate(all_sentiments = factor(x = all_sentiments,
                                               levels = sentiments_ordered,
@@ -266,10 +266,10 @@ mod_sentiment_server <- function(id){
           ggplot2::facet_grid(~super)
       } else if (input$select_sentiment_plot_facet == 2) {
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(~division2)
+          ggplot2::facet_grid(~division)
       } else if (input$select_sentiment_plot_facet == 3) {
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(division2~super)
+          ggplot2::facet_grid(division ~ super)
         }
       }
       , height = function() {

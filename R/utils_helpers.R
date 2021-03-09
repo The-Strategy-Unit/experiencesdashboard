@@ -11,12 +11,12 @@ tidy_sentiment_txt <- function(data) {
                   year = lubridate::year(date),
                   id = 1:nrow(data),
                   all_sentimtents_unnest = all_sentiments) %>% 
-    dplyr::select(id, date, year, super, division2, improve, all_sentiments, 
+    dplyr::select(id, date, year, super, division, improve, all_sentiments, 
                   all_sentimtents_unnest) %>% 
     tidyr::unnest(cols = all_sentimtents_unnest) %>% 
     dplyr::distinct() %>% 
     dplyr::mutate(value = TRUE) %>% 
-    tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division2", 
+    tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division", 
                                    "improve", "all_sentiments"), 
                        names_from = all_sentimtents_unnest, 
                        values_from = value) %>% 
