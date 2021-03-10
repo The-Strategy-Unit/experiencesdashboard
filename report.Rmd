@@ -1,0 +1,29 @@
+---
+title: "Summary report"
+author: "Chris Beeley"
+output: word_document
+params:
+  param1: NA
+  data: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Summary
+
+// TODO add details of the dates and locations within the report
+
+## SPC
+
+```{r}
+
+graph_data <- experiencesdashboard::split_data_spc(
+  params$data, variable = "service", chunks = 15
+  )
+
+experiencesdashboard::plot_fft_spc(graph_data)
+
+```
+
