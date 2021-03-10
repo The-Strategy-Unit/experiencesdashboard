@@ -10,15 +10,15 @@ tidy_sentiment_txt <- function(data) {
     dplyr::mutate(date = lubridate::date(date),
                   year = lubridate::year(date),
                   id = 1:nrow(data),
-                  all_sentimtents_unnest = all_sentiments) %>% 
+                  all_sentiments_unnest = all_sentiments) %>% 
     dplyr::select(id, date, year, super, division, improve, all_sentiments, 
-                  all_sentimtents_unnest) %>% 
-    tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+                  all_sentiments_unnest) %>% 
+    tidyr::unnest(cols = all_sentiments_unnest) %>% 
     dplyr::distinct() %>% 
     dplyr::mutate(value = TRUE) %>% 
     tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division", 
                                    "improve", "all_sentiments"), 
-                       names_from = all_sentimtents_unnest, 
+                       names_from = all_sentiments_unnest, 
                        values_from = value) %>% 
     janitor::clean_names() %>% 
     dplyr::select(-na) %>%
