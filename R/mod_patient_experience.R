@@ -17,7 +17,7 @@ mod_patient_experience_ui <- function(id){
       ),
       tabPanel(
         "Report builder",
-        p("This is the report builder tab")
+        mod_report_builder_ui("report_builder_ui_1")
       ),
       tabPanel(
         "FFT",

@@ -56,4 +56,8 @@ app_server <- function( input, output, session ) {
                                   filter_data = filter_data)
   
   mod_fft_server("fft_ui_1", filter_data = filter_data)
+  
+  mod_report_builder_server("report_builder_ui_1",
+                            filter_sentiment = filter_sentiment,
+                            filter_data = filter_data)
 }

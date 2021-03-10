@@ -35,14 +35,14 @@ Imports:
     UpSetR,
     tibbletime,
     tidytext,
-    qicharts2
+    qicharts2,
+    rmarkdown
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0),
-    knitr,
-    rmarkdown
+    knitr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/milanwiedemann/experiencesdashboard
