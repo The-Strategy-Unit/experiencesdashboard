@@ -24,13 +24,12 @@ mod_patient_experience_ui <- function(id){
         mod_fft_ui("fft_ui_1")
       ),
       tabPanel(
-        "Themes",
-        p("This module will summarise the themes"),
+        "Themes/ weighting",
         mod_category_criticality_ui("category_criticality_ui_1")
       ),
       tabPanel(
-        "Weighting",
-        p("This module will summarise sentiment/ weighting")
+        "Sentiment",
+        mod_sentiment_ui("mod_sentiment_ui_1")
       ),
       tabPanel(
         "Comment search",
@@ -49,9 +48,3 @@ mod_patient_experience_server <- function(id){
  
   })
 }
-    
-## To be copied in the UI
-# 
-    
-## To be copied in the server
-# 

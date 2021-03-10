@@ -5,11 +5,6 @@ library(tidyverse)
 library(janitor)
 library(odbc)
 
-## Load results from Andreas ----
-sentiment_txt_data <- readRDS(file = here::here("data-raw/sentiment_txt_data.rds")) %>% 
-  dplyr::rename(division = division2, directorate = directorate2)
-usethis::use_data(sentiment_txt_data, overwrite = TRUE)
-
 ## MySQL ----
 
 con <- DBI::dbConnect(odbc::odbc(),
@@ -74,3 +69,17 @@ tidy_trust_data <- trustData %>%
   tidyr::drop_na(comment_txt)
 
 usethis::use_data(tidy_trust_data, overwrite = TRUE)
+
+## Load results from Andreas ----
+sentiment_txt_data <- readRDS(file = here::here("data-raw/sentiment_txt_data.rds")) %>% 
+  dplyr::rename(division = division2, directorate = directorate2)
+
+# add fake dates
+
+sentiment_txt_data$date <- sample(tidy_trust_data$date, 
+                                  nrow(sentiment_txt_data), replace = TRUE)
+
+usethis::use_data(sentiment_txt_data, overwrite = TRUE)
+
+
+

@@ -39,10 +39,18 @@ app_server <- function( input, output, session ) {
                     date < input$date_range[2]) %>%
       dplyr::filter(division %in% input$select_division)
   })
+  
+  filter_sentiment <- reactive({
+    
+    sentiment_txt_data %>%
+      dplyr::filter(date > input$date_range[1], 
+                    date < input$date_range[2]) %>%
+      dplyr::filter(division %in% input$select_division)
+  })
 
   mod_patient_experience_server("patient_experience_ui_1")
   
-  mod_sentiment_server("mod_sentiment_ui_1")
+  mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
   
   mod_category_criticality_server("category_criticality_ui_1", 
                                   filter_data = filter_data)
