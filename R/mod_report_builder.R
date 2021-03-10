@@ -19,7 +19,8 @@ mod_report_builder_ui <- function(id, filter_data, filter_sentiment){
 #' report_builder Server Functions
 #'
 #' @noRd 
-mod_report_builder_server <- function(id, filter_sentiment, filter_data){
+mod_report_builder_server <- function(id, filter_sentiment, filter_data,
+                                      all_inputs){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
@@ -27,13 +28,15 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data){
       filename = paste0("CustomReport_", Sys.Date(), ".docx"),
       content = function(file){
         
-        params <- list(data = filter_data())
+        params <- list(date_from = all_inputs()$date_from[1],
+          data = filter_data()
+        )
         
         rmarkdown::render("report.Rmd", output_format = "word_document",
-               output_file = "report.docx", 
-               quiet = TRUE, params = params,
-               envir = new.env(parent = globalenv())
-               )
+                          output_file = "report.docx", 
+                          quiet = TRUE, params = params,
+                          envir = new.env(parent = globalenv())
+        )
         
         # copy docx to 'file'
         file.copy("report.docx", file, overwrite = TRUE)

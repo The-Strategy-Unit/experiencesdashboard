@@ -31,6 +31,14 @@ app_server <- function( input, output, session ) {
     )
   })
   
+  all_inputs <- reactive({
+    list(
+      "date_from" = input$date_range[1],
+      "date_to" = input$date_range[2],
+      division = input$select_division
+    )
+  })
+  
   # Create reactive data ----
   filter_data <- reactive({
     
@@ -59,5 +67,6 @@ app_server <- function( input, output, session ) {
   
   mod_report_builder_server("report_builder_ui_1",
                             filter_sentiment = filter_sentiment,
-                            filter_data = filter_data)
+                            filter_data = filter_data,
+                            all_inputs = all_inputs)
 }

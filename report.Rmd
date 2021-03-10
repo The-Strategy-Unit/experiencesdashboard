@@ -5,6 +5,7 @@ output: word_document
 params:
   param1: NA
   data: NA
+  date_from: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -14,6 +15,8 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Summary
 
 // TODO add details of the dates and locations within the report
+
+This report summarises data from `r params$date_from`
 
 ## SPC
 
