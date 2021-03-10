@@ -13,6 +13,8 @@
 
 # Engineering
 
+stop()
+
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
 usethis::use_package( "thinkr" )
@@ -29,6 +31,7 @@ usethis::use_package( "tidytext" )
 usethis::use_package( "janitor" )
 usethis::use_package( "UpSetR" )
 usethis::use_package( "tibbletime" )
+usethis::use_package( "qicharts2" )
 
 usethis::use_package( "shinydashboard" )
 usethis::use_package( "dashboardthemes" )
@@ -42,7 +45,9 @@ usethis::use_package( "timevis" )
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "sentiment" ) # Name of the module
+golem::add_module( name = "patient_experience" ) # Name of the module
 golem::add_module( name = "category_criticality" ) # Name of the module
+golem::add_module( name = "fft" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
@@ -61,7 +66,8 @@ usethis::use_data_raw( name = "my_dataset", open = FALSE )
 
 ## Tests ----
 ## Add one line by test you want to create
-usethis::use_test( "app" )
+usethis::use_test( "fft" )
+usethis::use_test( "sentiment_tidy" )
 
 # Documentation
 

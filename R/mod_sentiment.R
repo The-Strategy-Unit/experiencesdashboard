@@ -13,66 +13,36 @@ mod_sentiment_ui <- function(id) {
   tagList(
     wellPanel(
       fluidRow(
-        column(
-          3,
-          dateRangeInput(
-            ns("date_range"),
-            label = h5(strong("Select date range:")),
-            min = "2013-01-01",
-            start = "2013-01-01",
-            end = "2018-12-31",
-            max = "2019-02-11"
-          )
-        ),
-        column(
-          3,
-          selectInput(
-            ns("select_division"),
-            label = h5(strong("Select divisions:")),
-            choices = list(
-              "Local partnerships- MH" = "Local partnerships- MH",
-              "Forensic services" = "Forensic services",
-              "Local partnerships- CH" = "Local partnerships- CH"
-            ),
-            multiple = TRUE,
-            selected = c(
-              "Local partnerships- MH",
-              "Forensic services",
-              "Local partnerships- CH"
-            )
-          )
-        ),
-        column(
-          6,
-          selectInput(
-            ns("select_super"),
-            label = h5(strong("Select categories:")),
-            choices = list(
-              "Communication" = "Communication",
-              "Staff/Staff Attitude" = "Staff/Staff Attitude",
-              "Environment/Facilities" = "Environment/Facilities",
-              "Access to Services" = "Access to Services",
-              "Care/ Treatment" = "Care/ Treatment",
-              "Couldn't be improved" = "Couldn't be improved",
-              "Service Quality/Outcomes" = "Service Quality/Outcomes",
-              "Involvement" = "Involvement",
-              "Food" = "Food",
-              "Privacy and Dignity" = "Privacy and Dignity",
-              "MHA" = "MHA",
-              "Equality/Diversity" = "Equality/Diversity",
-              "Smoking" = "Smoking",
-              "Leave" = "Leave",
-              "Safety" = "Safety",
-              "Physical Health" = "Physical Health",
-              "Record Keeping" = "Record Keeping"
-            ),
-            selected = c("Staff/Staff Attitude", 
-                         "Care/ Treatment", 
-                         "Service Quality/Outcomes"),
-            multiple = TRUE
-          )
+        column(12,
+               selectInput(
+                 ns("select_super"),
+                 label = h5(strong("Select categories:")),
+                 choices = list(
+                   "Communication" = "Communication",
+                   "Staff/Staff Attitude" = "Staff/Staff Attitude",
+                   "Environment/Facilities" = "Environment/Facilities",
+                   "Access to Services" = "Access to Services",
+                   "Care/ Treatment" = "Care/ Treatment",
+                   "Couldn't be improved" = "Couldn't be improved",
+                   "Service Quality/Outcomes" = "Service Quality/Outcomes",
+                   "Involvement" = "Involvement",
+                   "Food" = "Food",
+                   "Privacy and Dignity" = "Privacy and Dignity",
+                   "MHA" = "MHA",
+                   "Equality/Diversity" = "Equality/Diversity",
+                   "Smoking" = "Smoking",
+                   "Leave" = "Leave",
+                   "Safety" = "Safety",
+                   "Physical Health" = "Physical Health",
+                   "Record Keeping" = "Record Keeping"
+                 ),
+                 selected = c("Staff/Staff Attitude", 
+                              "Care/ Treatment", 
+                              "Service Quality/Outcomes"),
+                 multiple = TRUE
+               )
         )
-      ),
+      ), 
       style = "padding: 5px;"),
     
     tabsetPanel(
@@ -142,8 +112,8 @@ mod_sentiment_ui <- function(id) {
                                     choices = c("Proportion" = "fill",
                                                 "Totals" = "stack"),
                                     selected = "stack"
-                                    )
-                        ),
+                        )
+                 ),
                  column(3,
                         selectInput(
                           ns("select_sentiment_plot"),
@@ -191,23 +161,18 @@ mod_sentiment_ui <- function(id) {
 #' mod_sentiment Server Function
 #'
 #' @noRd 
-mod_sentiment_server <- function(id){
+mod_sentiment_server <- function(id, filter_sentiment){
   
   moduleServer( id, function(input, output, session){
     
     ns <- session$ns
     
-
-    
-    # Fist, tidy entire data for upset plot
-    sentiment_txt_data_tidy <- tidy_sentiment_txt(sentiment_txt_data)
-    
     # Create reactive dataframe ----
-    # Filter data based on user selections
     sentiment_txt_data_tidy_r <- reactive({
+      
+      sentiment_txt_data_tidy <- tidy_sentiment_txt(filter_sentiment())
+      
       sentiment_txt_data_tidy %>% 
-        dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>% 
-        dplyr::filter(division2 %in% input$select_division) %>% 
         dplyr::filter(super %in% input$select_super)
     })
     
@@ -232,7 +197,7 @@ mod_sentiment_server <- function(id){
     
     # Create timeline ----
     output$sentiment_plot_time <- renderPlot({
-
+      
       sentiments_ordered <- c("negative", "anger", "disgust", "fear", "sadness",
                               "anticipation", "surprise", "joy",  "trust", "positive")
       
@@ -241,7 +206,7 @@ mod_sentiment_server <- function(id){
       sentiment_plot_time_temp <- sentiment_txt_data_tidy_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
         dplyr::filter(all_sentiments %in% input$select_sentiment_plot) %>% 
-        dplyr::select(date, all_sentiments, super, division2) %>% 
+        dplyr::select(date, all_sentiments, super, division) %>% 
         tidyr::drop_na() %>% 
         dplyr::mutate(all_sentiments = factor(x = all_sentiments,
                                               levels = sentiments_ordered,
@@ -266,13 +231,13 @@ mod_sentiment_server <- function(id){
           ggplot2::facet_grid(~super)
       } else if (input$select_sentiment_plot_facet == 2) {
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(~division2)
+          ggplot2::facet_grid(~division)
       } else if (input$select_sentiment_plot_facet == 3) {
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(division2~super)
-        }
+          ggplot2::facet_grid(division ~ super)
       }
-      , height = function() {
+    }
+    , height = function() {
       session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_time_width` / 2.3
     }
     )

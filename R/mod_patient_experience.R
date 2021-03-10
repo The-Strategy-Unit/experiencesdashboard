@@ -1,0 +1,50 @@
+#' patient_experience UI Function
+#'
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#'
+#' @noRd 
+#'
+#' @importFrom shiny NS tagList 
+mod_patient_experience_ui <- function(id){
+  ns <- NS(id)
+  tagList(
+    tabsetPanel(
+      tabPanel(
+        "Summary",
+        p("This module will contain a high level summary of PX data"),
+      ),
+      tabPanel(
+        "Report builder",
+        p("This is the report builder tab")
+      ),
+      tabPanel(
+        "FFT",
+        mod_fft_ui("fft_ui_1")
+      ),
+      tabPanel(
+        "Themes/ weighting",
+        mod_category_criticality_ui("category_criticality_ui_1")
+      ),
+      tabPanel(
+        "Sentiment",
+        mod_sentiment_ui("mod_sentiment_ui_1")
+      ),
+      tabPanel(
+        "Comment search",
+        p("This module will show and search raw text")
+      )
+    )
+  )
+}
+    
+#' patient_experience Server Functions
+#'
+#' @noRd 
+mod_patient_experience_server <- function(id){
+  moduleServer( id, function(input, output, session){
+    ns <- session$ns
+ 
+  })
+}
