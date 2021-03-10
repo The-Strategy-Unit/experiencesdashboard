@@ -47,7 +47,7 @@ app_ui <- function(request) {
                      icon = icon("info-circle"), 
                      menuItem("Data", tabName = "info-data")
             ),
-            uiOutput("filter_data")
+            uiOutput("filter_dataUI")
           )
         ),
         dashboardBody(

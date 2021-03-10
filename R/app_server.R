@@ -9,7 +9,7 @@ app_server <- function( input, output, session ) {
   
   # render the inputs
   
-  output$filter_data <- renderUI({
+  output$filter_dataUI <- renderUI({
     
     divisions <- na.omit(unique(tidy_trust_data$division))
     
