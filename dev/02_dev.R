@@ -47,6 +47,7 @@ golem::add_module( name = "patient_experience" ) # Name of the module
 golem::add_module( name = "category_criticality" ) # Name of the module
 golem::add_module( name = "fft" ) # Name of the module
 golem::add_module( name = "report_builder" ) # Name of the module
+golem::add_module( name = "click_tables" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*

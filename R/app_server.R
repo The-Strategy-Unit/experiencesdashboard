@@ -69,4 +69,6 @@ app_server <- function( input, output, session ) {
                             filter_sentiment = filter_sentiment,
                             filter_data = filter_data,
                             all_inputs = all_inputs)
+  
+  mod_click_tables_server("click_tables_ui_1")
 }

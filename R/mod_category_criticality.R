@@ -22,6 +22,11 @@ mod_category_criticality_ui <- function(id){
       
       tabsetPanel(
         type = "tabs",
+        tabPanel("Summary",
+                 splitLayout(
+                   mod_click_tables_ui("click_tables_ui_1"),
+                   p("Best thing goes here")
+                 )),
         tabPanel("Comments",
                  br(),
                  fluidRow(
