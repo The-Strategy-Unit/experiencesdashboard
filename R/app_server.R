@@ -35,7 +35,7 @@ app_server <- function( input, output, session ) {
     list(
       "date_from" = input$date_range[1],
       "date_to" = input$date_range[2],
-      division = input$select_division
+      "division" = input$select_division
     )
   })
   

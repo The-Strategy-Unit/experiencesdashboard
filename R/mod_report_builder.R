@@ -28,8 +28,10 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
       filename = paste0("CustomReport_", Sys.Date(), ".docx"),
       content = function(file){
         
-        params <- list(date_from = all_inputs()$date_from[1],
-          data = filter_data()
+        params <- list(date_from = all_inputs()$date_from,
+                       date_to = all_inputs()$date_to,
+                       division = all_inputs()$division,
+                       data = filter_data()
         )
         
         rmarkdown::render("report.Rmd", output_format = "word_document",
