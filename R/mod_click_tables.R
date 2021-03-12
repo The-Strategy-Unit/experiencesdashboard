@@ -25,44 +25,21 @@ mod_click_tables_server <- function(id, data, count_column, click, filter_data){
     
     output$table <- DT::renderDT({
       
-      # if(count_column == "Category"){
-      #   
-      #   req(click())
-      #   
-      #   first_table <- calculate_table(table_data = filter_data(),
-      #                                  code_column = "Code",
-      #                                  category_table = data()$categories,
-      #                                  join_lookup = c("Code" = "Number"),
-      #                                  count_column = "Super", 
-      #                                  click_column = NULL)
-      #   
-      #   row_selected <- first_table$Category[click()]
-      #   
-      #   calculated_table <- calculate_table(table_data = filter_data(),
-      #                                       code_column = "Code",
-      #                                       category_table = data()$categories,
-      #                                       join_lookup = c("Code" = "Number"),
-      #                                       count_column = count_column, 
-      #                                       click_column = row_selected)
-      # } else {
-      
-      calculated_table <- calculate_table(table_data = filter_data(),
-                                          code_column = "Code",
-                                          category_table = data()$categories,
-                                          join_lookup = c("Code" = "Number"),
-                                          count_column = count_column, 
-                                          click_column = click)
-      # }
-      
+      calculated_table <- calculate_table(
+        table_data = tidy_trust_data, 
+        count_column = "super_category",
+        comment_type = "improve", 
+        click_column = NULL)
+
       DT::datatable(calculated_table,
                     selection = 'single', rownames = FALSE, extensions = 'Buttons', 
-                    options = list(pageLength = 5, lengthMenu = c(5, 10),
+                    options = list(pageLength = 10, lengthMenu = c(10, 15, 20, 50),
                                    dom = 'Blfrtip',
                                    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')))
     })
     
     reactive(
-      input$themes_rows_selected
+      input$table_rows_selected
     )
   })
 }
