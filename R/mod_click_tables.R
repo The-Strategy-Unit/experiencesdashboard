@@ -19,7 +19,7 @@ mod_click_tables_ui <- function(id){
 #' click_tables Server Functions
 #'
 #' @noRd 
-mod_click_tables_server <- function(id, data, count_column, click, filter_data){
+mod_click_tables_server <- function(id, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     

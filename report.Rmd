@@ -19,12 +19,33 @@ This report summarises data from `r format(params$date_from, "%b %d %Y")` to `r 
 
 ## Themes
 
-```{r}
+### What could we do better?
 
+```{r, results = "asis"}
 
+calculate_table(
+  table_data = params$data, 
+  count_column = "super_category",
+  comment_type = "improve", 
+  click_column = NULL
+) %>% 
+  pander::pandoc.table()
 
 ```
 
+### What did we do well?
+
+```{r, results = "asis"}
+
+calculate_table(
+  table_data = params$data, 
+  count_column = "super_category",
+  comment_type = "best", 
+  click_column = NULL
+) %>% 
+  pander::pandoc.table()
+
+```
 
 ## SPC
 
@@ -32,7 +53,7 @@ This report summarises data from `r format(params$date_from, "%b %d %Y")` to `r 
 
 graph_data <- experiencesdashboard::split_data_spc(
   params$data, variable = "service", chunks = 15
-  )
+)
 
 experiencesdashboard::plot_fft_spc(graph_data)
 
