@@ -5,6 +5,7 @@
 #' @param comment_type String with type of comment- improve/ best
 #' @param click_column A string with the name of the category that has been clicked, if any
 #' @return a dataframe with category name, n, and %
+#' @export
 calculate_table <- function(table_data, count_column, 
                             comment_type = c("improve", "best"), 
                             click_column = NULL) {
