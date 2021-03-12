@@ -14,7 +14,8 @@ mod_category_criticality_ui <- function(id){
     fluidPage(
       
       # Add css file for table ----
-      includeCSS("www/crit-table.css"), 
+      includeCSS(system.file("app/www/", "crit-table.css", 
+                             package = "experiencesdashboard")),
       
       fluidRow(
         uiOutput(ns("categoryUI"))
