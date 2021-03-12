@@ -26,7 +26,7 @@ mod_click_tables_server <- function(id, data, count_column, click, filter_data){
     output$table <- DT::renderDT({
       
       calculated_table <- calculate_table(
-        table_data = tidy_trust_data, 
+        table_data = filter_data(), 
         count_column = "super_category",
         comment_type = "improve", 
         click_column = NULL)
