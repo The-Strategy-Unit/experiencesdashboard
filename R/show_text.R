@@ -1,16 +1,11 @@
-show_text <- function(data, filter_by, category_filter, comment_type_filter){
+show_text <- function(data, filter_by_column, filter_by_text, comment_type_filter){
   
   return(
     data %>%
-      dplyr::filter(.data[[filter_by]] == comment_type,
-                    comment_type == comment_type_filter) %>% 
+      dplyr::filter(comment_type == comment_type_filter,
+                    .data[[filter_by_column]] == filter_by_text) %>% 
       dplyr::distinct(key_comment, .keep_all = TRUE) %>%
       dplyr::pull(comment_txt) %>%
       paste0("<p>", ., "</p>")
   )
 }
-
-show_text(data = tidy_trust_data, 
-          filter_by = "super_category", 
-          category_filter = category_selected, 
-          comment_type_filter = comment_type)
