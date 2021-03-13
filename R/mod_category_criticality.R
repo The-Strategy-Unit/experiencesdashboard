@@ -14,7 +14,8 @@ mod_category_criticality_ui <- function(id){
     fluidPage(
       
       # Add css file for table ----
-      includeCSS("www/crit-table.css"), 
+      includeCSS(system.file("app/www/", "crit-table.css", 
+                             package = "experiencesdashboard")),
       
       fluidRow(
         uiOutput(ns("categoryUI"))
@@ -22,6 +23,11 @@ mod_category_criticality_ui <- function(id){
       
       tabsetPanel(
         type = "tabs",
+        tabPanel("Summary",
+                 splitLayout(
+                   mod_click_tables_ui("click_tables_ui_1"),
+                   p("Best thing goes here")
+                 )),
         tabPanel("Comments",
                  br(),
                  fluidRow(
@@ -169,32 +175,33 @@ mod_category_criticality_server <- function(id, filter_data){
         n_table_best <- nrow(best_comments)
       }
       
-      reactable::reactable(dplyr::sample_n(best_comments, n_table_best),
-                           # groupBy = "super_category",
-                           borderless = TRUE,
-                           highlight = TRUE,
-                           showSortIcon = FALSE,
-                           showPageSizeOptions = TRUE,
-                           pageSizeOptions = c(10, 15, 20, 25, 30),
-                           defaultPageSize = 10,
-                           columns = list(
-                             # super_category = reactable::colDef(minWidth = 2, 
-                             #                                    sortable = FALSE,
-                             #                                    filterable = FALSE,
-                             #                                    name = "Category"),
-                             comment_txt = reactable::colDef(minWidth = 5.5, 
-                                                             sortable = FALSE, 
-                                                             filterable = TRUE,
-                                                             name = "What was good?"),
-                             crit = reactable::colDef(minWidth = 1, 
-                                                      filterable = TRUE,
-                                                      name = "Criticality",
-                                                      cell = function(value) {
-                                                        class <- paste0("tag crit-best-", value)
-                                                        htmltools::div(class = class, value)
-                                                      }
-                             )
-                           )
+      reactable::reactable(
+        dplyr::sample_n(best_comments, n_table_best),
+        # groupBy = "super_category",
+        borderless = TRUE,
+        highlight = TRUE,
+        showSortIcon = FALSE,
+        showPageSizeOptions = TRUE,
+        pageSizeOptions = c(10, 15, 20, 25, 30),
+        defaultPageSize = 10,
+        columns = list(
+          # super_category = reactable::colDef(minWidth = 2, 
+          #                                    sortable = FALSE,
+          #                                    filterable = FALSE,
+          #                                    name = "Category"),
+          comment_txt = reactable::colDef(minWidth = 5.5, 
+                                          sortable = FALSE, 
+                                          filterable = TRUE,
+                                          name = "What was good?"),
+          crit = reactable::colDef(minWidth = 1, 
+                                   filterable = TRUE,
+                                   name = "Criticality",
+                                   cell = function(value) {
+                                     class <- paste0("tag crit-best-", value)
+                                     htmltools::div(class = class, value)
+                                   }
+          )
+        )
       )
       
     })

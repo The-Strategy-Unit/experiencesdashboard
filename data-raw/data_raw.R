@@ -30,43 +30,44 @@ trustData <- trustData %>%
   janitor::clean_names()
 
 categoriesTable <- dbGetQuery(con, "SELECT * from NewCodes") %>%
-  janitor::clean_names()
+  janitor::clean_names() %>% 
+  mutate(subcategory = paste0(category, ": ", subcategory))
 
-# Create tidy data set
-tidy_trust_data <- trustData %>%
-  dplyr::left_join(categoriesTable, 
-                   by = c("imp_n1" = "code")) %>%
-  dplyr::left_join(categoriesTable, 
-                   by = c("best_n1" = "code"),
-                   suffix = c("_imp", "_best")) %>% 
-  dplyr::select(date, team_n, directorate = dir_t, division = division2, 
-                improve, imp_crit, 
-                imp_category = subcategory_imp, imp_super = category_imp, 
-                best, best_crit, 
-                best_category = subcategory_best, best_super = category_best,
-                service) %>% 
-  dplyr::arrange(date) %>% 
+# combine theme codes
+
+trustData <- trustData %>% 
   dplyr::na_if(9) %>% 
   dplyr::mutate(across(where(is.character), ~na_if(., "Unknown"))) %>% 
-  # Come up with better key
-  dplyr::mutate(key_user = 1 : nrow(.)) %>% 
-  tidyr::pivot_longer(cols = c("improve", "best"), 
-                      names_to = "comment_type",
-                      values_to = "comment_txt") %>% 
-  dplyr::mutate(crit = case_when(comment_type == "improve" ~ imp_crit,
-                                 comment_type == "best" ~ best_crit),
-                category = case_when(comment_type == "improve" ~ imp_category,
-                                     comment_type == "best" ~ best_category),
-                super_category = case_when(comment_type == "improve" ~ imp_super,
-                                           comment_type == "best" ~ best_super)) %>% 
+  dplyr::mutate(across(where(is.character), ~na_if(., "XX"))) %>% 
+  dplyr::mutate(key_user = 1 : nrow(.))
+
+trustData <- bind_cols(
+  trustData %>% 
+    tidyr::pivot_longer(cols = c("improve", "best"), 
+                        names_to = "comment_type",
+                        values_to = "comment_txt"),
+  trustData %>% 
+    tidyr::pivot_longer(cols = c("imp_crit", "best_crit"), 
+                        names_to = "crit_type",
+                        values_to = "crit") %>% 
+    select(crit_type, crit)
+) %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(impcodes = list(na.omit(c(imp_n1, imp_n2)))) %>% 
+  dplyr::select(-imp_n1, -imp_n2) %>% 
+  tidyr::unnest(impcodes) %>% 
+  dplyr::left_join(categoriesTable, by = c("impcodes" = "code"))
+
+tidy_trust_data <- trustData %>% 
+  dplyr::select(key_user, date, team_n, 
+                directorate = dir_t, division = division2,
+                comment_txt, comment_type,
+                crit, 
+                super_category = category, category = subcategory, 
+                service) %>% 
   dplyr::mutate(key_comment = paste0(key_user, "_", comment_type)) %>% 
-  dplyr::select(key_user, key_comment, date, team_n, directorate, division, 
-                comment_type, comment_txt, crit, category, super_category,
-                service) %>%
   # only keep comments that are within possible range or NA
-  filter(crit %in% -5 : 5 | is.na(crit) == TRUE) %>% 
-  # Drop comments with missing values
-  tidyr::drop_na(comment_txt)
+  filter(crit %in% -5 : 5 | is.na(crit) == TRUE)
 
 usethis::use_data(tidy_trust_data, overwrite = TRUE)
 

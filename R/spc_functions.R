@@ -1,6 +1,18 @@
-
-# split dataframe into equal chunks and find average score
-
+#' Get data ready for SPC plotting
+#'
+#' @description TODO, ADD WHAT IS IN HERE AN WHAT ISNT
+#'
+#' @param data dataframe containing "date" column and an FFT column
+#' @param variable string, indicating the name of the FFT column
+#' @param chunks either "monthly", which divides the data in months 
+#' or the number of chunks to divide the data into (each chunk will have the 
+#' same number of rows)
+#' @param return dataframe suitable for plotting with qicharts2
+#'
+#' @return
+#' @export
+#'
+#' @examples
 split_data_spc <- function(data, variable = "service", chunks){
   
   if(chunks == "monthly"){
@@ -23,6 +35,17 @@ split_data_spc <- function(data, variable = "service", chunks){
   }
 }
 
+#' Plot data
+#'
+#' @description TODO, ADD WHAT IS IN HERE AN WHAT ISNT
+#'
+#' @param data dataframe, that you probably made with the split_data_spc function
+#' @param return SPC plot
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plot_fft_spc <- function(data){
   
   data %>% 
