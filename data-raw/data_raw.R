@@ -3,59 +3,84 @@
 ## Load packages ----
 library(tidyverse)
 library(janitor)
+library(odbc)
 
+## MySQL ----
 
-## Load results from Andreas ----
-sentiment_txt_data <- readRDS(file = here("data-raw/sentiment_txt_data.rds"))
-usethis::use_data(sentiment_txt_data, overwrite = TRUE)
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver   = "MySQL ODBC 8.0 Unicode Driver",
+                      Server   = Sys.getenv("HOST_NAME"),
+                      UID      = Sys.getenv("DB_USER"),
+                      PWD      = Sys.getenv("MYSQL_PASSWORD"),
+                      Port     = 3306,
+                      database = "SUCE")
 
-
-## Load raw data from Chris ----
-## This needs to be improved so that we get data directly from sql
-load(url("https://raw.github.com/ChrisBeeley/naturallanguageprocessing/master/cleanData.Rdata"))
+trustData = dbGetQuery(con, 
+                       "SELECT * FROM Local INNER JOIN Teams 
+                       INNER JOIN Directorates ON Directorates.DirC = Teams.Directorate
+                       WHERE Local.TeamC = Teams.TeamC
+                       AND Local.Date >= Teams.date_from 
+                       AND Local.Date <= Teams.date_to
+                       AND Local.Date >= Directorates.date_from 
+                       AND Local.Date <= Directorates.date_to
+                       AND Date > '2020-10-01'")
 
 # Tidy variable names
 trustData <- trustData %>%
   janitor::clean_names()
 
-categoriesTable <- categoriesTable %>%
-  janitor::clean_names()
+categoriesTable <- dbGetQuery(con, "SELECT * from NewCodes") %>%
+  janitor::clean_names() %>% 
+  mutate(subcategory = paste0(category, ": ", subcategory))
 
-# Create tidy data set
-tidy_trust_data <- trustData %>%
-  dplyr::left_join(categoriesTable, 
-                   by = c("imp1" = "number")) %>%
-  dplyr::left_join(categoriesTable, 
-                   by = c("best1" = "number"),
-                   suffix = c("_imp", "_best")) %>% 
-  dplyr::select(date, team_n, directorate2, division2, 
-                improve, imp_crit, 
-                imp_category = category_imp, imp_super = super_imp, 
-                best, best_crit, 
-                best_category = category_best, best_super = super_best) %>% 
-  # Only work with old categories
-  dplyr::filter(date < "2020-10-01") %>%
-  #only work with data that has criticality rating
-  dplyr::filter(date > "2010-04-01") %>% 
-  dplyr::arrange(date) %>% 
-  # Come up with better key
-  dplyr::mutate(key_user = 1:nrow(.)) %>% 
-  tidyr::pivot_longer(cols = c("improve", "best"), 
-                      names_to = "comment_type",
-                      values_to = "comment_txt") %>% 
-  dplyr::mutate(crit = case_when(comment_type == "improve" ~ imp_crit,
-                                 comment_type == "best" ~ best_crit),
-                category = case_when(comment_type == "improve" ~ imp_category,
-                                     comment_type == "best" ~ best_category),
-                super_category = case_when(comment_type == "improve" ~ imp_super,
-                                           comment_type == "best" ~ best_super)) %>% 
+# combine theme codes
+
+trustData <- trustData %>% 
+  dplyr::na_if(9) %>% 
+  dplyr::mutate(across(where(is.character), ~na_if(., "Unknown"))) %>% 
+  dplyr::mutate(across(where(is.character), ~na_if(., "XX"))) %>% 
+  dplyr::mutate(key_user = 1 : nrow(.))
+
+trustData <- bind_cols(
+  trustData %>% 
+    tidyr::pivot_longer(cols = c("improve", "best"), 
+                        names_to = "comment_type",
+                        values_to = "comment_txt"),
+  trustData %>% 
+    tidyr::pivot_longer(cols = c("imp_crit", "best_crit"), 
+                        names_to = "crit_type",
+                        values_to = "crit") %>% 
+    select(crit_type, crit)
+) %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(impcodes = list(na.omit(c(imp_n1, imp_n2)))) %>% 
+  dplyr::select(-imp_n1, -imp_n2) %>% 
+  tidyr::unnest(impcodes) %>% 
+  dplyr::left_join(categoriesTable, by = c("impcodes" = "code"))
+
+tidy_trust_data <- trustData %>% 
+  dplyr::select(key_user, date, team_n, 
+                directorate = dir_t, division = division2,
+                comment_txt, comment_type,
+                crit, 
+                super_category = category, category = subcategory, 
+                service) %>% 
   dplyr::mutate(key_comment = paste0(key_user, "_", comment_type)) %>% 
-  dplyr::select(key_user, key_comment, date, team_n, directorate2, division2, 
-                comment_type, comment_txt, crit, category, super_category) %>%
   # only keep comments that are within possible range or NA
-  filter(crit %in% c(1:3) | is.na(crit) == TRUE) %>% 
-  # Drop comments with missing values
-  tidyr::drop_na(comment_txt)
-
+  filter(crit %in% -5 : 5 | is.na(crit) == TRUE)
 
 usethis::use_data(tidy_trust_data, overwrite = TRUE)
+
+## Load results from Andreas ----
+sentiment_txt_data <- readRDS(file = here::here("data-raw/sentiment_txt_data.rds")) %>% 
+  dplyr::rename(division = division2, directorate = directorate2)
+
+# add fake dates
+
+sentiment_txt_data$date <- sample(tidy_trust_data$date, 
+                                  nrow(sentiment_txt_data), replace = TRUE)
+
+usethis::use_data(sentiment_txt_data, overwrite = TRUE)
+
+
+

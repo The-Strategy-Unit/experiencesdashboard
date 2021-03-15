@@ -11,150 +11,113 @@ mod_category_criticality_ui <- function(id){
   ns <- NS(id)
   tagList(
     
-    # Add css file for table ----
-    includeCSS("www/crit-table.css"), 
-    
-    wellPanel(
+    fluidPage(
+      
+      # Add css file for table ----
+      includeCSS(system.file("app/www/", "crit-table.css", 
+                             package = "experiencesdashboard")),
+      
       fluidRow(
-        column(3,
-          dateRangeInput(
-            ns("date_range"),
-            label = h5(strong("Select date range:")),
-            min = "2013-01-01",
-            start = "2013-01-01",
-            end = "2018-12-31",
-            max = "2019-02-11"
-          )
-        ),
-        column(3,
-          selectInput(
-            ns("select_division"),
-            label = h5(strong("Select divisions:")),
-            choices = list(
-              "Local partnerships- MH" = "Local partnerships- MH",
-              "Forensic services" = "Forensic services",
-              "Local partnerships- CH" = "Local partnerships- CH"
-            ),
-            multiple = TRUE,
-            selected = c(
-              "Local partnerships- MH",
-              "Forensic services",
-              "Local partnerships- CH"
-            )
-          )
-        ),
-        column(6,
-          selectInput(
-            ns("select_super"),
-            label = h5(strong("Select categories:")),
-            choices = list(
-              "Communication" = "Communication",
-              "Staff/Staff Attitude" = "Staff/Staff Attitude",
-              "Environment/Facilities" = "Environment/Facilities",
-              "Access to Services" = "Access to Services",
-              "Care/ Treatment" = "Care/ Treatment",
-              "Couldn't be improved" = "Couldn't be improved",
-              "Service Quality/Outcomes" = "Service Quality/Outcomes",
-              "Involvement" = "Involvement",
-              "Food" = "Food",
-              "Privacy and Dignity" = "Privacy and Dignity",
-              "MHA" = "MHA",
-              "Equality/Diversity" = "Equality/Diversity",
-              "Smoking" = "Smoking",
-              "Leave" = "Leave",
-              "Safety" = "Safety",
-              "Physical Health" = "Physical Health",
-              "Record Keeping" = "Record Keeping"
-            ),
-            selected = c("Staff/Staff Attitude", 
-                         "Care/ Treatment"),
-            multiple = TRUE
-          )
-        )
+        uiOutput(ns("categoryUI"))
       ),
-      style = "padding: 5px;"),
-    
-    tabsetPanel(
-      type = "tabs",
-      tabPanel("Comments",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL,
-                          background = "light-blue",
-                          textOutput(ns("category_crit_table_txt"))
-                        )
-                 )
-               ),
-               fluidRow(
-                 column(6,
-                        reactable::reactableOutput(ns("best_table"))
+      
+      tabsetPanel(
+        type = "tabs",
+        tabPanel("Summary",
+                 splitLayout(
+                   mod_click_tables_ui("click_tables_ui_1"),
+                   p("Best thing goes here")
+                 )),
+        tabPanel("Comments",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL,
+                            background = "light-blue",
+                            textOutput(ns("category_crit_table_txt"))
+                          )
+                   )
                  ),
-                 column(6,
-                        reactable::reactableOutput(ns("improve_table"))
+                 fluidRow(
+                   column(6,
+                          reactable::reactableOutput(ns("best_table"))
+                   ),
+                   column(6,
+                          reactable::reactableOutput(ns("improve_table"))
+                   )
                  )
-               )
-      ),
-      tabPanel("Timeline",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL,
-                          background = "light-blue",
-                          textOutput(ns("category_crit_time_plot_txt"))
-                        )
-                 )
-               ),
-               fluidRow(
-                 column(3,
-                        selectInput(ns("category_crit_time_facet"), 
-                                    label = h5(strong("Divide plot by:")), 
-                                    choices = list("Comment and category" = 1, 
-                                                   "Comment and division" = 2), 
-                                    selected = 1)
-                        ),
-                 column(3,
-                        selectInput(ns("category_crit_time_geom_histogram"), 
-                                    label = h5(strong("Show proportion or total:")), 
-                                    choices = list("Proportion" = "fill",
-                                                   "Total" = "stack"), 
-                                    selected = "stack")
-                 )
-               ),
-               plotOutput(ns("category_crit_time_plot"))
+        ),
+        tabPanel("Timeline",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL,
+                            background = "light-blue",
+                            textOutput(ns("category_crit_time_plot_txt"))
+                          )
+                   )
+                 ),
+                 fluidRow(
+                   column(3,
+                          selectInput(ns("category_crit_time_facet"), 
+                                      label = h5(strong("Divide plot by:")), 
+                                      choices = list("Comment and category" = 1, 
+                                                     "Comment and division" = 2), 
+                                      selected = 1)
+                   ),
+                   column(3,
+                          selectInput(ns("category_crit_time_geom_histogram"), 
+                                      label = h5(strong("Show proportion or total:")), 
+                                      choices = list("Proportion" = "fill",
+                                                     "Total" = "stack"), 
+                                      selected = "stack")
+                   )
+                 ),
+                 plotOutput(ns("category_crit_time_plot"))
+        )
       )
     )
-    
   )
 }
-    
+
 #' category_criticality Server Functions
 #'
 #' @noRd 
-mod_category_criticality_server <- function(id){
+mod_category_criticality_server <- function(id, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
+    # create UI
+    
+    output$categoryUI <- renderUI({
+      
+      choices <- na.omit(unique(tidy_trust_data$super_category))
+      
+      selectInput(
+        session$ns("select_super"),
+        label = h5(strong("Select categories:")),
+        choices = choices,
+        selected = sample(choices, 2),
+        multiple = TRUE
+      )
+    })
+    
     # Create reactive data ----
-    tidy_trust_data_r <- reactive( {
-      tidy_trust_data %>%
-      dplyr::filter(date > input$date_range[1], date < input$date_range[2]) %>%
-      dplyr::filter(division2 %in% input$select_division) %>%
-      dplyr::filter(super_category %in% input$select_super)
+    tidy_trust_data_r <- reactive({
+      
+      filter_data() %>%
+        dplyr::filter(super_category %in% input$select_super)
     })
     
     # Create sentiment plot over time ----
     output$category_crit_time_plot <- renderPlot({
       category_crit_time_plot <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
+        tidyr::drop_na(super_category) %>% 
         ggplot2::ggplot(ggplot2::aes(x = date, 
-                                     fill = factor(crit, 
-                                                   levels = c(1:3),
-                                                   labels = c("Mildly", 
-                                                              "Fairly", 
-                                                              "Highly")))) +
+                                     fill = factor(crit, exclude = NA))) +
         ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram,
                                 binwidth = 20) +
         ggplot2::scale_fill_viridis_d() +
@@ -177,24 +140,24 @@ mod_category_criticality_server <- function(id){
       # Add facet ----
       if (input$category_crit_time_facet == 1) {
         category_crit_time_plot +
-        ggplot2::facet_grid(super_category ~ factor(comment_type, 
-                                                    levels = c("best", 
-                                                               "improve"),
-                                                    labels = c("What was good?", 
-                                                               "What could we do better?"))
-                            )
-        } else if (input$category_crit_time_facet == 2) {
+          ggplot2::facet_grid(super_category ~ factor(comment_type, 
+                                                      levels = c("best", 
+                                                                 "improve"),
+                                                      labels = c("What was good?", 
+                                                                 "What could we do better?"))
+          )
+      } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
-        ggplot2::facet_grid(division2 ~ factor(comment_type, 
-                                                    levels = c("best", 
-                                                               "improve"),
-                                                    labels = c("What was good?", 
-                                                               "What could we do better?"))
-                            )
+          ggplot2::facet_grid(division ~ factor(comment_type, 
+                                                levels = c("best", 
+                                                           "improve"),
+                                                labels = c("What was good?", 
+                                                           "What could we do better?"))
+          )
       }}
-    , height = function() {
-      session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
-    }
+      , height = function() {
+        session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
+      }
     )
     
     # Create reactive table (best) ----
@@ -212,32 +175,33 @@ mod_category_criticality_server <- function(id){
         n_table_best <- nrow(best_comments)
       }
       
-      reactable::reactable(dplyr::sample_n(best_comments, n_table_best),
-                           # groupBy = "super_category",
-                           borderless = TRUE,
-                           highlight = TRUE,
-                           showSortIcon = FALSE,
-                           showPageSizeOptions = TRUE,
-                           pageSizeOptions = c(10, 15, 20, 25, 30),
-                           defaultPageSize = 10,
-                           columns = list(
-                             # super_category = reactable::colDef(minWidth = 2, 
-                             #                                    sortable = FALSE,
-                             #                                    filterable = FALSE,
-                             #                                    name = "Category"),
-                             comment_txt = reactable::colDef(minWidth = 5.5, 
-                                                             sortable = FALSE, 
-                                                             filterable = TRUE,
-                                                             name = "What was good?"),
-                             crit = reactable::colDef(minWidth = 1, 
-                                                      filterable = TRUE,
-                                                      name = "Criticality",
-                                                      cell = function(value) {
-                                                        class <- paste0("tag crit-best-", value)
-                                                        htmltools::div(class = class, value)
-                                                      }
-                             )
-                           )
+      reactable::reactable(
+        dplyr::sample_n(best_comments, n_table_best),
+        # groupBy = "super_category",
+        borderless = TRUE,
+        highlight = TRUE,
+        showSortIcon = FALSE,
+        showPageSizeOptions = TRUE,
+        pageSizeOptions = c(10, 15, 20, 25, 30),
+        defaultPageSize = 10,
+        columns = list(
+          # super_category = reactable::colDef(minWidth = 2, 
+          #                                    sortable = FALSE,
+          #                                    filterable = FALSE,
+          #                                    name = "Category"),
+          comment_txt = reactable::colDef(minWidth = 5.5, 
+                                          sortable = FALSE, 
+                                          filterable = TRUE,
+                                          name = "What was good?"),
+          crit = reactable::colDef(minWidth = 1, 
+                                   filterable = TRUE,
+                                   name = "Criticality",
+                                   cell = function(value) {
+                                     class <- paste0("tag crit-best-", value)
+                                     htmltools::div(class = class, value)
+                                   }
+          )
+        )
       )
       
     })
@@ -296,9 +260,9 @@ mod_category_criticality_server <- function(id){
     })
   })
 }
-    
+
 ## To be copied in the UI
 # mod_category_criticality_ui("category_criticality_ui_1")
-    
+
 ## To be copied in the server
 # mod_category_criticality_server("category_criticality_ui_1")
