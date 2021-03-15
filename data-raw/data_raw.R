@@ -23,7 +23,8 @@ trustData = dbGetQuery(con,
                        AND Local.Date <= Teams.date_to
                        AND Local.Date >= Directorates.date_from 
                        AND Local.Date <= Directorates.date_to
-                       AND Date > '2020-10-01'")
+                       AND Date > '2020-10-01' 
+                       AND (Optout = 'No' OR Optout IS NULL)")
 
 # Tidy variable names
 trustData <- trustData %>%

@@ -21,14 +21,15 @@ mod_category_criticality_ui <- function(id){
         uiOutput(ns("categoryUI"))
       ),
       
-      tabsetPanel(
+      tabsetPanel(id = ns("tabset"),
         type = "tabs",
-        tabPanel("Summary",
-                 splitLayout(
-                   mod_click_tables_ui("click_tables_ui_1"),
-                   p("Best thing goes here")
-                 )),
-        tabPanel("Comments",
+        tabPanel("Summary", value = "summary",
+                 fluidRow(
+                   column(6, mod_click_tables_ui("click_tables_ui_1")),
+                   column(6, mod_click_tables_ui("click_tables_ui_2"))
+                 )
+        ),
+        tabPanel("Comments", value = "comments",
                  br(),
                  fluidRow(
                    column(12,
@@ -48,7 +49,7 @@ mod_category_criticality_ui <- function(id){
                    )
                  )
         ),
-        tabPanel("Timeline",
+        tabPanel("Timeline", value = "timeline",
                  br(),
                  fluidRow(
                    column(12,
@@ -93,6 +94,10 @@ mod_category_criticality_server <- function(id, filter_data){
     
     output$categoryUI <- renderUI({
       
+      # don't show on the summary tab- doesn't do anything
+      
+      req(input$tabset != "summary")
+
       choices <- na.omit(unique(tidy_trust_data$super_category))
       
       selectInput(

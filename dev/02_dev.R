@@ -68,6 +68,7 @@ usethis::use_data_raw( name = "my_dataset", open = FALSE )
 ## Add one line by test you want to create
 usethis::use_test( "fft" )
 usethis::use_test( "sentiment_tidy" )
+usethis::use_test( "show_text" )
 
 # Documentation
 
