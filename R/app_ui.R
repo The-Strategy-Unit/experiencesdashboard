@@ -16,47 +16,40 @@ app_ui <- function(request) {
       # List the first level UI elements here
       dashboardPage(
         
-        
-        
-        dashboardHeader(title = "Service Experiences",
+        dashboardHeader(title = "Patient experience",
                         titleWidth = 300),
-        dashboardSidebar(width = 300,
-                         sidebarMenu(
-                           
-                           menuItem("Service User Experiences", 
-                                    tabName = "experiences-user",
-                                    icon = shiny::icon("comment"),
-                                    badgeLabel = "dev", badgeColor = "green"),
-                           
-                           # red, yellow, aqua, blue, light-blue, green, navy, teal, olive, lime, orange, fuchsia, purple, maroon, black
-                           
-                           menuItem("Service User Sentiment Analysis", 
-                                    tabName = "experiences-user-sentiment",
-                                    icon = shiny::icon("smile"),
-                                    badgeLabel = "dev", badgeColor = "green"), 
-                          
-                           menuItem("Staff Experiences", 
-                                    tabName = "experiences-staff",
-                                    icon = shiny::icon("comment-medical"),
-                                    badgeLabel = "planned", badgeColor = "orange"),
-                           
-                           menuItem("Complaints and Compliments", 
-                                    tabName = "complaints-compliments",
-                                    icon = shiny::icon("exclamation-triangle"),
-                                    badgeLabel = "planned", badgeColor = "orange"),
-                           
-                           menuItem("Generate Report",
-                                    tabName = "generate-report",
-                                    icon = shiny::icon("file-alt"),
-                                    badgeLabel = "planned", badgeColor = "orange"),
-                           
-                           menuItem("Info", tabName = "info", 
-                                    icon = icon("info-circle")
-                                    
-                                    # , menuItem("Data", tabName = "info-data")
-                                    )
-                           )
-                         ),
+        dashboardSidebar(
+          width = 300,
+          sidebarMenu(
+            
+            menuItem("Summary", 
+                     tabName = "overview",
+                     icon = shiny::icon("dashboard")
+                     # , badgeLabel = "planned", badgeColor = "orange"
+            ),
+            
+            menuItem("Patient experience", 
+                     tabName = "experiences-user",
+                     icon = shiny::icon("comment"),
+                     selected = TRUE,
+                     badgeLabel = "dev", badgeColor = "green"),
+            
+            # red, yellow, aqua, blue, light-blue, green, navy, teal, 
+            # olive, lime, orange, fuchsia, purple, maroon, black
+            
+            menuItem("Staff experience", 
+                     tabName = "experiences-staff",
+                     icon = shiny::icon("comment-medical"),
+                     badgeLabel = "planned", badgeColor = "orange"
+            ),
+            
+            menuItem("Info", tabName = "info", 
+                     icon = icon("info-circle"), 
+                     menuItem("Data", tabName = "info-data")
+            ),
+            uiOutput("filter_dataUI")
+          )
+        ),
         dashboardBody(
           ### Changing theme
           dashboardthemes::shinyDashboardThemes(
@@ -65,41 +58,36 @@ app_ui <- function(request) {
           
           tabItems(
             # First tab content
-            tabItem(tabName = "experiences-user",
-                    h1("Service User Experiences"),
+            tabItem(tabName = "overview",
+                    h1("Overview"),
+                    h2("NOTE: WORK IN PROGRESS"),
+                    p("This tab will contain information that summarises all available data- 
+                    staff and patient experience, clinical outcomes, and risk")
                     
-
             ),
             
-            tabItem(tabName = "experiences-user-sentiment",
-                    h1("Sentiment Analysis of Service User Experiences"),
-                    mod_sentiment_ui("mod_sentiment_ui_1")
-                    ),
+            tabItem(tabName = "experiences-user",
+                    # h1("Service User Experiences"),
+                    mod_patient_experience_ui("patient_experience_ui_1")
+            ),
             
             tabItem(tabName = "experiences-staff",
-                    h1("Staff Experiences")
-            ),
-            
-            tabItem(tabName = "complaints-compliments",
-                    h1("Complaints and Compliments")
-            ),
-            
-            tabItem(tabName = "generate-report",
-                    h1("Generate Report of Service Experiences")
+                    h1("Staff experiences"),
+                    h2("NOTE: WORK IN PROGRESS")
             ),
             
             tabItem(tabName = "info",
-                    h1("Further Information")
+                    h1("Further Information"),
+                    h2("NOTE: WORK IN PROGRESS"),
+                    p("This tab will contain information about the measures used in the 
+                    dashboard, as well as other relevant information")
+                    
             )
-            
-            )
-            
           )
         )
       )
     )
-    
-  
+  )
 }
 
 #' Add external Resources to the Application
@@ -115,7 +103,7 @@ golem_add_external_resources <- function(){
   add_resource_path(
     'www', app_sys('app/www')
   )
- 
+  
   tags$head(
     favicon(),
     bundle_resources(

@@ -1,0 +1,136 @@
+---
+title: "explore-ideas"
+output: html_document
+---
+
+
+
+
+# Sentiment
+
+
+## Random thoughts how to calculate proportions in long data
+
+```{r}
+library(tidyverse)
+
+sentiment_txt_data_tidy <- sentiment_txt_data %>% 
+  tidy_sentiment_txt()
+
+select_sentiments <- c("anticipation", "positive", "negative", "sadness", "fear", "joy", "anger", "disgust", "surprise")
+
+sentiment_txt_data_tidy %>% 
+  select(date, super, division2, 
+         anticipation, positive, negative, sadness, fear, joy, anger, disgust, surprise) %>% 
+  pivot_longer(cols = c(sentiments), 
+               names_to = "sentiment_name", 
+               values_to = "sentiment_check") %>% 
+  group_by(date, super, division2) %>% 
+  mutate(sum_sentiments = sum(sentiment_check))
+
+
+sentiment_txt_data_tidy %>% 
+        tidyr::unnest(cols = all_sentiments) %>% 
+        dplyr::select(date, all_sentiments, super, division2) %>% 
+        tidyr::drop_na() %>% 
+  dplyr::arrange(date) %>% 
+  dplyr::group_by(date, super, division2) %>% 
+  dplyr::mutate(n_sentiment_distinct = n_distinct(all_sentiments))
+```
+
+
+
+
+
+## Chris' idea with rolling mean
+
+Works but not really easy to:
+
+1. generalise to other variables 
+1. calculate proportions based on "filtering" variables like division or category
+
+```{r}
+#ADD CHRIS ROLLING MEAN LINE GRAPH HERE
+
+
+# Define rolling mean function
+rolling_mean <- tibbletime::rollify(mean, window = 30)
+
+
+mean_data <- purrr::map(c("anger", "anticipation", "disgust", "fear", "joy", "negative",
+                          "positive", "sadness", "surprise", "trust"), function(x) {
+                            
+                            sentiment_txt_data_tidy %>%
+                              dplyr::group_by(date) %>%
+                              dplyr::summarise(var_sum = sum(.data[[x]], na.rm = TRUE)) %>%
+                              dplyr::ungroup() %>%
+                              tsibble::tsibble(index = date) %>%
+                              tsibble::fill_gaps(var_sum = 0) %>%
+                              as.data.frame() %>%
+                              dplyr::mutate(roll_var = rolling_mean(var_sum)) %>%
+                              dplyr::select(roll_var) %>%
+                              purrr::set_names(x)
+                          }) %>%
+  do.call(cbind, .)
+
+to_plot <- dplyr::bind_cols(
+  sentiment_txt_data_tidy %>%
+    dplyr::group_by(date) %>%
+    dplyr::summarise(var_sum = sum(anger, na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
+    tsibble::tsibble(index = date) %>%
+    tsibble::fill_gaps(var_sum = 0) %>%
+    as.data.frame() %>%
+    dplyr::select(date),
+  as.data.frame(prop.table(as.matrix(mean_data), 1) * 100)
+)
+
+to_plot %>%
+  tidyr::drop_na() %>%
+  tidyr::pivot_longer(-date) %>%
+  ggplot2::ggplot(ggplot2::aes(x = date,
+                               y = value,
+                               colour = name,
+                               group = name)) +
+  ggplot2::geom_line()
+
+```
+
+
+## Density plot
+
+Works but shows someting different to proportions and might not be what we (or users) are actually interested in
+
+Need to look into this approach `ggplot2::geom_freqpoly(y = (..count..)/sum(..count..)) +` and figure out how exactly it is working
+
+
+```{r}
+library(tidyverse)
+library(scales)
+
+experiencesdashboard::sentiment_txt_data %>% 
+  mutate(date = lubridate::as_date(date)) %>% 
+  tidyr::unnest(cols = all_sentiments) %>% 
+  dplyr::select(date, all_sentiments) %>% 
+  tidyr::drop_na() %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, 
+                               fill = all_sentiments,
+                               colour = all_sentiments)) +
+  ggplot2::geom_density(alpha = .1, size = 1) +
+  # ggplot2::geom_freqpoly(y = (..count..)/sum(..count..)) +
+  ggplot2::scale_x_date() +
+  ggplot2::scale_fill_viridis_d(direction = -1) +
+  ggplot2::scale_colour_viridis_d(direction = -1) +
+  ggplot2::labs(x = "Date", 
+                y = NULL, 
+                fill = "Selected\nsentiments",
+                colour = "Selected\nsentiments") +
+  ggplot2::theme(text = ggplot2::element_text(size = 16))
+```
+
+
+
+
+
+
+
