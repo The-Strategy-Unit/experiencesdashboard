@@ -34,10 +34,13 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
                        data = filter_data()
         )
         
-        rmarkdown::render("report.Rmd", output_format = "word_document",
-                          output_file = "report.docx", 
-                          quiet = TRUE, params = params,
-                          envir = new.env(parent = globalenv())
+        rmarkdown::render(
+          system.file("report.Rmd",
+                      package = "experiencesdashboard"), 
+          output_format = "word_document",
+          output_file = "report.docx", 
+          quiet = TRUE, params = params,
+          envir = new.env(parent = globalenv())
         )
         
         # copy docx to 'file'
