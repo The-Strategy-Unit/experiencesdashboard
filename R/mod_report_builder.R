@@ -38,7 +38,8 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
           system.file("app/www/", "report.Rmd",
                       package = "experiencesdashboard"), 
           output_format = "word_document",
-          output_file = "report.docx", 
+          output_file = system.file("app/www/", "report.docx",
+                                    package = "experiencesdashboard"),
           quiet = TRUE, params = params,
           envir = new.env(parent = globalenv())
         )
