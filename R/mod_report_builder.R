@@ -45,7 +45,9 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         )
         
         # copy docx to 'file'
-        file.copy("report.docx", file, overwrite = TRUE)
+        file.copy(system.file("app/www/", "report.docx",
+                              package = "experiencesdashboard"), 
+                  file, overwrite = TRUE)
       }
     )
   })
