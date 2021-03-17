@@ -35,7 +35,7 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         )
         
         rmarkdown::render(
-          system.file("report.Rmd",
+          system.file("app/www/", "report.Rmd",
                       package = "experiencesdashboard"), 
           output_format = "word_document",
           output_file = "report.docx", 
