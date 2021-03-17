@@ -33,7 +33,7 @@ mod_patient_experience_ui <- function(id){
       ),
       tabPanel(
         "Comment search",
-        p("This module will show and search raw text")
+        mod_search_text_ui("search_text_ui_1")
       )
     )
   )
