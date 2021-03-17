@@ -26,7 +26,7 @@ app_server <- function( input, output, session ) {
         label = h5(strong("Select divisions:")),
         choices = divisions,
         multiple = TRUE,
-        selected = sample(divisions, 1)
+        selected = divisions
       )
     )
   })

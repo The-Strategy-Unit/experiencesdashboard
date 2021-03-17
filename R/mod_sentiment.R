@@ -11,148 +11,98 @@ mod_sentiment_ui <- function(id) {
   ns <- NS(id)
   
   tagList(
-    wellPanel(
+    fluidPage(
       fluidRow(
-        column(12,
-               selectInput(
-                 ns("select_super"),
-                 label = h5(strong("Select categories:")),
-                 choices = list(
-                   "Communication" = "Communication",
-                   "Staff/Staff Attitude" = "Staff/Staff Attitude",
-                   "Environment/Facilities" = "Environment/Facilities",
-                   "Access to Services" = "Access to Services",
-                   "Care/ Treatment" = "Care/ Treatment",
-                   "Couldn't be improved" = "Couldn't be improved",
-                   "Service Quality/Outcomes" = "Service Quality/Outcomes",
-                   "Involvement" = "Involvement",
-                   "Food" = "Food",
-                   "Privacy and Dignity" = "Privacy and Dignity",
-                   "MHA" = "MHA",
-                   "Equality/Diversity" = "Equality/Diversity",
-                   "Smoking" = "Smoking",
-                   "Leave" = "Leave",
-                   "Safety" = "Safety",
-                   "Physical Health" = "Physical Health",
-                   "Record Keeping" = "Record Keeping"
-                 ),
-                 selected = c("Staff/Staff Attitude", 
-                              "Care/ Treatment", 
-                              "Service Quality/Outcomes"),
-                 multiple = TRUE
-               )
+        uiOutput(ns("superUI")),
+        conditionalPanel(condition = 'input.tabs != "comments"', 
+          selectInput(
+            ns("select_sentiment"),
+            label = h5(strong("Select sentiments:")),
+            choices = c(
+              "anger",
+              "anticipation",
+              "disgust",
+              "fear",
+              "joy",
+              "negative",
+              "positive",
+              "sadness",
+              "surprise",
+              "trust"
+            ),
+            multiple = TRUE,
+            selected = c("anger", 
+                         "fear", 
+                         "negative",
+                         "sadness")
+          )
         )
-      ), 
-      style = "padding: 5px;"),
-    
-    tabsetPanel(
-      type = "tabs",
-      tabPanel("Comments",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL, 
-                          background = "light-blue",
-                          textOutput(ns("show_comments_box"))
-                        )
-                 )
-               ),
-               fluidRow(
-                 column(6,
-                        selectInput(
-                          ns("select_sentiment_txt"),
-                          label = h5(strong("Select combination of sentiments:")),
-                          choices = list(
-                            "anger" = "anger",
-                            "anticipation" = "anticipation",
-                            "disgust" = "disgust",
-                            "fear" = "fear",
-                            "joy" = "joy",
-                            "negative" = "negative",
-                            "positive" = "positive",
-                            "sadness" = "sadness",
-                            "surprise" = "surprise",
-                            "trust" = "trust"
-                          ),
-                          multiple = TRUE,
-                          selected = c("negative", "sadness")
-                        )
-                 )
-               ),
-               fluidRow(
-                 column(12,
-                        reactable::reactableOutput(ns("sentiment_table"))
-                 )
-               )
       ),
-      tabPanel("Timeline",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL, 
-                          background = "light-blue",
-                          textOutput(ns("change_time_sentiments_txt"))
-                        )
-                 )
-               ),
-               fluidRow(
-                 column(3,
-                        selectInput(ns("select_sentiment_plot_facet"), 
-                                    label = h5(strong("Divide plot by:")), 
-                                    choices = list("Category" = 1, 
-                                                   "Division" = 2, 
-                                                   "Division and category" = 3), 
-                                    selected = 1),
+      
+      tabsetPanel(id = "tabs",
+        type = "tabs",
+        tabPanel("Comments", value = "comments",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL, 
+                            background = "light-blue",
+                            textOutput(ns("show_comments_box"))
+                          )
+                   )
                  ),
-                 column(3,
-                        selectInput(ns("select_sentiment_plot_position"), 
-                                    label = h5(strong("Show proportion or total:")),
-                                    choices = c("Proportion" = "fill",
-                                                "Totals" = "stack"),
-                                    selected = "stack"
-                        )
+                 fluidRow(
+                   column(12,
+                          reactable::reactableOutput(ns("sentiment_table"))
+                   )
+                 )
+        ),
+        tabPanel("Timeline",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL, 
+                            background = "light-blue",
+                            textOutput(ns("change_time_sentiments_txt"))
+                          )
+                   )
                  ),
-                 column(3,
-                        selectInput(
-                          ns("select_sentiment_plot"),
-                          label = h5(strong("Select sentiments:")),
-                          choices = list(
-                            "anger" = "anger",
-                            "anticipation" = "anticipation",
-                            "disgust" = "disgust",
-                            "fear" = "fear",
-                            "joy" = "joy",
-                            "negative" = "negative",
-                            "positive" = "positive",
-                            "sadness" = "sadness",
-                            "surprise" = "surprise",
-                            "trust" = "trust"
-                          ),
-                          multiple = TRUE,
-                          selected = c("anger", 
-                                       "fear", 
-                                       "negative",
-                                       "sadness")
-                        )
+                 fluidRow(
+                   column(3,
+                          selectInput(ns("select_sentiment_plot_facet"), 
+                                      label = h5(strong("Divide plot by:")), 
+                                      choices = list("Category" = 1, 
+                                                     "Division" = 2, 
+                                                     "Division and category" = 3), 
+                                      selected = 1),
+                   ),
+                   column(3,
+                          selectInput(ns("select_sentiment_plot_position"), 
+                                      label = h5(strong("Show proportion or total:")),
+                                      choices = c("Proportion" = "fill",
+                                                  "Totals" = "stack"),
+                                      selected = "stack"
+                          )
+                   )      
+                 ),
+                 plotOutput(ns("sentiment_plot_time"))
+        ),
+        tabPanel("Sentiment combinations",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL, 
+                            background = "light-blue",
+                            textOutput(ns("combination_sentiments_txt"))
+                          )
+                   )
+                 ),
+                 plotOutput(ns("sentiment_plot_upset")
                  )
-               ),
-               plotOutput(ns("sentiment_plot_time"))
-      ),
-      tabPanel("Sentiment combinations",
-               br(),
-               fluidRow(
-                 column(12,
-                        box(
-                          width = NULL, 
-                          background = "light-blue",
-                          textOutput(ns("combination_sentiments_txt"))
-                        )
-                 )
-               ),
-               plotOutput(ns("sentiment_plot_upset")
-               )
+        )
       )
     )
   )
@@ -167,25 +117,50 @@ mod_sentiment_server <- function(id, filter_sentiment){
     
     ns <- session$ns
     
+    output$superUI <- renderUI({
+      
+      super_choices <- na.omit(unique(filter_sentiment()$super))
+      
+      super_selected <- filter_sentiment() %>% 
+        dplyr::count(super) %>% 
+        dplyr::arrange(desc(n)) %>% 
+        head(5) %>% 
+        dplyr::pull(super)
+      
+      selectInput(
+        session$ns("select_super"),
+        label = h5(strong("Select categories")),
+        choices = super_choices,
+        selected = super_selected,
+        multiple = TRUE,
+        width = "100%"
+      )
+    })
+    
     # Create reactive dataframe ----
     sentiment_txt_data_tidy_r <- reactive({
       
       sentiment_txt_data_tidy <- tidy_sentiment_txt(filter_sentiment())
       
-      sentiment_txt_data_tidy %>% 
-        dplyr::filter(super %in% input$select_super)
+      if(isTruthy(input$select_super)){
+        
+        sentiment_txt_data_tidy <- sentiment_txt_data_tidy %>% 
+          dplyr::filter(super %in% input$select_super)
+      }
+
+      return(sentiment_txt_data_tidy)
     })
     
     # Create upset plot ----
     output$sentiment_plot_upset <- renderPlot({
       
       UpSetR::upset(data = as.data.frame(sentiment_txt_data_tidy_r()
-                                         [, c("year", "anger", "anticipation", 
-                                              "disgust", "fear", "joy", "negative", 
-                                              "positive", "sadness", "surprise", 
-                                              "trust")]), 
+                                         [, c("year", "anger", "anticipation",
+                                              "disgust", "fear", "joy", "negative",
+                                              "positive", "sadness", "surprise",
+                                              "trust")]),
                     nintersects = 15,
-                    sets = c("anger", "anticipation", "disgust", "fear", "joy", 
+                    sets = c("anger", "anticipation", "disgust", "fear", "joy",
                              "negative", "positive", "sadness", "surprise", "trust"),
                     order.by = "freq",
                     text.scale = 1.5
@@ -205,7 +180,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
       
       sentiment_plot_time_temp <- sentiment_txt_data_tidy_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
-        dplyr::filter(all_sentiments %in% input$select_sentiment_plot) %>% 
+        dplyr::filter(all_sentiments %in% input$select_sentiment) %>% 
         dplyr::select(date, all_sentiments, super, division) %>% 
         tidyr::drop_na() %>% 
         dplyr::mutate(all_sentiments = factor(x = all_sentiments,
@@ -245,19 +220,21 @@ mod_sentiment_server <- function(id, filter_sentiment){
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
+      req(nrow(sentiment_txt_data_tidy_r()) > 0)
+
       filtered_comments <- sentiment_txt_data_tidy_r() %>% 
         dplyr::select(id, all_sentiments, improve) %>% 
         # First get number of total sentiments in all comments
         dplyr::mutate(length = lengths(all_sentiments),
                       all_sentimtents_unnest = all_sentiments) %>%
         # Now filter for number of selected sentiments
-        dplyr::filter(length == length(input$select_sentiment_txt)) %>%
+        dplyr::filter(length == length(input$select_sentiment)) %>%
         # Unnest to create long version of data
         tidyr::unnest(cols = all_sentimtents_unnest) %>% 
         # Group by comment id so that every computation is now for each comment
         dplyr::group_by(id) %>% 
         dplyr::mutate(test_sentiment = dplyr::case_when(
-          all_sentimtents_unnest %in% input$select_sentiment_txt ~ TRUE),
+          all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
           sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
         # Filter comments that match the selected sentiments
@@ -297,9 +274,3 @@ mod_sentiment_server <- function(id, filter_sentiment){
   })
   
 }
-
-## To be copied in the UI
-# mod_sentiment_ui("mod_sentiment_ui_1")
-
-## To be copied in the server
-# mod_sentiment_server("mod_sentiment_ui_1")
