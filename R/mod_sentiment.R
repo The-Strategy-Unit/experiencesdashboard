@@ -14,32 +14,34 @@ mod_sentiment_ui <- function(id) {
     fluidPage(
       fluidRow(
         uiOutput(ns("superUI")),
-        selectInput(
-          ns("select_sentiment"),
-          label = h5(strong("Select sentiments:")),
-          choices = c(
-            "anger",
-            "anticipation",
-            "disgust",
-            "fear",
-            "joy",
-            "negative",
-            "positive",
-            "sadness",
-            "surprise",
-            "trust"
-          ),
-          multiple = TRUE,
-          selected = c("anger", 
-                       "fear", 
-                       "negative",
-                       "sadness")
+        conditionalPanel(condition = 'input.tabs != "comments"', 
+          selectInput(
+            ns("select_sentiment"),
+            label = h5(strong("Select sentiments:")),
+            choices = c(
+              "anger",
+              "anticipation",
+              "disgust",
+              "fear",
+              "joy",
+              "negative",
+              "positive",
+              "sadness",
+              "surprise",
+              "trust"
+            ),
+            multiple = TRUE,
+            selected = c("anger", 
+                         "fear", 
+                         "negative",
+                         "sadness")
+          )
         )
       ),
       
-      tabsetPanel(
+      tabsetPanel(id = "tabs",
         type = "tabs",
-        tabPanel("Comments",
+        tabPanel("Comments", value = "comments",
                  br(),
                  fluidRow(
                    column(12,
