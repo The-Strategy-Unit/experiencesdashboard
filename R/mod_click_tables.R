@@ -28,7 +28,7 @@ mod_click_tables_server <- function(id, filter_data, comment_type){
       calculate_table(
         table_data = filter_data(), 
         count_column = "super_category",
-        comment_type = "improve", 
+        comment_type = comment_type(),
         click_column = NULL
       )
     })
