@@ -83,7 +83,8 @@ sentiment_txt_data$date <- sample(tidy_trust_data$date,
 
 sentiment_txt_data <- sentiment_txt_data %>% 
   dplyr::mutate(division = dplyr::recode(division, 
-                          "Local partnerships- CH" = "General health services"))
+                          "Local partnerships- CH" = "General health services",
+                          "Forensic services" = "Forensic"))
 
 usethis::use_data(sentiment_txt_data, overwrite = TRUE)
 
