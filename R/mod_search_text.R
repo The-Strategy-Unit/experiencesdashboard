@@ -11,21 +11,23 @@ mod_search_text_ui <- function(id){
   ns <- NS(id)
   tagList(
     
-    p("Text searches are combined with OR- searching AND will be in a 
+    fluidPage(
+      p("Text searches are combined with OR- searching AND will be in a 
       future release"),
-    p("Add multiple search terms with comma"),
-    fluidRow(
-      textInput(ns("text_search"), "Search term(s)",
-                placeholder = "e.g. staff, doctor, nurse")
-    ),
-    fluidRow(
-      column(6,
-             h2("What could we improve?"),
-             htmlOutput(ns("imp_text"))
+      p("Add multiple search terms with comma"),
+      fluidRow(
+        textInput(ns("text_search"), "Search term(s)",
+                  placeholder = "e.g. staff, doctor, nurse")
       ),
-      column(6,
-             h2("What did we do well?"),
-             htmlOutput(ns("best_text"))
+      fluidRow(
+        column(6,
+               h2("What could we improve?"),
+               htmlOutput(ns("imp_text"))
+        ),
+        column(6,
+               h2("What did we do well?"),
+               htmlOutput(ns("best_text"))
+        )
       )
     )
   )
