@@ -71,6 +71,7 @@ usethis::use_test( "fft" )
 usethis::use_test( "sentiment_tidy" )
 usethis::use_test( "show_text" )
 usethis::use_test( "search_text" )
+usethis::use_test( "calculate_table" )
 
 # Documentation
 
