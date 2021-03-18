@@ -39,6 +39,7 @@ usethis::use_package( "waiter" )
 usethis::use_package( "shinyjqui" )
 usethis::use_package( "timevis" )
 usethis::use_package( "rmarkdown" )
+usethis::use_package( "pander" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
