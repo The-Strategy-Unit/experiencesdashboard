@@ -1,6 +1,6 @@
 Package: experiencesdashboard
 Title: Patient Experiences Dashboard
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(person('Milan', 'Wiedemann', email = 'milan.wiedemann@gmail.com', 
     role = c('cre', 'aut')),
     person('Chris', 'Beeley', email = 'chris.beeley@gmail.com', 
