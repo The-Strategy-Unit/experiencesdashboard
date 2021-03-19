@@ -16,17 +16,17 @@ app_server <- function( input, output, session ) {
     max_date <- max(tidy_trust_data$date)
     
     tagList(
-      dateRangeInput(
-        "date_range",
-        label = h5(strong("Select date range:")),
-        start = "2020-10-01"
-      ),
       selectInput(
         "select_division",
         label = h5(strong("Select divisions:")),
         choices = divisions,
         multiple = TRUE,
         selected = divisions
+      ),
+      dateRangeInput(
+        "date_range",
+        label = h5(strong("Select date range:")),
+        start = "2020-10-01"
       )
     )
   })
