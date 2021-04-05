@@ -9,8 +9,6 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
 
-The goal of `experiencesdashboard` is to …
-
 ## Installation
 
 The development version is available from GitHub with:
@@ -19,6 +17,26 @@ The development version is available from GitHub with:
 # install.packages("devtools")
 # devtools::install_github("CDU-data-science-team/experiencesdashboard")
 ```
+
+## Running
+
+Run with:
+
+``` r
+library(experiencesdashboard)
+run_app()
+```
+
+There is a known bug where the report button does not work when the
+application is downloaded as a package (as opposed to being cloned and
+run). It relates to the file location of report.Rmd and if you know how
+to fix this bug please make a PR 😁.
+
+A hosted version can be found
+[here](https://involve.nottshc.nhs.uk:8443/experiencesdashboard/).
+Please note the some of the data has been modified for the purposes of
+demonstration so it should NOT be used for reporting and is not accurate
+in several important ways.
 
 ## Code of Conduct
 

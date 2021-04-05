@@ -14,7 +14,7 @@ mod_sentiment_ui <- function(id) {
     fluidPage(
       fluidRow(
         uiOutput(ns("superUI")),
-        conditionalPanel(condition = 'input.tabs != "comments"', 
+        conditionalPanel(condition = 'input.tabs != "upset"', 
           selectInput(
             ns("select_sentiment"),
             label = h5(strong("Select sentiments:")),
@@ -90,6 +90,7 @@ mod_sentiment_ui <- function(id) {
                  plotOutput(ns("sentiment_plot_time"))
         ),
         tabPanel("Sentiment combinations",
+                 value = "upset",
                  br(),
                  fluidRow(
                    column(12,

@@ -2,73 +2,17 @@
 
 ## Load packages ----
 library(tidyverse)
-library(janitor)
-library(odbc)
+library(nottshc)
 
 ## MySQL ----
 
-con <- DBI::dbConnect(odbc::odbc(),
-                      Driver   = "MySQL ODBC 8.0 Unicode Driver",
-                      Server   = Sys.getenv("HOST_NAME"),
-                      UID      = Sys.getenv("DB_USER"),
-                      PWD      = Sys.getenv("MYSQL_PASSWORD"),
-                      Port     = 3306,
-                      database = "SUCE")
+con_open <- suppressMessages(connect_mysql(open_data = TRUE))
 
-trustData = dbGetQuery(con, 
-                       "SELECT * FROM Local INNER JOIN Teams 
-                       INNER JOIN Directorates ON Directorates.DirC = Teams.Directorate
-                       WHERE Local.TeamC = Teams.TeamC
-                       AND Local.Date >= Teams.date_from 
-                       AND Local.Date <= Teams.date_to
-                       AND Local.Date >= Directorates.date_from 
-                       AND Local.Date <= Directorates.date_to
-                       AND Date > '2020-10-01' 
-                       AND (Optout = 'No' OR Optout IS NULL)")
+trustData <- get_px_exp(con_open, from = "2020-10-01",
+                        open_data = TRUE,
+                        return = "tbl_df")
 
-# Tidy variable names
-trustData <- trustData %>%
-  janitor::clean_names()
-
-categoriesTable <- dbGetQuery(con, "SELECT * from NewCodes") %>%
-  janitor::clean_names() %>% 
-  mutate(subcategory = paste0(category, ": ", subcategory))
-
-# combine theme codes
-
-trustData <- trustData %>% 
-  dplyr::na_if(9) %>% 
-  dplyr::mutate(across(where(is.character), ~na_if(., "Unknown"))) %>% 
-  dplyr::mutate(across(where(is.character), ~na_if(., "XX"))) %>% 
-  dplyr::mutate(key_user = 1 : nrow(.))
-
-trustData <- bind_cols(
-  trustData %>% 
-    tidyr::pivot_longer(cols = c("improve", "best"), 
-                        names_to = "comment_type",
-                        values_to = "comment_txt"),
-  trustData %>% 
-    tidyr::pivot_longer(cols = c("imp_crit", "best_crit"), 
-                        names_to = "crit_type",
-                        values_to = "crit") %>% 
-    select(crit_type, crit)
-) %>% 
-  dplyr::rowwise() %>% 
-  dplyr::mutate(impcodes = list(na.omit(c(imp_n1, imp_n2)))) %>% 
-  dplyr::select(-imp_n1, -imp_n2) %>% 
-  tidyr::unnest(impcodes) %>% 
-  dplyr::left_join(categoriesTable, by = c("impcodes" = "code"))
-
-tidy_trust_data <- trustData %>% 
-  dplyr::select(key_user, date, team_n, 
-                directorate = dir_t, division = division2,
-                comment_txt, comment_type,
-                crit, 
-                super_category = category, category = subcategory, 
-                service) %>% 
-  dplyr::mutate(key_comment = paste0(key_user, "_", comment_type)) %>% 
-  # only keep comments that are within possible range or NA
-  filter(crit %in% -5 : 5 | is.na(crit) == TRUE)
+tidy_trust_data <- tidy_px_exp(trustData)
 
 usethis::use_data(tidy_trust_data, overwrite = TRUE)
 
