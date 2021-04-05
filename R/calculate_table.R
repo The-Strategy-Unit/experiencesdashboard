@@ -16,9 +16,9 @@ calculate_table <- function(table_data, count_column,
   }
   
   table_data %>% 
-    dplyr::filter(comment_type == comment_type) %>% 
-    dplyr::filter(category != "Miscellaneous: Nothing was good/bad" &
-                    comment_type == "improve") %>% 
+    dplyr::filter(comment_type == rlang::expr(!!comment_type)) %>%
+    dplyr::filter(!(category == "Miscellaneous: Nothing was good/bad" &
+                      comment_type == "improve")) %>% 
     dplyr::count(.data[[count_column]]) %>%
     purrr::set_names(c("Category", "n")) %>% 
     dplyr::filter(!is.na(Category)) %>%
