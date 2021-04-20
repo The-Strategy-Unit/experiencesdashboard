@@ -72,7 +72,7 @@ app_server <- function( input, output, session ) {
   
   mod_click_tables_server("click_tables_ui_1",
                           filter_data = filter_data,
-                          comment_type = "improve")
+                          comment_type = "imp")
   
   mod_click_tables_server("click_tables_ui_2",
                           filter_data = filter_data,

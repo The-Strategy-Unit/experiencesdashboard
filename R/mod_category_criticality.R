@@ -102,7 +102,7 @@ mod_category_criticality_server <- function(id, filter_data){
       
       req(input$tabset != "summary")
 
-      choices <- na.omit(unique(tidy_trust_data$super_category))
+      choices <- na.omit(unique(tidy_trust_data$category))
       
       selectInput(
         session$ns("select_super"),
@@ -117,14 +117,14 @@ mod_category_criticality_server <- function(id, filter_data){
     tidy_trust_data_r <- reactive({
       
       filter_data() %>%
-        dplyr::filter(super_category %in% input$select_super)
+        dplyr::filter(category %in% input$select_super)
     })
     
     # Create sentiment plot over time ----
     output$category_crit_time_plot <- renderPlot({
       category_crit_time_plot <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
-        tidyr::drop_na(super_category) %>% 
+        tidyr::drop_na(category) %>% 
         ggplot2::ggplot(ggplot2::aes(x = date, 
                                      fill = factor(crit, exclude = NA))) +
         ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram,
@@ -149,7 +149,7 @@ mod_category_criticality_server <- function(id, filter_data){
       # Add facet ----
       if (input$category_crit_time_facet == 1) {
         category_crit_time_plot +
-          ggplot2::facet_grid(super_category ~ factor(comment_type, 
+          ggplot2::facet_grid(category ~ factor(comment_type, 
                                                       levels = c("best", 
                                                                  "improve"),
                                                       labels = c("What was good?", 
@@ -186,7 +186,6 @@ mod_category_criticality_server <- function(id, filter_data){
       
       reactable::reactable(
         dplyr::sample_n(best_comments, n_table_best),
-        # groupBy = "super_category",
         borderless = TRUE,
         highlight = TRUE,
         showSortIcon = FALSE,
@@ -194,10 +193,6 @@ mod_category_criticality_server <- function(id, filter_data){
         pageSizeOptions = c(10, 15, 20, 25, 30),
         defaultPageSize = 10,
         columns = list(
-          # super_category = reactable::colDef(minWidth = 2, 
-          #                                    sortable = FALSE,
-          #                                    filterable = FALSE,
-          #                                    name = "Category"),
           comment_txt = reactable::colDef(minWidth = 5.5, 
                                           sortable = FALSE, 
                                           filterable = TRUE,
@@ -230,8 +225,8 @@ mod_category_criticality_server <- function(id, filter_data){
         n_table_imp <- nrow(improve_comments)
       }
       
-      reactable::reactable(dplyr::sample_n(improve_comments, n_table_imp),
-                           # groupBy = "super_category",
+      reactable::reactable(
+        dplyr::sample_n(improve_comments, n_table_imp),
                            borderless = TRUE,
                            highlight = TRUE,
                            showSortIcon = FALSE,
@@ -240,9 +235,6 @@ mod_category_criticality_server <- function(id, filter_data){
                            pageSizeOptions = c(10, 15, 20, 25, 30), 
                            defaultPageSize = 10,
                            columns = list(
-                             # super_category = reactable::colDef(minWidth = 2, 
-                             #                                 sortable = FALSE, 
-                             #                                 name = "Category"),
                              comment_txt = reactable::colDef(minWidth = 5.5, 
                                                              sortable = FALSE, 
                                                              name = "What could we do better?"),

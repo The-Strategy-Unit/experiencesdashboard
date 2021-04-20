@@ -4,7 +4,7 @@ show_text <- function(data, filter_by_column, filter_by_text, comment_type_filte
     data %>%
       dplyr::filter(comment_type == comment_type_filter,
                     .data[[filter_by_column]] == filter_by_text) %>% 
-      dplyr::distinct(key_comment, .keep_all = TRUE) %>%
+      dplyr::distinct(comment_key, .keep_all = TRUE) %>%
       dplyr::pull(comment_txt) %>%
       paste0("<p>", ., "</p>")
   )

@@ -11,7 +11,7 @@ returnSearchText <- function(text_data, filter_text, comment_type_filter){
     dplyr::filter(grepl(paste(
       trimws(unlist(strsplit(searchTextInclude, ","))), 
       collapse = "|"), comment_txt)) %>% 
-    dplyr::distinct(key_comment, .keep_all = TRUE) %>%
+    dplyr::distinct(comment_key, .keep_all = TRUE) %>%
     dplyr::pull(comment_txt) %>%
     paste0("<p>", ., "</p>")
   

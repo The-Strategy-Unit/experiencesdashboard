@@ -3,16 +3,16 @@
 ## Load packages ----
 library(tidyverse)
 library(nottshc)
+library(nottshcMethods)
 
 ## MySQL ----
 
-con_open <- suppressMessages(connect_mysql(open_data = TRUE))
+open_db_data <- get_px_exp(from = "2020-10-01",
+                           open_data = TRUE)
 
-trustData <- get_px_exp(con_open, from = "2020-10-01",
-                        open_data = TRUE,
-                        return = "tbl_df")
-
-tidy_trust_data <- tidy_px_exp(trustData)
+tidy_trust_data <- tidy_px_exp(open_db_data) %>% 
+  arrange(date) %>% 
+  collect()
 
 usethis::use_data(tidy_trust_data, overwrite = TRUE)
 

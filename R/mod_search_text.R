@@ -48,7 +48,7 @@ mod_search_text_server <- function(id, filter_data){
       
       returnSearchText(text_data = filter_data(), 
                        filter_text = input$text_search, 
-                       comment_type_filter = "improve")
+                       comment_type_filter = "imp")
     })
     
     output$best_text <- renderText({
