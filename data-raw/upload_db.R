@@ -13,9 +13,9 @@ new_codes <- dplyr::tbl(con, dbplyr::in_schema("SUCE", "NewCodes")) %>%
 
 # function to produce probabilities for sampling
 
-make_prob <- function(values){
+sample_vector <- function(values, weights, length){
   
-  values / sum(values)
+  sample(values, length, replace = TRUE, prob = weights / sum(weights))
 }
 
 # trust b----
@@ -69,8 +69,8 @@ trust_b <- read_excel(
   select(location_1 : location_3, fft, comment, code, criticality, patient_carer) %>% 
   left_join(new_codes, by = "code") %>% 
   mutate(across(starts_with("location"), ~ nottshcMethods::hash(.x, n_char = 8))) %>% 
-  mutate(fft = sample(c(NA, 1 : 5), n(), replace = TRUE, 
-                      prob = make_prob(c(1, 2, 3, 4, 7, 9))))
+  mutate(fft = sample_vector(values = c(NA, 1 : 5), weights = c(1, 2, 3, 4, 7, 9), 
+                             dplyr::n()))
 
 # trust c----
 
@@ -82,8 +82,7 @@ trust_c <- read_xlsx("data-raw/TrustC.xlsx") %>%
   mutate(
     criticality = as.numeric(criticality),
     code = tolower(code)) %>%
-  mutate(fft = sample(c(NA, 1 : 5), n(), replace = TRUE, 
-                      prob = make_prob(c(1, 2, 3, 4, 7, 9))),
+  mutate(fft = sample_vector(values = c(NA, 1 : 5), weights = c(1, 2, 3, 4, 7, 9), dplyr::n()),
          criticality = case_when(
            criticality > 5 ~ NA_real_,
            criticality < -5 ~ NA_real_,
@@ -94,31 +93,67 @@ trust_c <- read_xlsx("data-raw/TrustC.xlsx") %>%
 
 # demographics----
 
-# gender
+trust_b <- trust_b %>% 
+  mutate(gender = sample_vector(values = c(NA, "Male", "Female", "Other"),
+                                weights = c(10, 50, 50, 2),
+                                length = dplyr::n())) %>% 
+  mutate(age = sample_vector(values = c("Up to 25", "26 - 35", "36 - 45", "46 - 55", 
+                                        "56 - 65", "65-74",  "75-84", "85-94", "95 plus"),
+                             weights = c(9 : 1),
+                             length = dplyr::n())) %>% 
+  mutate(ethnicity = sample_vector(values = c("Asian", "Black / African / Caribbean", 
+                                              "Mixed / Multiple ethnic group", 
+                                              "Other ethnic group", "White", 
+                                              "Not recorded"),
+                                   weights = c(4, 2, 4, 1, 15, 8),
+                                   length = dplyr::n())) %>% 
+  mutate(sexuality = sample_vector(values = c("Bisexual", "Gay man", "Gay woman / lesbian", 
+                                              "Heterosexual", "Heterosexual / straight", 
+                                              "Other", "Prefer not to say", 
+                                              "Prefer to self-describe:", "Not recorded"),
+                                   weights = c(2, 2, 2, 7, 9, 1, 5, 2, 8),
+                                   length = dplyr::n())) %>% 
+  mutate(patient_carer = sample_vector(values = c("Carer", "Parent", "Patient", 
+                                                  "Not recorded"),
+                                       weights = c(5, 3, 20, 10),
+                                       length = dplyr::n())) %>% 
+  mutate(disability = sample_vector(values = c("No", "Not limited", "Yes, limited a little", 
+                                               "Yes, limited a lot", 
+                                               "Prefer not to say", "Not recorded"),
+                                    weights = c(20, 20, 10, 5, 5, 10),
+                                    length = dplyr::n()))
 
-c("Male", "Female", "Other")
+trust_c <- trust_c %>% 
+  mutate(gender = sample_vector(values = c(NA, "Male", "Female", "Other"),
+                            weights = c(10, 50, 50, 2),
+                            length = dplyr::n())) %>% 
+  mutate(age = sample_vector(values = c("Up to 25", "26 - 35", "36 - 45", "46 - 55", 
+                                        "56 - 65", "65-74",  "75-84", "85-94", "95 plus"),
+                             weights = c(9 : 1),
+                             length = dplyr::n())) %>% 
+  mutate(ethnicity = sample_vector(values = c("Asian", "Black / African / Caribbean", 
+                                              "Mixed / Multiple ethnic group", 
+                                              "Other ethnic group", "White", 
+                                              "Not recorded"),
+                                   weights = c(4, 2, 4, 1, 15, 8),
+                                   length = dplyr::n())) %>% 
+  mutate(sexuality = sample_vector(values = c("Bisexual", "Gay man", "Gay woman / lesbian", 
+                                              "Heterosexual", "Heterosexual / straight", 
+                                              "Other", "Prefer not to say", 
+                                              "Prefer to self-describe:", "Not recorded"),
+                                   weights = c(2, 2, 2, 7, 9, 1, 5, 2, 8),
+                                   length = dplyr::n())) %>% 
+  mutate(patient_carer = sample_vector(values = c("Carer", "Parent", "Patient", 
+                                                  "Not recorded"),
+                                       weights = c(5, 3, 20, 10),
+                                       length = dplyr::n())) %>% 
+  mutate(disability = sample_vector(values = c("No", "Not limited", "Yes, limited a little", 
+                                               "Yes, limited a lot", 
+                                               "Prefer not to say", "Not recorded"),
+                                    weights = c(20, 20, 10, 5, 5, 10),
+                                    length = dplyr::n()))
 
-# age
+usethis::use_data(trust_b)
 
-c("Up to 25", "26 - 35", "36 - 45", "46 - 55", "56 - 65", "65-74", 
-  "75-84", "85-94", "95 plus")
+usethis::use_data(trust_c)
 
-# ethnicity
-
-c("Asian", "Black / African / Caribbean", "Mixed / Multiple ethnic group", 
-  "Other ethnic group", "White", "Not recorded")
-
-# sexuality
-
-c("Bisexual", "Gay man", "Gay woman / lesbian", "Heterosexual", 
-  "Heterosexual / straight", "Other", "Prefer not to say", 
-  "Prefer to self-describe:", "Not recorded")
-
-# patient/ carer
-
-c("Carer", "Parent", "Patient", "Not recorded")
-
-# disability
-
-c("No", "Not limited", "Yes, limited a little", "Yes, limited a lot", 
-  "Prefer not to say", "Not recorded")
