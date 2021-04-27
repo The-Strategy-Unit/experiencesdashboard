@@ -153,7 +153,6 @@ trust_c <- trust_c %>%
                                     weights = c(20, 20, 10, 5, 5, 10),
                                     length = dplyr::n()))
 
-usethis::use_data(trust_b)
-
-usethis::use_data(trust_c)
-
+# usethis::use_data(trust_b)
+# 
+# usethis::use_data(trust_c)
