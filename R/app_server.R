@@ -7,13 +7,32 @@
 app_server <- function( input, output, session ) {
   # List the first level callModules here
   
-  # render the inputs
+  # fetch data
+  
+  pool <- pool::dbPool(drv = odbc::odbc(),
+                       driver = "Maria DB",
+                       server = Sys.getenv("HOST_NAME"),
+                       UID = Sys.getenv("DB_USER"),
+                       PWD = Sys.getenv("MYSQL_PASSWORD"),
+                       database = "TEXT_MINING",
+                       Port = 3306)
+  
+  db_data <- dplyr::tbl(pool, dbplyr::in_schema("TEXT_MINING", "trust_a"))
+  
+  # render ALL the inputs
   
   output$filter_dataUI <- renderUI({
     
-    divisions <- na.omit(unique(tidy_trust_data$division))
+    dates <- db_data %>% 
+      dplyr::summarise(min_date = min(Date),
+                       max_date = max(Date)) %>% 
+      dplyr::collect()
     
-    max_date <- max(tidy_trust_data$date)
+    divisions <- db_data %>% 
+      dplyr::distinct(division) %>% 
+      dplyr::mutate(division = dplyr::na_if(division, "Unknown")) %>% 
+      dplyr::filter(!is.na(division)) %>% 
+      dplyr::pull(division)
     
     tagList(
       selectInput(
@@ -26,7 +45,8 @@ app_server <- function( input, output, session ) {
       dateRangeInput(
         "date_range",
         label = h5(strong("Select date range:")),
-        start = "2020-10-01"
+        start = dates$min_date,
+        end = dates$max_date
       )
     )
   })
@@ -42,10 +62,11 @@ app_server <- function( input, output, session ) {
   # Create reactive data ----
   filter_data <- reactive({
     
-    tidy_trust_data %>%
-      dplyr::filter(date > input$date_range[1], 
-                    date < input$date_range[2]) %>%
-      dplyr::filter(division %in% input$select_division)
+    db_data %>%
+      dplyr::filter(date > !!input$date_range[1], 
+                    date < !!input$date_range[2]) %>%
+      dplyr::filter(division %in% !!input$select_division) %>% 
+      dplyr::collect()
   })
   
   filter_sentiment <- reactive({
@@ -55,7 +76,7 @@ app_server <- function( input, output, session ) {
                     date < input$date_range[2]) %>%
       dplyr::filter(division %in% input$select_division)
   })
-
+  
   mod_patient_experience_server("patient_experience_ui_1")
   
   mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
@@ -77,7 +98,7 @@ app_server <- function( input, output, session ) {
   mod_click_tables_server("click_tables_ui_2",
                           filter_data = filter_data,
                           comment_type = "best")
-
+  
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)
 }

@@ -22,66 +22,66 @@ mod_category_criticality_ui <- function(id){
       ),
       
       tabsetPanel(id = ns("tabset"),
-        type = "tabs",
-        tabPanel("Summary", value = "summary",
-                 fluidRow(
-                   column(6, h2("What could we improve?"),
-                          p("Click a row to see comments related to that category"),
-                          mod_click_tables_ui("click_tables_ui_1")),
-                   column(6, h2("What did we do well?"),
-                          p("Click a row to see comments related to that category"),
-                          mod_click_tables_ui("click_tables_ui_2"))
-                 )
-        ),
-        tabPanel("Comments", value = "comments",
-                 br(),
-                 fluidRow(
-                   column(12,
-                          box(
-                            width = NULL,
-                            background = "light-blue",
-                            textOutput(ns("category_crit_table_txt"))
-                          )
-                   )
-                 ),
-                 fluidRow(
-                   column(6,
-                          reactable::reactableOutput(ns("best_table"))
-                   ),
-                   column(6,
-                          reactable::reactableOutput(ns("improve_table"))
-                   )
-                 )
-        ),
-        tabPanel("Timeline", value = "timeline",
-                 br(),
-                 fluidRow(
-                   column(12,
-                          box(
-                            width = NULL,
-                            background = "light-blue",
-                            textOutput(ns("category_crit_time_plot_txt"))
-                          )
-                   )
-                 ),
-                 fluidRow(
-                   column(3,
-                          selectInput(ns("category_crit_time_facet"), 
-                                      label = h5(strong("Divide plot by:")), 
-                                      choices = list("Comment and category" = 1, 
-                                                     "Comment and division" = 2), 
-                                      selected = 1)
-                   ),
-                   column(3,
-                          selectInput(ns("category_crit_time_geom_histogram"), 
-                                      label = h5(strong("Show proportion or total:")), 
-                                      choices = list("Proportion" = "fill",
-                                                     "Total" = "stack"), 
-                                      selected = "stack")
-                   )
-                 ),
-                 plotOutput(ns("category_crit_time_plot"))
-        )
+                  type = "tabs",
+                  tabPanel("Summary", value = "summary",
+                           fluidRow(
+                             column(6, h2("What could we improve?"),
+                                    p("Click a row to see comments related to that category"),
+                                    mod_click_tables_ui("click_tables_ui_1")),
+                             column(6, h2("What did we do well?"),
+                                    p("Click a row to see comments related to that category"),
+                                    mod_click_tables_ui("click_tables_ui_2"))
+                           )
+                  ),
+                  tabPanel("Comments", value = "comments",
+                           br(),
+                           fluidRow(
+                             column(12,
+                                    box(
+                                      width = NULL,
+                                      background = "light-blue",
+                                      textOutput(ns("category_crit_table_txt"))
+                                    )
+                             )
+                           ),
+                           fluidRow(
+                             column(6,
+                                    reactable::reactableOutput(ns("best_table"))
+                             ),
+                             column(6,
+                                    reactable::reactableOutput(ns("improve_table"))
+                             )
+                           )
+                  ),
+                  tabPanel("Timeline", value = "timeline",
+                           br(),
+                           fluidRow(
+                             column(12,
+                                    box(
+                                      width = NULL,
+                                      background = "light-blue",
+                                      textOutput(ns("category_crit_time_plot_txt"))
+                                    )
+                             )
+                           ),
+                           fluidRow(
+                             column(3,
+                                    selectInput(ns("category_crit_time_facet"), 
+                                                label = h5(strong("Divide plot by:")), 
+                                                choices = list("Comment and category" = 1, 
+                                                               "Comment and division" = 2), 
+                                                selected = 1)
+                             ),
+                             column(3,
+                                    selectInput(ns("category_crit_time_geom_histogram"), 
+                                                label = h5(strong("Show proportion or total:")), 
+                                                choices = list("Proportion" = "fill",
+                                                               "Total" = "stack"), 
+                                                selected = "stack")
+                             )
+                           ),
+                           plotOutput(ns("category_crit_time_plot"))
+                  )
       )
     )
   )
@@ -101,8 +101,8 @@ mod_category_criticality_server <- function(id, filter_data){
       # don't show on the summary tab- doesn't do anything
       
       req(input$tabset != "summary")
-
-      choices <- na.omit(unique(tidy_trust_data$category))
+      
+      choices <- na.omit(unique(filter_data()$category))
       
       selectInput(
         session$ns("select_super"),
@@ -150,16 +150,16 @@ mod_category_criticality_server <- function(id, filter_data){
       if (input$category_crit_time_facet == 1) {
         category_crit_time_plot +
           ggplot2::facet_grid(category ~ factor(comment_type, 
-                                                      levels = c("best", 
-                                                                 "improve"),
-                                                      labels = c("What was good?", 
-                                                                 "What could we do better?"))
+                                                levels = c("best", 
+                                                           "imp"),
+                                                labels = c("What was good?", 
+                                                           "What could we do better?"))
           )
       } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
           ggplot2::facet_grid(division ~ factor(comment_type, 
                                                 levels = c("best", 
-                                                           "improve"),
+                                                           "imp"),
                                                 labels = c("What was good?", 
                                                            "What could we do better?"))
           )
@@ -215,7 +215,7 @@ mod_category_criticality_server <- function(id, filter_data){
       
       improve_comments <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
-        dplyr::filter(comment_type == "improve") %>% 
+        dplyr::filter(comment_type == "imp") %>% 
         dplyr::select(comment_txt, crit)
       
       # Trick so table is max 1000 rows, otherwise takes ages to load
@@ -227,25 +227,25 @@ mod_category_criticality_server <- function(id, filter_data){
       
       reactable::reactable(
         dplyr::sample_n(improve_comments, n_table_imp),
-                           borderless = TRUE,
-                           highlight = TRUE,
-                           showSortIcon = FALSE,
-                           filterable = TRUE,
-                           showPageSizeOptions = TRUE, 
-                           pageSizeOptions = c(10, 15, 20, 25, 30), 
-                           defaultPageSize = 10,
-                           columns = list(
-                             comment_txt = reactable::colDef(minWidth = 5.5, 
-                                                             sortable = FALSE, 
-                                                             name = "What could we do better?"),
-                             crit = reactable::colDef(minWidth = 1, 
-                                                      name = "Criticality",
-                                                      cell = function(value) {
-                                                        class <- paste0("tag crit-imp-", value)
-                                                        htmltools::div(class = class, value)
-                                                      }
-                             )
-                           )
+        borderless = TRUE,
+        highlight = TRUE,
+        showSortIcon = FALSE,
+        filterable = TRUE,
+        showPageSizeOptions = TRUE, 
+        pageSizeOptions = c(10, 15, 20, 25, 30), 
+        defaultPageSize = 10,
+        columns = list(
+          comment_txt = reactable::colDef(minWidth = 5.5, 
+                                          sortable = FALSE, 
+                                          name = "What could we do better?"),
+          crit = reactable::colDef(minWidth = 1, 
+                                   name = "Criticality",
+                                   cell = function(value) {
+                                     class <- paste0("tag crit-imp-", value)
+                                     htmltools::div(class = class, value)
+                                   }
+          )
+        )
       )
     })
     

@@ -40,6 +40,10 @@ usethis::use_package( "shinyjqui" )
 usethis::use_package( "timevis" )
 usethis::use_package( "rmarkdown" )
 usethis::use_package( "pander" )
+usethis::use_package( "pool" )
+usethis::use_package( "odbc" )
+usethis::use_package( "DBI" )
+# usethis::use_dev_package("nottshc", remote = "CDU-data-science-team/nottshc")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
