@@ -13,14 +13,14 @@ open_db_data <- get_px_exp(from = "2020-10-01",
                            remove_demographics = FALSE,
                            remove_optout = TRUE)
 
-trust_a <- tidy_px_exp(open_db_data) %>% 
-  arrange(date) %>% 
+trust_a <- open_db_data %>% 
+  arrange(Date) %>% 
   collect()
 
 # MUST randomise the demographic features
 
 trust_a <- trust_a %>% 
-  mutate(across(gender : baby, ~ sample(.x, n())))
+  mutate(across(Gender : Baby, ~ sample(.x, n())))
 
 con <- DBI::dbConnect(odbc::odbc(),
                       Driver   = "Maria DB",

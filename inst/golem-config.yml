@@ -1,8 +1,16 @@
 default:
   golem_name: experiencesdashboard
-  golem_version: 0.0.0.9000
+  golem_version: 0.2.1
   app_prod: no
+  open: yes
 production:
   app_prod: yes
 dev:
   golem_wd: !expr here::here()
+trust_a:
+  trust_name: trust_a
+  comment_1: What could be improved?
+  comment_2: What did we do well?
+  location_1: Team
+  location_2: Directorate
+  location_3: Division

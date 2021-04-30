@@ -17,15 +17,17 @@ app_server <- function( input, output, session ) {
                        database = "TEXT_MINING",
                        Port = 3306)
   
-  db_data <- dplyr::tbl(pool, dbplyr::in_schema("TEXT_MINING", "trust_a"))
+  db_data <- dplyr::tbl(pool, 
+                        dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name"))) %>% 
+    nottshc::tidy_px_exp(conn = pool, trust_id = get_golem_config("trust_name"))
   
   # render ALL the inputs
   
   output$filter_dataUI <- renderUI({
     
     dates <- db_data %>% 
-      dplyr::summarise(min_date = min(Date),
-                       max_date = max(Date)) %>% 
+      dplyr::summarise(min_date = min(date),
+                       max_date = max(date)) %>% 
       dplyr::collect()
     
     divisions <- db_data %>% 

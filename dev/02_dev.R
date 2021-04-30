@@ -43,7 +43,7 @@ usethis::use_package( "pander" )
 usethis::use_package( "pool" )
 usethis::use_package( "odbc" )
 usethis::use_package( "DBI" )
-# usethis::use_dev_package("nottshc", remote = "CDU-data-science-team/nottshc")
+usethis::use_dev_package("nottshc", remote = "CDU-data-science-team/nottshc")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -77,6 +77,7 @@ usethis::use_test( "sentiment_tidy" )
 usethis::use_test( "show_text" )
 usethis::use_test( "search_text" )
 usethis::use_test( "calculate_table" )
+usethis::use_test( "tidy_data" )
 
 # Documentation
 
