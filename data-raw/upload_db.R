@@ -6,25 +6,7 @@
 library(readxl)
 library(tidyverse)
 library(DBI)
-library(nottshc)
 library(nottshcMethods)
-
-# data prep----
-
-con <- nottshc::connect_mysql(open_data = FALSE)
-
-new_codes <- dplyr::tbl(con, dbplyr::in_schema("SUCE", "NewCodes")) %>%
-  dplyr::rename_all(janitor::make_clean_names) %>% 
-  collect() %>% 
-  mutate(code = toupper(code))
-
-# trust a----
-
-trust_a <- get_px_exp(conn = con, 
-                      from = "2020-10-01",
-                      open_data = FALSE, 
-                      remove_demographics = FALSE,
-                      remove_optout = TRUE)
 
 # trust b----
 
@@ -72,10 +54,8 @@ trust_b <- read_excel(
            code == "xn" ~ abs(criticality),
            TRUE ~ criticality
          )) %>% 
-  filter(code %in% new_codes$code) %>% 
   mutate(patient_carer = coalesce(patient, carer)) %>% 
   select(location_1 : location_3, fft, comment, code, criticality, patient_carer) %>% 
-  left_join(new_codes, by = "code") %>% 
   mutate(across(starts_with("location"), ~ nottshcMethods::hash(.x, n_char = 8))) %>% 
   mutate(fft = sample_vector(values = c(NA, 1 : 5), weights = c(1, 2, 3, 4, 7, 9), 
                              dplyr::n())) %>% 
@@ -102,7 +82,6 @@ trust_c <- read_xlsx("data-raw/TrustC.xlsx") %>%
            TRUE ~ criticality
          )) %>% 
   mutate(across(starts_with("location"), ~ nottshcMethods::hash(.x, n_char = 8))) %>% 
-  left_join(new_codes, by = "code") %>% 
   mutate(date = sample( # fake dates
     seq.Date(as.Date("2020-10-01"), Sys.Date(), "day"), 
     n(), replace = TRUE))
@@ -137,7 +116,9 @@ trust_b <- trust_b %>%
                                                "Yes, limited a lot", 
                                                "Prefer not to say", "Not recorded"),
                                     weights = c(20, 20, 10, 5, 5, 10),
-                                    length = dplyr::n()))
+                                    length = dplyr::n())) %>% 
+  mutate(date = sample(seq.Date(as.Date("2020-10-01"), Sys.Date(), by = "day"),
+                       dplyr::n(), replace = TRUE))
 
 trust_c <- trust_c %>% 
   mutate(gender = sample_vector(values = c(NA, "Male", "Female", "Other"),
@@ -167,12 +148,9 @@ trust_c <- trust_c %>%
                                                "Yes, limited a lot", 
                                                "Prefer not to say", "Not recorded"),
                                     weights = c(20, 20, 10, 5, 5, 10),
-                                    length = dplyr::n()))
-
-data <- get_px_exp(from = "2020-10-01",
-                   open_data = FALSE, 
-                   remove_demographics = FALSE,
-                   remove_optout = TRUE)
+                                    length = dplyr::n())) %>% 
+  mutate(date = sample(seq.Date(as.Date("2020-10-01"), Sys.Date(), by = "day"),
+                       dplyr::n(), replace = TRUE))
 
 con <- DBI::dbConnect(odbc::odbc(),
                       Driver   = "Maria DB",
@@ -188,4 +166,3 @@ DBI::dbWriteTable(con, 'trust_b', trust_b, overwrite = TRUE)
 dbWriteTable(con, 'trust_c', trust_c, overwrite = TRUE)
 
 dbDisconnect(con)
-

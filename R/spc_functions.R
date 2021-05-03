@@ -13,7 +13,7 @@
 #' @export
 #'
 #' @examples
-split_data_spc <- function(data, variable = "service", chunks){
+split_data_spc <- function(data, variable = "fft", chunks){
   
   if(chunks == "monthly"){
     
@@ -30,7 +30,7 @@ split_data_spc <- function(data, variable = "service", chunks){
         dplyr::mutate(group = ceiling(dplyr::cur_group_rows() / nrow(.) * chunks)) %>% 
         dplyr::group_by(group) %>% 
         dplyr::mutate(date = min(date)) %>% 
-        dplyr::mutate(fft = service * 20)
+        dplyr::mutate(fft = .data[[variable]] * 20)
     )
   }
 }

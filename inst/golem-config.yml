@@ -14,3 +14,6 @@ trust_a:
   location_1: Team
   location_2: Directorate
   location_3: Division
+trust_b:
+  trust_name: trust_b
+  comment_1: Comment?

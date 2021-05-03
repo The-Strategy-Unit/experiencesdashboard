@@ -24,25 +24,25 @@ app_server <- function( input, output, session ) {
   # render ALL the inputs
   
   output$filter_dataUI <- renderUI({
-    
-    dates <- db_data %>% 
+
+    dates <- db_data %>%
       dplyr::summarise(min_date = min(date),
-                       max_date = max(date)) %>% 
+                       max_date = max(date)) %>%
       dplyr::collect()
-    
-    divisions <- db_data %>% 
-      dplyr::distinct(division) %>% 
-      dplyr::mutate(division = dplyr::na_if(division, "Unknown")) %>% 
-      dplyr::filter(!is.na(division)) %>% 
-      dplyr::pull(division)
-    
+
+    location_1_choices <- db_data %>%
+      dplyr::distinct(location_1) %>%
+      dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
+      dplyr::filter(!is.na(location_1)) %>%
+      dplyr::pull(location_1)
+
     tagList(
       selectInput(
         "select_division",
         label = h5(strong("Select divisions:")),
-        choices = divisions,
+        choices = location_1_choices,
         multiple = TRUE,
-        selected = divisions
+        selected = location_1_choices
       ),
       dateRangeInput(
         "date_range",
@@ -65,18 +65,18 @@ app_server <- function( input, output, session ) {
   filter_data <- reactive({
     
     db_data %>%
-      dplyr::filter(date > !!input$date_range[1], 
+      dplyr::filter(date > !!input$date_range[1],
                     date < !!input$date_range[2]) %>%
-      dplyr::filter(division %in% !!input$select_division) %>%
+      dplyr::filter(location_1 %in% !!input$select_division) %>%
       dplyr::collect()
   })
   
   filter_sentiment <- reactive({
     
     sentiment_txt_data %>%
-      dplyr::filter(date > input$date_range[1], 
+      dplyr::filter(date > input$date_range[1],
                     date < input$date_range[2]) %>%
-      dplyr::filter(division %in% input$select_division)
+      dplyr::filter(location_1 %in% input$select_division)
   })
   
   mod_patient_experience_server("patient_experience_ui_1")

@@ -157,7 +157,7 @@ mod_category_criticality_server <- function(id, filter_data){
           )
       } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
-          ggplot2::facet_grid(division ~ factor(comment_type, 
+          ggplot2::facet_grid(location_1 ~ factor(comment_type, 
                                                 levels = c("best", 
                                                            "imp"),
                                                 labels = c("What was good?", 
