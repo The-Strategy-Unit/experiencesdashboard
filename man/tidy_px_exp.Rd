@@ -12,7 +12,7 @@ tidy_px_exp(data, conn, trust_id = "trust_a")
 \item{conn}{connection, that you can make with connect_mysql()- by default
 this will be done automatically}
 
-\item{trust_id}{string. Which trust are you tidying data for (NHC is trust_a)?}
+\item{trust_id}{string. Which trust are you tidying data for?}
 }
 \value{
 
