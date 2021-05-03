@@ -19,7 +19,7 @@ app_server <- function( input, output, session ) {
   
   db_data <- dplyr::tbl(pool, 
                         dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name"))) %>% 
-    nottshc::tidy_px_exp(conn = pool, trust_id = get_golem_config("trust_name"))
+    tidy_px_exp(conn = pool, trust_id = get_golem_config("trust_name"))
   
   # render ALL the inputs
   
@@ -67,7 +67,7 @@ app_server <- function( input, output, session ) {
     db_data %>%
       dplyr::filter(date > !!input$date_range[1], 
                     date < !!input$date_range[2]) %>%
-      dplyr::filter(division %in% !!input$select_division) %>% 
+      dplyr::filter(division %in% !!input$select_division) %>%
       dplyr::collect()
   })
   
