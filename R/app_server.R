@@ -68,7 +68,8 @@ app_server <- function( input, output, session ) {
       dplyr::filter(date > !!input$date_range[1],
                     date < !!input$date_range[2]) %>%
       dplyr::filter(location_1 %in% !!input$select_division) %>%
-      dplyr::collect()
+      dplyr::collect() %>% 
+      dplyr::arrange(date)
   })
   
   filter_sentiment <- reactive({

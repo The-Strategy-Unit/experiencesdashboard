@@ -1,7 +1,5 @@
 #' Get data ready for SPC plotting
 #'
-#' @description TODO, ADD WHAT IS IN HERE AN WHAT ISNT
-#'
 #' @param data dataframe containing "date" column and an FFT column
 #' @param variable string, indicating the name of the FFT column
 #' @param chunks either "monthly", which divides the data in months 
@@ -19,7 +17,7 @@ split_data_spc <- function(data, variable = "fft", chunks){
     
     return(
       data %>% 
-        dplyr::mutate(month = as.Date(cut(date, "month"))) %>% 
+        dplyr::mutate(date = as.Date(cut(date, "month"))) %>% 
         dplyr::mutate(fft = .data[[variable]] * 20)
     )
   } else {
@@ -36,8 +34,6 @@ split_data_spc <- function(data, variable = "fft", chunks){
 }
 
 #' Plot data
-#'
-#' @description TODO, ADD WHAT IS IN HERE AN WHAT ISNT
 #'
 #' @param data dataframe, that you probably made with the split_data_spc function
 #' @param return SPC plot

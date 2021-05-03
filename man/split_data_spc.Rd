@@ -21,5 +21,5 @@ same number of rows)}
 
 }
 \description{
-TODO, ADD WHAT IS IN HERE AN WHAT ISNT
+Get data ready for SPC plotting
 }
