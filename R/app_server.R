@@ -84,7 +84,7 @@ app_server <- function( input, output, session ) {
   
   mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
   
-  mod_category_criticality_server("category_criticality_ui_1", 
+  filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                   filter_data = filter_data)
   
   mod_fft_server("fft_ui_1", filter_data = filter_data)
@@ -101,6 +101,9 @@ app_server <- function( input, output, session ) {
   mod_click_tables_server("click_tables_ui_2",
                           filter_data = filter_data,
                           comment_type = "comment_2")
+  
+  mod_text_reactable_server("text_reactable_ui_1", filter_data = filter_data,
+                            filter_category = filter_category)
   
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)
