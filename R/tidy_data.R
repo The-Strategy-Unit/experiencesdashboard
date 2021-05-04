@@ -70,8 +70,8 @@ tidy_px_exp <- function(data, conn, trust_id = "trust_a") {
   if(trust_id == "trust_a"){
     
     db_tidy <- db_tidy %>%
-      dplyr::mutate(crit = case_when(comment_type == "imp" ~ imp_crit * -1,
-                                     comment_type == "best" ~ best_crit))
+      dplyr::mutate(crit = case_when(comment_type == "comment_1" ~ imp_crit * -1,
+                                     comment_type == "comment_2" ~ best_crit))
   }
   
   db_tidy <- db_tidy %>%

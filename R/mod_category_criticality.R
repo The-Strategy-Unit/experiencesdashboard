@@ -149,20 +149,11 @@ mod_category_criticality_server <- function(id, filter_data){
       # Add facet ----
       if (input$category_crit_time_facet == 1) {
         category_crit_time_plot +
-          ggplot2::facet_grid(category ~ factor(comment_type, 
-                                                levels = c("best", 
-                                                           "imp"),
-                                                labels = c("What was good?", 
-                                                           "What could we do better?"))
-          )
+          ggplot2::facet_grid(category ~ factor(comment_type))
+
       } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
-          ggplot2::facet_grid(location_1 ~ factor(comment_type, 
-                                                levels = c("best", 
-                                                           "imp"),
-                                                labels = c("What was good?", 
-                                                           "What could we do better?"))
-          )
+          ggplot2::facet_grid(location_1 ~ factor(comment_type))
       }}
       , height = function() {
         session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
@@ -174,7 +165,7 @@ mod_category_criticality_server <- function(id, filter_data){
       
       best_comments <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
-        dplyr::filter(comment_type == "best") %>% 
+        dplyr::filter(comment_type == "comment_2") %>% 
         dplyr::select(comment_txt, crit)
       
       # Trick so table is max 1000 rows, otherwise takes ages to load
@@ -215,7 +206,7 @@ mod_category_criticality_server <- function(id, filter_data){
       
       improve_comments <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
-        dplyr::filter(comment_type == "imp") %>% 
+        dplyr::filter(comment_type == "comment_1") %>% 
         dplyr::select(comment_txt, crit)
       
       # Trick so table is max 1000 rows, otherwise takes ages to load
