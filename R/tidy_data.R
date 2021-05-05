@@ -31,7 +31,7 @@ tidy_px_exp <- function(data, conn, trust_id = "trust_a") {
                       "inv_care", "positive")
   }
   
-  if(trust_id == "trust_b"){
+  if(trust_id %in% c("trust_b", "trust_c")){
     
     data <- data %>%
       dplyr::rename(comment_1 = comment, code1_c1 = code,
