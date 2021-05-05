@@ -7,26 +7,48 @@
 app_server <- function( input, output, session ) {
   # List the first level callModules here
   
-  # render the inputs
+  # fetch data
+  
+  pool <- pool::dbPool(drv = odbc::odbc(),
+                       driver = "Maria DB",
+                       server = Sys.getenv("HOST_NAME"),
+                       UID = Sys.getenv("DB_USER"),
+                       PWD = Sys.getenv("MYSQL_PASSWORD"),
+                       database = "TEXT_MINING",
+                       Port = 3306)
+  
+  db_data <- dplyr::tbl(pool, 
+                        dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name"))) %>% 
+    tidy_px_exp(conn = pool, trust_id = get_golem_config("trust_name"))
+  
+  # render ALL the inputs
   
   output$filter_dataUI <- renderUI({
-    
-    divisions <- na.omit(unique(tidy_trust_data$division))
-    
-    max_date <- max(tidy_trust_data$date)
-    
+
+    dates <- db_data %>%
+      dplyr::summarise(min_date = min(date),
+                       max_date = max(date)) %>%
+      dplyr::collect()
+
+    location_1_choices <- db_data %>%
+      dplyr::distinct(location_1) %>%
+      dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
+      dplyr::filter(!is.na(location_1)) %>%
+      dplyr::pull(location_1)
+
     tagList(
       selectInput(
         "select_division",
         label = h5(strong("Select divisions:")),
-        choices = divisions,
+        choices = location_1_choices,
         multiple = TRUE,
-        selected = divisions
+        selected = location_1_choices
       ),
       dateRangeInput(
         "date_range",
         label = h5(strong("Select date range:")),
-        start = "2020-10-01"
+        start = dates$min_date,
+        end = dates$max_date
       )
     )
   })
@@ -42,25 +64,27 @@ app_server <- function( input, output, session ) {
   # Create reactive data ----
   filter_data <- reactive({
     
-    tidy_trust_data %>%
-      dplyr::filter(date > input$date_range[1], 
-                    date < input$date_range[2]) %>%
-      dplyr::filter(division %in% input$select_division)
+    db_data %>%
+      dplyr::filter(date > !!input$date_range[1],
+                    date < !!input$date_range[2]) %>%
+      dplyr::filter(location_1 %in% !!input$select_division) %>%
+      dplyr::collect() %>% 
+      dplyr::arrange(date)
   })
   
   filter_sentiment <- reactive({
     
     sentiment_txt_data %>%
-      dplyr::filter(date > input$date_range[1], 
+      dplyr::filter(date > input$date_range[1],
                     date < input$date_range[2]) %>%
-      dplyr::filter(division %in% input$select_division)
+      dplyr::filter(location_1 %in% input$select_division)
   })
-
+  
   mod_patient_experience_server("patient_experience_ui_1")
   
   mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
   
-  mod_category_criticality_server("category_criticality_ui_1", 
+  filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                   filter_data = filter_data)
   
   mod_fft_server("fft_ui_1", filter_data = filter_data)
@@ -72,12 +96,15 @@ app_server <- function( input, output, session ) {
   
   mod_click_tables_server("click_tables_ui_1",
                           filter_data = filter_data,
-                          comment_type = "improve")
+                          comment_type = "comment_1")
   
   mod_click_tables_server("click_tables_ui_2",
                           filter_data = filter_data,
-                          comment_type = "best")
-
+                          comment_type = "comment_2")
+  
+  mod_text_reactable_server("text_reactable_ui_1", filter_data = filter_data,
+                            filter_category = filter_category)
+  
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)
 }

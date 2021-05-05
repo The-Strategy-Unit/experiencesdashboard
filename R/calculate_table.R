@@ -7,18 +7,18 @@
 #' @return a dataframe with category name, n, and %
 #' @export
 calculate_table <- function(table_data, count_column, 
-                            comment_type = c("improve", "best"), 
+                            comment_type = c("imp", "best"), 
                             click_column = NULL) {
   
   if(!is.null(click_column)){
     table_data <- table_data %>% 
-      dplyr::filter(super_category == click_column)
+      dplyr::filter(category == click_column)
   }
   
   table_data %>% 
     dplyr::filter(comment_type == rlang::expr(!!comment_type)) %>%
     dplyr::filter(!(category == "Miscellaneous: Nothing was good/bad" &
-                      comment_type == "improve")) %>% 
+                      comment_type == "imp")) %>% 
     dplyr::count(.data[[count_column]]) %>%
     purrr::set_names(c("Category", "n")) %>% 
     dplyr::filter(!is.na(Category)) %>%

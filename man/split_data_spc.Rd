@@ -4,7 +4,7 @@
 \alias{split_data_spc}
 \title{Get data ready for SPC plotting}
 \usage{
-split_data_spc(data, variable = "service", chunks)
+split_data_spc(data, variable = "fft", chunks)
 }
 \arguments{
 \item{data}{dataframe containing "date" column and an FFT column}
@@ -21,5 +21,5 @@ same number of rows)}
 
 }
 \description{
-TODO, ADD WHAT IS IN HERE AN WHAT ISNT
+Get data ready for SPC plotting
 }

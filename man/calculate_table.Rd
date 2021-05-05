@@ -7,7 +7,7 @@
 calculate_table(
   table_data,
   count_column,
-  comment_type = c("improve", "best"),
+  comment_type = c("imp", "best"),
   click_column = NULL
 )
 }
