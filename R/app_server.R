@@ -21,7 +21,7 @@ app_server <- function( input, output, session ) {
                         dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name"))) %>% 
     tidy_all_trusts(conn = pool, trust_id = get_golem_config("trust_name"))
   
-  # sentiment data
+  # vector of sentiment names
   
   nrc_sentiments <- tidytext::get_sentiments("nrc") %>%
     dplyr::select(sentiment) %>%
@@ -99,8 +99,6 @@ app_server <- function( input, output, session ) {
         filter_data() %>%
           dplyr::mutate(linenumber = dplyr::row_number()),
         by = "linenumber") %>%
-      dplyr::select(comment_txt, everything(), -`NA`) %>%
-      dplyr::rename(positive = positive.x, positive_q = positive.y) %>% 
       dplyr::mutate(all_sentiments =  
                       dplyr::select(., dplyr::all_of(nrc_sentiments)) %>%
                       split(seq(nrow(.))) %>%

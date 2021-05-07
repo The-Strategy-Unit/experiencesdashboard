@@ -21,7 +21,6 @@ tidy_sentiment_txt <- function(data) {
                        names_from = all_sentiments_unnest, 
                        values_from = value) %>% 
     janitor::clean_names() %>% 
-    dplyr::select(-na) %>%
     tidyr::replace_na(list(trust = FALSE, 
                            anticipation = FALSE, 
                            positive = FALSE, 

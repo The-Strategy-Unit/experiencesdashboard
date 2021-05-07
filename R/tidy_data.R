@@ -25,7 +25,7 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
                     location_2 = dir_t, location_1 = division2,
                     code1_c1 = imp_n1, code2_c1 = imp_n2,
                     code1_c2 = best_n1, code2_c2 = best_n2,
-                    fft = service)
+                    fft = service, positive_q = positive)
     
     score_fields <- c("fft", "listening", "communication", "respect",
                       "inv_care", "positive")
