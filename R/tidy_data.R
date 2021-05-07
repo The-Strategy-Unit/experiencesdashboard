@@ -12,7 +12,7 @@
 #' Chris Beeley
 #' @section Last updated date:
 #' 2021-04-25
-tidy_px_exp <- function(data, conn, trust_id = "trust_a") {
+tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
   
   data <- data %>%
     dplyr::rename_all(janitor::make_clean_names)
@@ -25,7 +25,7 @@ tidy_px_exp <- function(data, conn, trust_id = "trust_a") {
                     location_2 = dir_t, location_1 = division2,
                     code1_c1 = imp_n1, code2_c1 = imp_n2,
                     code1_c2 = best_n1, code2_c2 = best_n2,
-                    fft = service)
+                    fft = service, positive_q = positive)
     
     score_fields <- c("fft", "listening", "communication", "respect",
                       "inv_care", "positive")
@@ -42,6 +42,10 @@ tidy_px_exp <- function(data, conn, trust_id = "trust_a") {
   
   text_fields <- grep("comment_", colnames(data), value = TRUE)
   code_fields <- grep("code", colnames(data), value = TRUE)
+  
+  # get the sentiment data
+  
+  
   
   # get the codes db connection
   db_codes_exp_data <- dplyr::tbl(conn, dbplyr::in_schema("TEXT_MINING", "NewCodes")) %>%

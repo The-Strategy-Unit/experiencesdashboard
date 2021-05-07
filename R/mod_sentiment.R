@@ -120,13 +120,13 @@ mod_sentiment_server <- function(id, filter_sentiment){
     
     output$superUI <- renderUI({
       
-      super_choices <- na.omit(unique(filter_sentiment()$super))
+      super_choices <- na.omit(unique(filter_sentiment()$category))
       
       super_selected <- filter_sentiment() %>% 
-        dplyr::count(super) %>% 
+        dplyr::count(category) %>% 
         dplyr::arrange(desc(n)) %>% 
         head(5) %>% 
-        dplyr::pull(super)
+        dplyr::pull(category)
       
       selectInput(
         session$ns("select_super"),
@@ -146,7 +146,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
       if(isTruthy(input$select_super)){
         
         sentiment_txt_data_tidy <- sentiment_txt_data_tidy %>% 
-          dplyr::filter(super %in% input$select_super)
+          dplyr::filter(category %in% input$select_super)
       }
 
       return(sentiment_txt_data_tidy)
@@ -182,7 +182,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
       sentiment_plot_time_temp <- sentiment_txt_data_tidy_r() %>% 
         tidyr::unnest(cols = all_sentiments) %>% 
         dplyr::filter(all_sentiments %in% input$select_sentiment) %>% 
-        dplyr::select(date, all_sentiments, super, division) %>% 
+        dplyr::select(date, all_sentiments, category, location_1) %>%
         tidyr::drop_na() %>% 
         dplyr::mutate(all_sentiments = factor(x = all_sentiments,
                                               levels = sentiments_ordered,
@@ -204,13 +204,13 @@ mod_sentiment_server <- function(id, filter_sentiment){
       # Add facet ----
       if (input$select_sentiment_plot_facet == 1){
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(~super)
+          ggplot2::facet_grid(~category)
       } else if (input$select_sentiment_plot_facet == 2) {
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(~division)
+          ggplot2::facet_grid(~ location_1)
       } else if (input$select_sentiment_plot_facet == 3) {
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(division ~ super)
+          ggplot2::facet_grid(location_1 ~ category)
       }
     }
     , height = function() {
@@ -224,7 +224,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
       req(nrow(sentiment_txt_data_tidy_r()) > 0)
 
       filtered_comments <- sentiment_txt_data_tidy_r() %>% 
-        dplyr::select(id, all_sentiments, improve) %>% 
+        dplyr::select(id, all_sentiments, comment_txt) %>% 
         # First get number of total sentiments in all comments
         dplyr::mutate(length = lengths(all_sentiments),
                       all_sentimtents_unnest = all_sentiments) %>%
@@ -240,10 +240,10 @@ mod_sentiment_server <- function(id, filter_sentiment){
         dplyr::ungroup() %>% 
         # Filter comments that match the selected sentiments
         dplyr::filter(is.na(sum_temp) == FALSE) %>% 
-        dplyr::select(id, improve) %>%
+        dplyr::select(id, comment_txt) %>%
         dplyr::distinct()
       
-      reactable::reactable(filtered_comments[, "improve"],
+      reactable::reactable(filtered_comments[, "comment_txt"],
                            borderless = TRUE,
                            highlight = TRUE,
                            showSortIcon = FALSE,
@@ -252,7 +252,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
                            pageSizeOptions = c(10, 15, 20, 25, 30), 
                            defaultPageSize = 10,
                            columns = list(
-                             improve = reactable::colDef(minWidth = 200, 
+                             comment_txt = reactable::colDef(minWidth = 200, 
                                                          sortable = FALSE, 
                                                          name = "What could we do better?")
                            )
@@ -261,15 +261,19 @@ mod_sentiment_server <- function(id, filter_sentiment){
     
     # Write output text for text boxes ----
     output$combination_sentiments_txt <- renderText({
-      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF UPSET PLOT. EXPLAIN DIFFERENCE BETWEEN SET SIZE AND INTERSECTION SIZE.")
+      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF UPSET PLOT. EXPLAIN 
+             DIFFERENCE BETWEEN SET SIZE AND INTERSECTION SIZE.")
     })
     
     output$change_time_sentiments_txt <- renderText({
-      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF CHANGE IN SENTIMENT OVER TIME. ADD INFORMATION EXPLAINING THE DIFFERENCE BETWEEEN TOTALS AND PROPORTIONS.")
+      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF CHANGE IN SENTIMENT 
+             OVER TIME. ADD INFORMATION EXPLAINING THE DIFFERENCE BETWEEEN TOTALS AND 
+             PROPORTIONS.")
     })
     
     output$show_comments_box <- renderText({
-      paste0("TODO NOTE: ADD INFORMATION EXPLAINING HOW TO FILTER FOR SENTIMENTS IN THE COMMENTS.")
+      paste0("TODO NOTE: ADD INFORMATION EXPLAINING HOW TO FILTER FOR SENTIMENTS IN THE 
+             COMMENTS.")
     })
     
   })

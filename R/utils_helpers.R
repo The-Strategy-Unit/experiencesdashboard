@@ -11,17 +11,16 @@ tidy_sentiment_txt <- function(data) {
                   year = lubridate::year(date),
                   id = 1:nrow(data),
                   all_sentiments_unnest = all_sentiments) %>% 
-    dplyr::select(id, date, year, super, division, improve, all_sentiments, 
-                  all_sentiments_unnest) %>% 
+    dplyr::select(id, date, year, category, location_1, comment_txt, comment_key,
+                  all_sentiments, all_sentiments_unnest) %>% 
     tidyr::unnest(cols = all_sentiments_unnest) %>% 
     dplyr::distinct() %>% 
     dplyr::mutate(value = TRUE) %>% 
-    tidyr::pivot_wider(id_cols = c("id", "date", "year", "super", "division", 
-                                   "improve", "all_sentiments"), 
+    tidyr::pivot_wider(id_cols = c("id", "date", "year", "category", "location_1", 
+                                   "comment_txt", "comment_key", "all_sentiments"), 
                        names_from = all_sentiments_unnest, 
                        values_from = value) %>% 
     janitor::clean_names() %>% 
-    dplyr::select(-na) %>%
     tidyr::replace_na(list(trust = FALSE, 
                            anticipation = FALSE, 
                            positive = FALSE, 
@@ -33,6 +32,7 @@ tidy_sentiment_txt <- function(data) {
                            disgust = FALSE, 
                            surprise = FALSE)
     ) %>% 
-    dplyr::mutate_if(is.logical, as.numeric)
+    dplyr::mutate_if(is.logical, as.numeric) %>% 
+    dplyr::distinct(comment_key, .keep_all = TRUE)
   
 }
