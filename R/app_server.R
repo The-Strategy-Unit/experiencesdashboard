@@ -19,23 +19,31 @@ app_server <- function( input, output, session ) {
   
   db_data <- dplyr::tbl(pool, 
                         dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name"))) %>% 
-    tidy_px_exp(conn = pool, trust_id = get_golem_config("trust_name"))
+    tidy_all_trusts(conn = pool, trust_id = get_golem_config("trust_name"))
+  
+  # sentiment data
+  
+  nrc_sentiments <- tidytext::get_sentiments("nrc") %>%
+    dplyr::select(sentiment) %>%
+    dplyr::distinct() %>%
+    dplyr::pull() %>%
+    sort()
   
   # render ALL the inputs
   
   output$filter_dataUI <- renderUI({
-
+    
     dates <- db_data %>%
       dplyr::summarise(min_date = min(date),
                        max_date = max(date)) %>%
       dplyr::collect()
-
+    
     location_1_choices <- db_data %>%
       dplyr::distinct(location_1) %>%
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
       dplyr::filter(!is.na(location_1)) %>%
       dplyr::pull(location_1)
-
+    
     tagList(
       selectInput(
         "select_division",
@@ -74,10 +82,30 @@ app_server <- function( input, output, session ) {
   
   filter_sentiment <- reactive({
     
-    sentiment_txt_data %>%
-      dplyr::filter(date > input$date_range[1],
-                    date < input$date_range[2]) %>%
-      dplyr::filter(location_1 %in% input$select_division)
+    filter_data() %>%
+      dplyr::mutate(linenumber = dplyr::row_number()) %>% 
+      tidytext::unnest_tokens(word, comment_txt) %>%
+      dplyr::left_join(tidytext::get_sentiments("nrc"), by = "word") %>% 
+      dplyr::count(linenumber, sentiment, name = 'sentiment_count') %>%
+      dplyr::mutate(sentiment_count = dplyr::case_when(
+        is.na(sentiment) ~ NA_integer_,
+        TRUE ~ sentiment_count)) %>%
+      dplyr::select(linenumber, sentiment, sentiment_count) %>%
+      tidyr::pivot_wider(names_from = sentiment, 
+                         values_from = sentiment_count, 
+                         values_fill = 0,
+                         names_sort = TRUE) %>%
+      dplyr::full_join(
+        filter_data() %>%
+          dplyr::mutate(linenumber = dplyr::row_number()),
+        by = "linenumber") %>%
+      dplyr::select(comment_txt, everything(), -`NA`) %>%
+      dplyr::rename(positive = positive.x, positive_q = positive.y) %>% 
+      dplyr::mutate(all_sentiments =  
+                      dplyr::select(., dplyr::all_of(nrc_sentiments)) %>%
+                      split(seq(nrow(.))) %>%
+                      lapply(function(x) unlist(names(x)[x != 0]))
+      )
   })
   
   mod_patient_experience_server("patient_experience_ui_1")
@@ -85,7 +113,7 @@ app_server <- function( input, output, session ) {
   mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
   
   filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
-                                  filter_data = filter_data)
+                                                     filter_data = filter_data)
   
   mod_fft_server("fft_ui_1", filter_data = filter_data)
   
