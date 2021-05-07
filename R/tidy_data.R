@@ -28,7 +28,7 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
                     fft = service, positive_q = positive)
     
     score_fields <- c("fft", "listening", "communication", "respect",
-                      "inv_care", "positive")
+                      "inv_care", "positive_q")
   }
   
   if(trust_id %in% c("trust_b", "trust_c")){
