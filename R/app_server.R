@@ -30,25 +30,25 @@ app_server <- function( input, output, session ) {
     dplyr::pull() %>%
     sort()
   
-  # return unique values for UI elements
+  # render ALL the inputs
   
-  input_values <- reactive({
-    
-    # dates reactive
-    
-    dates <- db_data %>%
-      dplyr::summarise(min_date = min(date),
-                       max_date = max(date)) %>%
-      dplyr::collect()
-    
-    # location 1 choices
+  output$filter_location_1 <- renderUI({
     
     location_1_choices <- db_data %>%
       dplyr::distinct(location_1) %>%
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
       dplyr::filter(!is.na(location_1))
-    
-    # location 2 choices
+
+    selectInput(
+      "select_location_1",
+      label = h5(strong(paste0("Select ", get_golem_config("location_1"), " :"))),
+      choices = sort(location_1_choices %>% dplyr::pull(location_1)),
+      multiple = TRUE,
+      selected = NULL
+    )
+  })
+  
+  output$filter_location_2 <- renderUI({
     
     location_2_choices <- db_data
     
@@ -63,19 +63,28 @@ app_server <- function( input, output, session ) {
       dplyr::mutate(location_2 = dplyr::na_if(location_2, "Unknown")) %>%
       dplyr::filter(!is.na(location_2))
     
-    # location 3 choices
+    selectInput(
+      "select_location_2",
+      label = h5(strong(paste0("Select ", get_golem_config("location_2"), " :"))),
+      choices = sort(location_2_choices %>% dplyr::pull(location_2)),
+      multiple = TRUE,
+      selected = NULL
+    )
+  })
+  
+  output$filter_location_3 <- renderUI({
     
     location_3_choices <- db_data
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
-      
-      location_3_choices <- location_3_choices %>% 
+
+      location_3_choices <- location_3_choices %>%
         dplyr::filter(location_1 %in% !!input$select_location_1)
     }
-    
-    if(isTruthy(input$select_location_2)){ # filter by location_2 if exists 
-      
-      location_3_choices <- location_3_choices %>% 
+
+    if(isTruthy(input$select_location_2)){ # filter by location_2 if exists
+
+      location_3_choices <- location_3_choices %>%
         dplyr::filter(location_2 %in% !!input$select_location_2)
     }
     
@@ -84,44 +93,10 @@ app_server <- function( input, output, session ) {
       dplyr::mutate(location_3 = dplyr::na_if(location_3, "Unknown")) %>%
       dplyr::filter(!is.na(location_3))
     
-    return(list(
-      "dates" = dates,
-      "location_1_choices" = location_1_choices %>% dplyr::pull(location_1),
-      "location_2_choices" = location_2_choices %>% dplyr::pull(location_2),
-      "location_3_choices" = location_3_choices %>% dplyr::pull(location_3)
-    ))
-  })
-  
-  # render ALL the inputs
-  
-  output$filter_location_1 <- renderUI({
-    
-    selectInput(
-      "select_location_1",
-      label = h5(strong(paste0("Select ", get_golem_config("location_1"), " :"))),
-      choices = isolate(sort(input_values()$location_1_choices)),
-      multiple = TRUE,
-      selected = NULL
-    )
-  })
-  
-  output$filter_location_2 <- renderUI({
-    
-    selectInput(
-      "select_location_2",
-      label = h5(strong(paste0("Select ", get_golem_config("location_2"), " :"))),
-      choices = sort(input_values()$location_2_choices),
-      multiple = TRUE,
-      selected = NULL
-    )
-  })
-  
-  output$filter_location_3 <- renderUI({
-    
     selectInput(
       "select_location_3",
       label = h5(strong(paste0("Select ", get_golem_config("location_3"), " :"))),
-      choices = sort(input_values()$location_3_choices),
+      choices = sort(location_3_choices %>% dplyr::pull(location_3)),
       multiple = TRUE,
       selected = NULL
     )
@@ -129,11 +104,16 @@ app_server <- function( input, output, session ) {
   
   output$filter_date <- renderUI({
     
+    dates <- db_data %>%
+      dplyr::summarise(min_date = min(date),
+                       max_date = max(date)) %>%
+      dplyr::collect()
+
     dateRangeInput(
       "date_range",
       label = h5(strong("Select date range:")),
-      start = input_values()$dates$min_date,
-      end = input_values()$dates$max_date
+      start = dates$min_date,
+      end = dates$max_date
     )
   })
   
