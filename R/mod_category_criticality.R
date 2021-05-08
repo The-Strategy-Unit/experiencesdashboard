@@ -21,50 +21,51 @@ mod_category_criticality_ui <- function(id){
         uiOutput(ns("categoryUI"))
       ),
       
-      tabsetPanel(id = ns("tabset"),
-                  type = "tabs",
-                  tabPanel("Summary", value = "summary",
-                           fluidRow(
-                             column(6, h2("What could we improve?"),
-                                    p("Click a row to see comments related to that category"),
-                                    mod_click_tables_ui("click_tables_ui_1")),
-                             column(6, h2("What did we do well?"),
-                                    p("Click a row to see comments related to that category"),
-                                    mod_click_tables_ui("click_tables_ui_2"))
-                           )
-                  ),
-                  tabPanel("Comments", value = "comments",
-                           mod_text_reactable_ui("text_reactable_ui_1")
-                  ),
-                  tabPanel("Timeline", value = "timeline",
-                           br(),
-                           fluidRow(
-                             column(12,
-                                    box(
-                                      width = NULL,
-                                      background = "light-blue",
-                                      textOutput(ns("category_crit_time_plot_txt"))
-                                    )
-                             )
-                           ),
-                           fluidRow(
-                             column(3,
-                                    selectInput(ns("category_crit_time_facet"), 
-                                                label = h5(strong("Divide plot by:")), 
-                                                choices = list("Comment and category" = 1, 
-                                                               "Comment and division" = 2), 
-                                                selected = 1)
-                             ),
-                             column(3,
-                                    selectInput(ns("category_crit_time_geom_histogram"), 
-                                                label = h5(strong("Show proportion or total:")), 
-                                                choices = list("Proportion" = "fill",
-                                                               "Total" = "stack"), 
-                                                selected = "stack")
-                             )
-                           ),
-                           plotOutput(ns("category_crit_time_plot"))
-                  )
+      tabsetPanel(
+        id = ns("tabset"),
+        type = "tabs",
+        tabPanel("Summary", value = "summary",
+                 fluidRow(
+                   column(6, h2("What could we improve?"),
+                          p("Click a row to see comments related to that category"),
+                          mod_click_tables_ui("click_tables_ui_1")),
+                   column(6, h2("What did we do well?"),
+                          p("Click a row to see comments related to that category"),
+                          mod_click_tables_ui("click_tables_ui_2"))
+                 )
+        ),
+        tabPanel("Comments", value = "comments",
+                 mod_text_reactable_ui("text_reactable_ui_1")
+        ),
+        tabPanel("Timeline", value = "timeline",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL,
+                            background = "light-blue",
+                            textOutput(ns("category_crit_time_plot_txt"))
+                          )
+                   )
+                 ),
+                 fluidRow(
+                   column(3,
+                          selectInput(ns("category_crit_time_facet"), 
+                                      label = h5(strong("Divide plot by:")), 
+                                      choices = list("Comment and category" = 1, 
+                                                     "Comment and division" = 2), 
+                                      selected = 1)
+                   ),
+                   column(3,
+                          selectInput(ns("category_crit_time_geom_histogram"), 
+                                      label = h5(strong("Show proportion or total:")), 
+                                      choices = list("Proportion" = "fill",
+                                                     "Total" = "stack"), 
+                                      selected = "stack")
+                   )
+                 ),
+                 plotOutput(ns("category_crit_time_plot"))
+        )
       )
     )
   )
