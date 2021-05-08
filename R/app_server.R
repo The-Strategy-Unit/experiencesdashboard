@@ -18,7 +18,8 @@ app_server <- function( input, output, session ) {
                        Port = 3306)
   
   db_data <- dplyr::tbl(pool, 
-                        dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name"))) %>% 
+                        dbplyr::in_schema("TEXT_MINING", 
+                                          get_golem_config("trust_name"))) %>% 
     tidy_all_trusts(conn = pool, trust_id = get_golem_config("trust_name"))
   
   # vector of sentiment names
@@ -43,7 +44,15 @@ app_server <- function( input, output, session ) {
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
       dplyr::filter(!is.na(location_1))
     
-    location_2_choices <- db_data %>%
+    location_2_choices <- db_data
+    
+    if(isTruthy(input$select_location_1)){
+      
+      location_2_choices <- location_2_choices %>% 
+        dplyr::filter(location_1 %in% !!input$select_location_1)
+    }
+    
+    location_2_choices <- location_2_choices %>%
       dplyr::distinct(location_2) %>%
       dplyr::mutate(location_2 = dplyr::na_if(location_2, "Unknown")) %>%
       dplyr::filter(!is.na(location_2))
@@ -52,9 +61,7 @@ app_server <- function( input, output, session ) {
       dplyr::distinct(location_3) %>%
       dplyr::mutate(location_3 = dplyr::na_if(location_3, "Unknown")) %>%
       dplyr::filter(!is.na(location_3))
-    
-    # if(isTruthy(input$))
-    
+
     return(list(
       "dates" = dates,
       "location_1_choices" = location_1_choices %>% dplyr::pull(location_1),
@@ -73,14 +80,14 @@ app_server <- function( input, output, session ) {
         label = h5(strong(paste0("Select ", get_golem_config("location_1"), " :"))),
         choices = sort(input_values()$location_1_choices),
         multiple = TRUE,
-        selected = input_values()$location_1_choices
+        selected = NULL
       ),
       selectInput(
         "select_location_2",
         label = h5(strong(paste0("Select ", get_golem_config("location_2"), " :"))),
         choices = sort(input_values()$location_2_choices),
         multiple = TRUE,
-        selected = input_values()$location_2_choices
+        selected = NULL
       ),
       selectInput(
         "select_location_3",
