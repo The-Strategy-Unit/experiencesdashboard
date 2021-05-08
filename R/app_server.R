@@ -18,7 +18,8 @@ app_server <- function( input, output, session ) {
                        Port = 3306)
   
   db_data <- dplyr::tbl(pool, 
-                        dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name"))) %>% 
+                        dbplyr::in_schema("TEXT_MINING", 
+                                          get_golem_config("trust_name"))) %>% 
     tidy_all_trusts(conn = pool, trust_id = get_golem_config("trust_name"))
   
   # vector of sentiment names
@@ -31,33 +32,88 @@ app_server <- function( input, output, session ) {
   
   # render ALL the inputs
   
-  output$filter_dataUI <- renderUI({
+  output$filter_location_1 <- renderUI({
+    
+    location_1_choices <- db_data %>%
+      dplyr::distinct(location_1) %>%
+      dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
+      dplyr::filter(!is.na(location_1))
+
+    selectInput(
+      "select_location_1",
+      label = h5(strong(paste0("Select ", get_golem_config("location_1"), " :"))),
+      choices = sort(location_1_choices %>% dplyr::pull(location_1)),
+      multiple = TRUE,
+      selected = NULL
+    )
+  })
+  
+  output$filter_location_2 <- renderUI({
+    
+    location_2_choices <- db_data
+    
+    if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
+      
+      location_2_choices <- location_2_choices %>% 
+        dplyr::filter(location_1 %in% !!input$select_location_1)
+    }
+    
+    location_2_choices <- location_2_choices %>%
+      dplyr::distinct(location_2) %>%
+      dplyr::mutate(location_2 = dplyr::na_if(location_2, "Unknown")) %>%
+      dplyr::filter(!is.na(location_2))
+    
+    selectInput(
+      "select_location_2",
+      label = h5(strong(paste0("Select ", get_golem_config("location_2"), " :"))),
+      choices = sort(location_2_choices %>% dplyr::pull(location_2)),
+      multiple = TRUE,
+      selected = NULL
+    )
+  })
+  
+  output$filter_location_3 <- renderUI({
+    
+    location_3_choices <- db_data
+    
+    if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
+
+      location_3_choices <- location_3_choices %>%
+        dplyr::filter(location_1 %in% !!input$select_location_1)
+    }
+
+    if(isTruthy(input$select_location_2)){ # filter by location_2 if exists
+
+      location_3_choices <- location_3_choices %>%
+        dplyr::filter(location_2 %in% !!input$select_location_2)
+    }
+    
+    location_3_choices <- location_3_choices %>%
+      dplyr::distinct(location_3) %>%
+      dplyr::mutate(location_3 = dplyr::na_if(location_3, "Unknown")) %>%
+      dplyr::filter(!is.na(location_3))
+    
+    selectInput(
+      "select_location_3",
+      label = h5(strong(paste0("Select ", get_golem_config("location_3"), " :"))),
+      choices = sort(location_3_choices %>% dplyr::pull(location_3)),
+      multiple = TRUE,
+      selected = NULL
+    )
+  })
+  
+  output$filter_date <- renderUI({
     
     dates <- db_data %>%
       dplyr::summarise(min_date = min(date),
                        max_date = max(date)) %>%
       dplyr::collect()
-    
-    location_1_choices <- db_data %>%
-      dplyr::distinct(location_1) %>%
-      dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
-      dplyr::filter(!is.na(location_1)) %>%
-      dplyr::pull(location_1)
-    
-    tagList(
-      selectInput(
-        "select_division",
-        label = h5(strong("Select divisions:")),
-        choices = location_1_choices,
-        multiple = TRUE,
-        selected = location_1_choices
-      ),
-      dateRangeInput(
-        "date_range",
-        label = h5(strong("Select date range:")),
-        start = dates$min_date,
-        end = dates$max_date
-      )
+
+    dateRangeInput(
+      "date_range",
+      label = h5(strong("Select date range:")),
+      start = dates$min_date,
+      end = dates$max_date
     )
   })
   
@@ -65,7 +121,7 @@ app_server <- function( input, output, session ) {
     list(
       "date_from" = input$date_range[1],
       "date_to" = input$date_range[2],
-      "division" = input$select_division
+      "location_1" = input$select_location_1
     )
   })
   
@@ -75,7 +131,7 @@ app_server <- function( input, output, session ) {
     db_data %>%
       dplyr::filter(date > !!input$date_range[1],
                     date < !!input$date_range[2]) %>%
-      dplyr::filter(location_1 %in% !!input$select_division) %>%
+      dplyr::filter(location_1 %in% !!input$select_location_1) %>%
       dplyr::collect() %>% 
       dplyr::arrange(date)
   })

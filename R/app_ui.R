@@ -43,7 +43,10 @@ app_ui <- function(request) {
                    icon = icon("info-circle"), 
                    menuItem("Data", tabName = "info-data")
           ),
-          uiOutput("filter_dataUI")
+          uiOutput("filter_location_1"),
+          uiOutput("filter_location_2"),
+          uiOutput("filter_location_3"),
+          uiOutput("filter_date")
         )
       ),
       dashboardBody(
