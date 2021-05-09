@@ -30,8 +30,6 @@ app_server <- function( input, output, session ) {
     dplyr::pull() %>%
     sort()
   
-  # render ALL the inputs
-  
   output$filter_location_1 <- renderUI({
     
     location_1_choices <- db_data %>%
@@ -41,7 +39,8 @@ app_server <- function( input, output, session ) {
 
     selectInput(
       "select_location_1",
-      label = h5(strong(paste0("Select ", get_golem_config("location_1"), " :"))),
+      label = h5(strong(paste0("Select ", get_golem_config("location_1"),
+                               " (defaults to all) :"))),
       choices = sort(location_1_choices %>% dplyr::pull(location_1)),
       multiple = TRUE,
       selected = NULL
@@ -128,13 +127,34 @@ app_server <- function( input, output, session ) {
   # Create reactive data ----
   filter_data <- reactive({
     
-    db_data %>%
+    return_data <- db_data
+    
+    if(isTruthy(input$select_location_1)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(location_1 %in% !!input$select_location_1)
+    }
+    
+    if(isTruthy(input$select_location_2)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(location_2 %in% !!input$select_location_2)
+    }
+    
+    if(isTruthy(input$select_location_3)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(location_3 %in% !!input$select_location_3)
+    }
+    
+    return_data %>%
       dplyr::filter(date > !!input$date_range[1],
                     date < !!input$date_range[2]) %>%
-      dplyr::filter(location_1 %in% !!input$select_location_1) %>%
       dplyr::collect() %>% 
       dplyr::arrange(date)
-  })
+  }) %>% 
+    bindCache(input$select_location_1, input$select_location_2,
+              input$select_location_3, input$date_range)
   
   filter_sentiment <- reactive({
     
