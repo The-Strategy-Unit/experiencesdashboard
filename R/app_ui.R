@@ -46,7 +46,9 @@ app_ui <- function(request) {
           uiOutput("filter_location_1"),
           uiOutput("filter_location_2"),
           uiOutput("filter_location_3"),
-          uiOutput("filter_date")
+          uiOutput("filter_date"),
+          actionButton("launch_filter_demographics", 
+                       "Filter by demographic")
         )
       ),
       dashboardBody(

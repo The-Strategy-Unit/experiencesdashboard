@@ -30,6 +30,29 @@ app_server <- function( input, output, session ) {
     dplyr::pull() %>%
     sort()
   
+  # store values of demographics and location_1
+  
+  store_inputs <- reactive({
+    
+    store_data <- db_data %>% 
+      dplyr::collect()
+    
+    age_choices <- store_data %>%
+      dplyr::arrange(age) %>% 
+      dplyr::distinct(age_label, .keep_all = TRUE) %>%
+      dplyr::filter(!is.na(age_label))
+    
+    age_choices <- factor(age_choices$age, 
+                          levels = age_choices$age, 
+                          labels = age_choices$age_label, 
+                          exclude = NULL)
+    
+    return(na.omit(age_choices))
+  })
+  
+  
+  # render UI---
+  
   output$filter_location_1 <- renderUI({
     
     location_1_choices <- db_data %>%
@@ -124,6 +147,17 @@ app_server <- function( input, output, session ) {
     )
   })
   
+  observeEvent(input$launch_filter_demographics, {
+    
+    showModal(
+      modalDialog(
+        selectInput("select_age", label = "Select age (defaults to all)",
+                    choices = store_inputs(),
+                    selected = NULL, multiple = TRUE),
+        size = "l")
+    )
+  })
+  
   # Create reactive data ----
   filter_data <- reactive({
     
@@ -147,6 +181,12 @@ app_server <- function( input, output, session ) {
         dplyr::filter(location_3 %in% !!input$select_location_3)
     }
     
+    if(isTruthy(input$select_age)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(age_label %in% !!input$select_age)
+    }
+    
     return_data %>%
       dplyr::filter(date > !!input$date_range[1],
                     date < !!input$date_range[2]) %>%
@@ -154,7 +194,8 @@ app_server <- function( input, output, session ) {
       dplyr::arrange(date)
   }) %>% 
     bindCache(input$select_location_1, input$select_location_2,
-              input$select_location_3, input$date_range)
+              input$select_location_3, input$date_range,
+              input$select_age)
   
   filter_sentiment <- reactive({
     
@@ -181,6 +222,8 @@ app_server <- function( input, output, session ) {
                       lapply(function(x) unlist(names(x)[x != 0]))
       )
   })
+  
+  # modules----
   
   mod_patient_experience_server("patient_experience_ui_1")
   

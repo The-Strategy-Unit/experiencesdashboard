@@ -43,10 +43,6 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
   text_fields <- grep("comment_", colnames(data), value = TRUE)
   code_fields <- grep("code", colnames(data), value = TRUE)
   
-  # get the sentiment data
-  
-  
-  
   # get the codes db connection
   db_codes_exp_data <- dplyr::tbl(conn, dbplyr::in_schema("TEXT_MINING", "NewCodes")) %>%
     dplyr::rename_all(janitor::make_clean_names)
@@ -75,7 +71,21 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
     
     db_tidy <- db_tidy %>%
       dplyr::mutate(crit = case_when(comment_type == "comment_1" ~ imp_crit * -1,
-                                     comment_type == "comment_2" ~ best_crit))
+                                     comment_type == "comment_2" ~ best_crit)) %>% 
+      dplyr::mutate(age_label = dplyr::case_when(
+        age == 1 ~ "Under 12",
+        age == 2 ~ "12-17",
+        age == 3 ~ "18-25",
+        age == 4 ~ "26-39",
+        age == 5 ~ "40-64",
+        age == 6 ~ "65-79",
+        age == 7 ~ "80+",
+        TRUE ~ NA_character_
+      ))
+  } else {
+    
+    db_tidy <- db_tidy %>%
+      mutate(age_label = age)
   }
   
   db_tidy <- db_tidy %>%
