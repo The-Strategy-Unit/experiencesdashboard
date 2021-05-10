@@ -71,5 +71,19 @@ mod_demographics_server <- function(id, filter_data){
                   selected = NULL, multiple = TRUE)
     })
     
+    output$age_graph <- renderPlot({
+      
+      db_data %>% 
+        dplyr::arrange(age) %>% 
+        dplyr::mutate(age = factor(age, 
+                                   levels = age, 
+                                   labels = age_label, 
+                                   exclude = NULL)) %>% 
+        dplyr::count(age) %>% 
+        ggplot2::ggplot(ggplot2::aes(x = age, y = n)) + 
+        ggplot2::geom_col() + 
+        ggplot2::xlab("Age") + 
+        nottshcMethods::theme_nottshc()
+    })
   })
 }

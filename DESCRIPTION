@@ -44,7 +44,8 @@ Imports:
     pander,
     pool,
     odbc,
-    DBI
+    DBI,
+    nottshcMethods (>= 0.0.1)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
@@ -58,4 +59,5 @@ BugReports: https://github.com/milanwiedemann/experiencesdashboard/issues
 Depends: 
     R (>= 2.10)
 Remotes:  
-    CDU-data-science-team/nottshc
+    CDU-data-science-team/nottshc,
+    CDU-data-science-team/nottshcMethods
