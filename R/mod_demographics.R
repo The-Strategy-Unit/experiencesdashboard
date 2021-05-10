@@ -73,16 +73,29 @@ mod_demographics_server <- function(id, filter_data){
     
     output$age_graph <- renderPlot({
       
-      db_data %>% 
+      filter_data() %>% 
         dplyr::arrange(age) %>% 
         dplyr::mutate(age = factor(age, 
                                    levels = age, 
                                    labels = age_label, 
                                    exclude = NULL)) %>% 
         dplyr::count(age) %>% 
+        tidyr::replace_na(list(age = "Unknown")) %>% 
         ggplot2::ggplot(ggplot2::aes(x = age, y = n)) + 
         ggplot2::geom_col() + 
         ggplot2::xlab("Age") + 
+        nottshcMethods::theme_nottshc()
+    })
+    
+    output$gender_graph <- renderPlot({
+      
+      filter_data() %>% 
+        dplyr::arrange(gender) %>% 
+        dplyr::count(gender) %>% 
+        tidyr::replace_na(list(gender = "Unknown")) %>% 
+        ggplot2::ggplot(ggplot2::aes(x = gender, y = n)) + 
+        ggplot2::geom_col() + 
+        ggplot2::xlab("Gender") + 
         nottshcMethods::theme_nottshc()
     })
   })

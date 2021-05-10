@@ -82,7 +82,11 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
         age == 7 ~ "80+",
         TRUE ~ NA_character_
       )) %>% 
-      dplyr::rename(ethnicity = ethnic)
+      dplyr::rename(ethnicity = ethnic) %>% 
+      dplyr::mutate(gender = dplyr::case_when(
+        gender %in% c("M", "F", "O", NA) ~ gender,
+        TRUE ~ NA_character_
+      ))
   } else {
     
     db_tidy <- db_tidy %>%
