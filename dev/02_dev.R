@@ -43,6 +43,8 @@ usethis::use_package( "pander" )
 usethis::use_package( "pool" )
 usethis::use_package( "odbc" )
 usethis::use_package( "DBI" )
+usethis::use_dev_package("nottshcMethods", 
+                         remote = "CDU-data-science-team/nottshcMethods")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
