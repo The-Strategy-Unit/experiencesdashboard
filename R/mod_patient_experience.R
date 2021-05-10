@@ -34,6 +34,10 @@ mod_patient_experience_ui <- function(id){
       tabPanel(
         "Comment search",
         mod_search_text_ui("search_text_ui_1")
+      ),
+      tabPanel(
+        "Demographics",
+        mod_demographics_ui("demographics_ui_1")
       )
     )
   )

@@ -147,17 +147,6 @@ app_server <- function( input, output, session ) {
     )
   })
   
-  observeEvent(input$launch_filter_demographics, {
-    
-    showModal(
-      modalDialog(
-        selectInput("select_age", label = "Select age (defaults to all)",
-                    choices = store_inputs(),
-                    selected = NULL, multiple = TRUE),
-        size = "l")
-    )
-  })
-  
   # Create reactive data ----
   filter_data <- reactive({
     
@@ -252,4 +241,7 @@ app_server <- function( input, output, session ) {
   
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)
+  
+  demographic_filters <- mod_demographics_server("demographics_ui_1",
+                                                 filter_data = filter_data)
 }

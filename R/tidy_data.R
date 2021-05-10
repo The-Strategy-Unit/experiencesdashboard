@@ -81,7 +81,8 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
         age == 6 ~ "65-79",
         age == 7 ~ "80+",
         TRUE ~ NA_character_
-      ))
+      )) %>% 
+      dplyr::rename(ethnicity = ethnic)
   } else {
     
     db_tidy <- db_tidy %>%
