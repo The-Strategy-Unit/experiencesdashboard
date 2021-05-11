@@ -24,7 +24,7 @@ app_server <- function( input, output, session ) {
   
   # vector of sentiment names
   
-  nrc_sentiments <- tidytext::get_sentiments("nrc") %>%
+  nrc_sentiments <- sentiment_nrc %>%
     dplyr::select(sentiment) %>%
     dplyr::distinct() %>%
     dplyr::pull() %>%
@@ -186,7 +186,7 @@ app_server <- function( input, output, session ) {
     filter_data() %>%
       dplyr::mutate(linenumber = dplyr::row_number()) %>% 
       tidytext::unnest_tokens(word, comment_txt) %>%
-      dplyr::left_join(tidytext::get_sentiments("nrc"), by = "word") %>% 
+      dplyr::left_join(sentiment_nrc, by = "word") %>% 
       dplyr::count(linenumber, sentiment, name = 'sentiment_count') %>%
       dplyr::mutate(sentiment_count = dplyr::case_when(
         is.na(sentiment) ~ NA_integer_,
