@@ -43,7 +43,13 @@ usethis::use_package( "pander" )
 usethis::use_package( "pool" )
 usethis::use_package( "odbc" )
 usethis::use_package( "DBI" )
+<<<<<<< Updated upstream
 usethis::use_dev_package("nottshc", remote = "CDU-data-science-team/nottshc")
+=======
+usethis::use_package( "dbplyr" )
+usethis::use_dev_package("nottshcMethods", 
+                         remote = "CDU-data-science-team/nottshcMethods")
+>>>>>>> Stashed changes
 
 ## Add modules ----
 ## Create a module infrastructure in R/
