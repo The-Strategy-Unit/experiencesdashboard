@@ -10,7 +10,7 @@ app_server <- function( input, output, session ) {
   # fetch data
   
   pool <- pool::dbPool(drv = odbc::odbc(),
-                       driver = "MySQL ODBC 8.0 Unicode Driver",
+                       driver = "Maria DB",
                        server = Sys.getenv("HOST_NAME"),
                        UID = Sys.getenv("DB_USER"),
                        PWD = Sys.getenv("MYSQL_PASSWORD"),
@@ -30,18 +30,28 @@ app_server <- function( input, output, session ) {
     dplyr::pull() %>%
     sort()
   
-  # render ALL the inputs
+  # store values of demographics and location_1 from last 3 years
+  
+  interpolate_date <- Sys.Date()
+  
+  store_data <- db_data %>% 
+    dplyr::filter(date > interpolate_date - 3 * 365) %>% 
+    dplyr::select(location_1, age, age_label, gender, ethnicity) %>% 
+    dplyr::collect()
+    
+  # render UI---
   
   output$filter_location_1 <- renderUI({
     
-    location_1_choices <- db_data %>%
+    location_1_choices <- store_data %>%
       dplyr::distinct(location_1) %>%
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
       dplyr::filter(!is.na(location_1))
 
     selectInput(
       "select_location_1",
-      label = h5(strong(paste0("Select ", get_golem_config("location_1"), " :"))),
+      label = h5(strong(paste0("Select ", get_golem_config("location_1"),
+                               " (defaults to all) :"))),
       choices = sort(location_1_choices %>% dplyr::pull(location_1)),
       multiple = TRUE,
       selected = NULL
@@ -128,10 +138,45 @@ app_server <- function( input, output, session ) {
   # Create reactive data ----
   filter_data <- reactive({
     
-    db_data %>%
+    return_data <- db_data
+    
+    # filter location
+    
+    if(isTruthy(input$select_location_1)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(location_1 %in% !!input$select_location_1)
+    }
+    
+    if(isTruthy(input$select_location_2)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(location_2 %in% !!input$select_location_2)
+    }
+    
+    if(isTruthy(input$select_location_3)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(location_3 %in% !!input$select_location_3)
+    }
+    
+    # filter demographics
+    
+    if(isTruthy(demographic_filters()$select_age)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(age_label %in% !!demographic_filters()$select_age)
+    }
+    
+    if(isTruthy(demographic_filters()$select_gender)){
+      
+      return_data <- return_data %>% 
+        dplyr::filter(gender %in% !!demographic_filters()$select_gender)
+    }
+    
+    return_data %>%
       dplyr::filter(date > !!input$date_range[1],
                     date < !!input$date_range[2]) %>%
-      dplyr::filter(location_1 %in% !!input$select_location_1) %>%
       dplyr::collect() %>% 
       dplyr::arrange(date)
   })
@@ -162,6 +207,8 @@ app_server <- function( input, output, session ) {
       )
   })
   
+  # modules----
+  
   mod_patient_experience_server("patient_experience_ui_1")
   
   mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
@@ -189,4 +236,8 @@ app_server <- function( input, output, session ) {
   
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)
+  
+  demographic_filters <- mod_demographics_server("demographics_ui_1",
+                                                 filter_data = filter_data,
+                                                 store_data = store_data)
 }
