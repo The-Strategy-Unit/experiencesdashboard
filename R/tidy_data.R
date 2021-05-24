@@ -44,7 +44,8 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
   code_fields <- grep("code", colnames(data), value = TRUE)
   
   # get the codes db connection
-  db_codes_exp_data <- dplyr::tbl(conn, dbplyr::in_schema("TEXT_MINING", "NewCodes")) %>%
+  db_codes_exp_data <- dplyr::tbl(
+    conn, dbplyr::in_schema("TEXT_MINING", "NewCodes")) %>%
     dplyr::rename_all(janitor::make_clean_names)
   
   # TIDY FUNCTION HERE
@@ -86,11 +87,22 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
       dplyr::mutate(gender = dplyr::case_when(
         gender %in% c("M", "F", "O", NA) ~ gender,
         TRUE ~ NA_character_
+      )) %>% 
+      dplyr::mutate(ethnicity = dplyr::case_when(
+        substr(ethnicity, 1, 1) == "W" ~ "White",
+        substr(ethnicity, 1, 1) == "M" ~ "Mixed",
+        substr(ethnicity, 1, 1) == "A" ~ "Asian",
+        substr(ethnicity, 1, 1) == "B" ~ "Black",
+        ethnicity == "O" ~ "Other",
+        ethnicity == "GRT" ~ "Gypsy/ Romany/ Traveller",
+        TRUE ~ NA_character_
       ))
   } else {
     
     db_tidy <- db_tidy %>%
-      dplyr::mutate(age_label = age)
+      dplyr::mutate(age_label = dplyr::case_when(
+        age == "Up to 25" ~ "0 - 25",
+        TRUE ~ age))
   }
   
   db_tidy <- db_tidy %>%

@@ -38,7 +38,7 @@ app_server <- function( input, output, session ) {
     dplyr::filter(date > interpolate_date - 3 * 365) %>% 
     dplyr::select(location_1, age, age_label, gender, ethnicity) %>% 
     dplyr::collect()
-    
+  
   # render UI---
   
   output$filter_location_1 <- renderUI({
@@ -47,7 +47,7 @@ app_server <- function( input, output, session ) {
       dplyr::distinct(location_1) %>%
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
       dplyr::filter(!is.na(location_1))
-
+    
     selectInput(
       "select_location_1",
       label = h5(strong(paste0("Select ", get_golem_config("location_1"),
@@ -87,13 +87,13 @@ app_server <- function( input, output, session ) {
     location_3_choices <- db_data
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
-
+      
       location_3_choices <- location_3_choices %>%
         dplyr::filter(location_1 %in% !!input$select_location_1)
     }
-
+    
     if(isTruthy(input$select_location_2)){ # filter by location_2 if exists
-
+      
       location_3_choices <- location_3_choices %>%
         dplyr::filter(location_2 %in% !!input$select_location_2)
     }
@@ -118,7 +118,7 @@ app_server <- function( input, output, session ) {
       dplyr::summarise(min_date = min(date),
                        max_date = max(date)) %>%
       dplyr::collect()
-
+    
     dateRangeInput(
       "date_range",
       label = h5(strong("Select date range:")),
@@ -138,7 +138,9 @@ app_server <- function( input, output, session ) {
   # Create reactive data ----
   filter_data <- reactive({
     
-    return_data <- db_data
+    return_data <- db_data %>% 
+      dplyr::filter(date > !!input$date_range[1],
+                    date < !!input$date_range[2])
     
     # filter location
     
@@ -162,23 +164,48 @@ app_server <- function( input, output, session ) {
     
     # filter demographics
     
+    demography_data <- return_data
+    
     if(isTruthy(demographic_filters()$select_age)){
       
-      return_data <- return_data %>% 
+      demography_data <- demography_data %>% 
         dplyr::filter(age_label %in% !!demographic_filters()$select_age)
     }
     
     if(isTruthy(demographic_filters()$select_gender)){
       
-      return_data <- return_data %>% 
+      demography_data <- demography_data %>% 
         dplyr::filter(gender %in% !!demographic_filters()$select_gender)
     }
     
-    return_data %>%
-      dplyr::filter(date > !!input$date_range[1],
-                    date < !!input$date_range[2]) %>%
-      dplyr::collect() %>% 
-      dplyr::arrange(date)
+    if(isTruthy(demographic_filters()$select_ethnicity)){
+      
+      demography_data <- demography_data %>% 
+        dplyr::filter(gender %in% !!demographic_filters()$select_gender)
+    }
+    
+    no_responses <- demography_data %>% 
+      dplyr::tally() %>% 
+      dplyr::pull(n)
+    
+    if(no_responses < 20){
+      
+      return_data <- return_data %>%
+               dplyr::collect() %>% 
+               dplyr::arrange(date)
+    } else {
+      
+      return_data <- demography_data %>% 
+               dplyr::collect() %>% 
+               dplyr::arrange(date)
+    }
+    
+    demography_number <- demography_data %>% 
+      dplyr::tally() %>% 
+      dplyr::pull(n)
+    
+    return(list("filter_data" = return_data, 
+                "demography_number" = demography_number))
   })
   
   filter_sentiment <- reactive({

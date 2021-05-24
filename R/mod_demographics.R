@@ -11,6 +11,7 @@ mod_demographics_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidRow(textOutput(ns("total_responses"))),
+    hr(),
     fluidRow(
       column(4, uiOutput(ns("age_UI"))),
       column(4, uiOutput(ns("gender_UI"))),
@@ -45,8 +46,8 @@ mod_demographics_server <- function(id, filter_data, store_data){
       
       if(no_responses < 20){
         
-        return(paste0("There are only " , no_responses, " in your selection. 
-                      Filtering below 20 responses with demographic 
+        return(paste0("There are only " , no_responses, " responses in your 
+                      selection. Filtering below 20 responses with demographic 
                       selections is disabled for reasons of confidentiality. 
                       Please widen your selection by clinical area or 
                       demography"))
