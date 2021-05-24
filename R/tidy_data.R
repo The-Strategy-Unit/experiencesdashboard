@@ -90,7 +90,7 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
   } else {
     
     db_tidy <- db_tidy %>%
-      mutate(age_label = age)
+      dplyr::mutate(age_label = age)
   }
   
   db_tidy <- db_tidy %>%

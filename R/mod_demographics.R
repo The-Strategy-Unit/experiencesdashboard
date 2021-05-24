@@ -10,6 +10,7 @@
 mod_demographics_ui <- function(id){
   ns <- NS(id)
   tagList(
+    fluidRow(textOutput(ns("total_responses"))),
     fluidRow(
       column(4, uiOutput(ns("age_UI"))),
       column(4, uiOutput(ns("gender_UI"))),
@@ -22,7 +23,9 @@ mod_demographics_ui <- function(id){
     ),
     hr(),
     fluidRow(
-      column(4, plotOutput(ns("compare_age")))
+      column(4, plotOutput(ns("compare_age"))),
+      column(4, plotOutput(ns("compare_gender"))),
+      column(4, plotOutput(ns("compare_ethnicity")))
     )
   )
 }
@@ -33,6 +36,26 @@ mod_demographics_ui <- function(id){
 mod_demographics_server <- function(id, filter_data, store_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    # top row
+    
+    output$total_responses <- renderText({
+      
+      no_responses <- nrow(filter_data())
+      
+      if(no_responses < 20){
+        
+        return(paste0("There are only " , no_responses, " in your selection. 
+                      Filtering below 20 responses with demographic 
+                      selections is disabled for reasons of confidentiality. 
+                      Please widen your selection by clinical area or 
+                      demography"))
+      } else {
+        
+        return(paste0("There are a total number of ", 
+                      no_responses, " responses in your selection"))
+      }
+    })
     
     # UI----
     
@@ -88,48 +111,36 @@ mod_demographics_server <- function(id, filter_data, store_data){
                                    levels = age, 
                                    labels = age_label, 
                                    exclude = NULL)) %>% 
-        dplyr::count(age) %>% 
-        tidyr::replace_na(list(age = "Unknown")) %>% 
-        ggplot2::ggplot(ggplot2::aes(x = age, y = n)) + 
-        ggplot2::geom_col() + 
-        ggplot2::xlab("Age") + 
-        nottshcMethods::theme_nottshc()
+        demographic_distribution(variable = "age")
     })
     
     output$gender_graph <- renderPlot({
       
       filter_data() %>% 
-        dplyr::arrange(gender) %>% 
-        dplyr::count(gender) %>% 
-        tidyr::replace_na(list(gender = "Unknown")) %>% 
-        ggplot2::ggplot(ggplot2::aes(x = gender, y = n)) + 
-        ggplot2::geom_col() + 
-        ggplot2::xlab("Gender") + 
-        nottshcMethods::theme_nottshc()
+        demographic_distribution(variable = "gender")
+    })
+    
+    output$ethnicity_graph <- renderPlot({
+      
+      filter_data() %>% 
+        demographic_distribution(variable = "ethnicity")
     })
     
     # compare scores----
     
     output$compare_age <- renderPlot({
       
-      filter_data() %>% 
-        dplyr::filter(!is.na(age_label)) %>% 
-        dplyr::group_by(age_label) %>% 
-        dplyr::summarise(fft = mean(fft, na.rm = TRUE),
-                         listening = mean(listening, na.rm = TRUE),
-                         communication = mean(communication, na.rm = TRUE),
-                         respect = mean(respect, na.rm = TRUE),
-                         inv_care = mean(inv_care, na.rm = TRUE),
-                         positive_q = mean(positive_q, na.rm = TRUE),
-                         n = dplyr::n()) %>% 
-        dplyr::filter(n > 10) %>% 
-        dplyr::mutate(dplyr::across(where(is.numeric), ~ round(. * 20, 1))) %>% 
-        dplyr::select(-n) %>% 
-        tidyr::pivot_longer(-age_label) %>% 
-        ggplot2::ggplot(ggplot2::aes(x = age_label, y = value, 
-                                     group = name, fill = name)) + 
-        ggplot2::geom_col(position = "dodge") + nottshcMethods::theme_nottshc() +
-        ggplot2::ylab("%") + ggplot2::ylim(0, 100)
+      compare_demographics(filter_data(), "age_label")
+    })
+    
+    output$compare_gender <- renderPlot({
+      
+      compare_demographics(filter_data(), "gender")
+    })
+    
+    output$compare_ethnicity <- renderPlot({
+      
+      compare_demographics(filter_data(), "ethnicity")
     })
     
     reactive(
