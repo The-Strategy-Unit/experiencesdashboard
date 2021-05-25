@@ -90,7 +90,7 @@ mod_category_criticality_server <- function(id, filter_data){
       
       req(input$tabset != "summary")
       
-      choices <- na.omit(unique(filter_data()$category))
+      choices <- na.omit(unique(filter_data()$filter_data$category))
       
       selectInput(
         session$ns("select_super"),
@@ -104,7 +104,7 @@ mod_category_criticality_server <- function(id, filter_data){
     # Create reactive data ----
     tidy_trust_data_r <- reactive({
       
-      filter_data() %>%
+      filter_data()$filter_data %>%
         dplyr::filter(category %in% input$select_super)
     })
     

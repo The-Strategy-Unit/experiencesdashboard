@@ -24,7 +24,7 @@ mod_fft_server <- function(id, filter_data){
 
     output$spc_plot <- renderPlot({
       
-      graph_data <- split_data_spc(filter_data(), variable = "fft", 
+      graph_data <- split_data_spc(filter_data()$filter_data, variable = "fft", 
                                    chunks = 15)
       
       plot_fft_spc(graph_data)

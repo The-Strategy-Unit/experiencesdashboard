@@ -41,7 +41,7 @@ mod_text_reactable_server <- function(id, filter_data, filter_category){
     # Create reactive data ----
     tidy_trust_data_r <- reactive({
       
-      filter_data() %>%
+      filter_data()$filter_data %>%
         dplyr::filter(category %in% filter_category())
     })
     

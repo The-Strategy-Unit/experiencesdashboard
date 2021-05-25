@@ -42,7 +42,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$total_responses <- renderText({
       
-      no_responses <- nrow(filter_data())
+      no_responses <- filter_data()$demography_number
       
       if(no_responses < 20){
         
@@ -53,7 +53,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
                       demography"))
       } else {
         
-        return(paste0("There are a total number of ", 
+        return(paste0("There is a total of ", 
                       no_responses, " responses in your selection"))
       }
     })
@@ -106,7 +106,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$age_graph <- renderPlot({
       
-      filter_data() %>% 
+      filter_data()$filter_data %>% 
         dplyr::arrange(age) %>% 
         dplyr::mutate(age = factor(age, 
                                    levels = age, 
@@ -117,13 +117,13 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$gender_graph <- renderPlot({
       
-      filter_data() %>% 
+      filter_data()$filter_data %>% 
         demographic_distribution(variable = "gender")
     })
     
     output$ethnicity_graph <- renderPlot({
       
-      filter_data() %>% 
+      filter_data()$filter_data %>% 
         demographic_distribution(variable = "ethnicity")
     })
     
@@ -131,17 +131,17 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$compare_age <- renderPlot({
       
-      compare_demographics(filter_data(), "age_label")
+      compare_demographics(filter_data()$filter_data, "age_label")
     })
     
     output$compare_gender <- renderPlot({
       
-      compare_demographics(filter_data(), "gender")
+      compare_demographics(filter_data()$filter_data, "gender")
     })
     
     output$compare_ethnicity <- renderPlot({
       
-      compare_demographics(filter_data(), "ethnicity")
+      compare_demographics(filter_data()$filter_data, "ethnicity")
     })
     
     reactive(

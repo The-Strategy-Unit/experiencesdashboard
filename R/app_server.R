@@ -210,7 +210,7 @@ app_server <- function( input, output, session ) {
   
   filter_sentiment <- reactive({
     
-    filter_data() %>%
+    filter_data()$filter_data %>%
       dplyr::mutate(linenumber = dplyr::row_number()) %>% 
       tidytext::unnest_tokens(word, comment_txt) %>%
       dplyr::left_join(sentiment_nrc, by = "word") %>% 
@@ -224,7 +224,7 @@ app_server <- function( input, output, session ) {
                          values_fill = 0,
                          names_sort = TRUE) %>%
       dplyr::full_join(
-        filter_data() %>%
+        filter_data()$filter_data %>%
           dplyr::mutate(linenumber = dplyr::row_number()),
         by = "linenumber") %>%
       dplyr::mutate(all_sentiments =  
