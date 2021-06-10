@@ -54,7 +54,16 @@ mod_summary_server <- function(id, db_conn){
       
       raw_df <- imported$data()
       
+      raw_df <- raw_df %>% 
+        dplyr::filter(!is.na(date))
+      
       DBI::dbWriteTable(db_conn, "trust_d", raw_df, append = TRUE)
+      
+      showModal(modalDialog(
+        title = "Important message",
+        "This is an important message!",
+        easyClose = TRUE
+      ))
     })
   })
 }
