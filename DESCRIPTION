@@ -45,7 +45,8 @@ Imports:
     odbc,
     DBI,
     nottshcMethods,
-    dbplyr
+    dbplyr,
+    datamods
 Remotes: 
     CDU-data-science-team/nottshcMethods
 Encoding: UTF-8

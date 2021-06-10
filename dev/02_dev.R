@@ -44,6 +44,7 @@ usethis::use_package( "pool" )
 usethis::use_package( "odbc" )
 usethis::use_package( "DBI" )
 usethis::use_package( "dbplyr" )
+usethis::use_package( "datamods" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/

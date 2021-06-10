@@ -236,7 +236,7 @@ app_server <- function( input, output, session ) {
   
   # modules----
   
-  mod_summary_server("summary_ui_1")
+  mod_summary_server("summary_ui_1", db_conn = pool)
   
   # patient experience modules----
   
