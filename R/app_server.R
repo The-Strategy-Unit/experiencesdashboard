@@ -236,6 +236,10 @@ app_server <- function( input, output, session ) {
   
   # modules----
   
+  mod_summary_server("summary_ui_1")
+  
+  # patient experience modules----
+  
   mod_patient_experience_server("patient_experience_ui_1")
   
   mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)

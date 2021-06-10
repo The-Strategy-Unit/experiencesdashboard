@@ -62,9 +62,9 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
                         values_to = "code") %>%
     dplyr::mutate(code = na_if(code, "XX")) %>%
     dplyr::filter(
-      str_sub(comment_type, -1) == str_sub(type_category, -1)) %>%
+      str_sub(comment_type, -1) == str_sub(type_category, -1)) %>% 
     dplyr::left_join(db_codes_exp_data,
-                     by = c("code"), copy = TRUE) %>%
+                     by = c("code"), copy = TRUE, auto_index = TRUE) %>%
     dplyr::mutate(comment_key = paste0(key, "_", type_category)) %>%
     dplyr::select(colnames(.))
   
