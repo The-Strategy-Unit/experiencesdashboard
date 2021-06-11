@@ -14,14 +14,6 @@ mod_summary_ui <- function(id){
       
       fluidRow(
         actionButton(ns("launch_modal"), "Launch modal window")
-      ),
-      
-      fluidRow(
-        column(
-          width = 8,
-          tags$b("Imported data:"),
-          DT::DTOutput(ns("show_data"))
-        )
       )
     )
   )
@@ -44,10 +36,6 @@ mod_summary_server <- function(id, db_conn){
     
     imported <- datamods::import_server("myid", return_class = "tbl_df")
     
-    # output$show_data <- DT::renderDT({
-    #   imported$data()
-    # })
-    
     observe({
       
       req(imported$data())
@@ -60,8 +48,8 @@ mod_summary_server <- function(id, db_conn){
       DBI::dbWriteTable(db_conn, "trust_d", raw_df, append = TRUE)
       
       showModal(modalDialog(
-        title = "Important message",
-        "This is an important message!",
+        title = "Success!",
+        paste0(nrow(raw_df), " records successfully imported"),
         easyClose = TRUE
       ))
     })
