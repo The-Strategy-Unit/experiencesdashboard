@@ -13,7 +13,7 @@ mod_summary_ui <- function(id){
     fluidPage(
       
       fluidRow(
-        actionButton(ns("launch_modal"), "Launch modal window")
+        actionButton(ns("launch_modal"), "Upload new data")
       )
     )
   )
@@ -43,13 +43,29 @@ mod_summary_server <- function(id, db_conn){
       raw_df <- imported$data()
       
       raw_df <- raw_df %>% 
-        dplyr::filter(!is.na(date))
+        dplyr::filter(!is.na(date)) %>% 
+        dplyr::mutate(date = as.Date(date))
       
-      DBI::dbWriteTable(db_conn, "trust_d", raw_df, append = TRUE)
+      preds <- experienceAnalysis::calc_predict_unlabelled_text(
+        x = raw_df,
+        file_path=NULL,
+        predictor='comment',
+        preds_column=NULL,
+        column_names=NULL,
+        pipe_path='fitted_pipeline.sav'
+      ) %>% 
+        dplyr::rename(code = comment_preds)
+      
+      final_df <- dplyr::bind_cols(
+        raw_df, 
+        preds)
+
+      DBI::dbWriteTable(db_conn, get_golem_config("trust_name"),
+                        final_df, append = TRUE)
       
       showModal(modalDialog(
         title = "Success!",
-        paste0(nrow(raw_df), " records successfully imported"),
+        paste0(nrow(final_df), " records successfully imported"),
         easyClose = TRUE
       ))
     })

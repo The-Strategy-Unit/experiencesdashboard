@@ -45,6 +45,7 @@ usethis::use_package( "odbc" )
 usethis::use_package( "DBI" )
 usethis::use_package( "dbplyr" )
 usethis::use_package( "datamods" )
+usethis::use_package( "experienceAnalysis" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
