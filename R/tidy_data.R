@@ -63,14 +63,14 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
     dplyr::mutate(code = na_if(code, "XX")) %>%
     dplyr::filter(
       str_sub(comment_type, -1) == str_sub(type_category, -1)) %>% 
-    dplyr::left_join(db_codes_exp_data,
-                     by = c("code"), copy = TRUE, auto_index = TRUE) %>%
     dplyr::mutate(comment_key = paste0(key, "_", type_category)) %>%
     dplyr::select(colnames(.))
   
   if(trust_id == "trust_a"){
     
     db_tidy <- db_tidy %>%
+      dplyr::left_join(db_codes_exp_data,
+                       by = c("code"), copy = TRUE) %>%
       dplyr::mutate(crit = case_when(comment_type == "comment_1" ~ imp_crit * -1,
                                      comment_type == "comment_2" ~ best_crit)) %>% 
       dplyr::mutate(age_label = dplyr::case_when(
@@ -102,7 +102,8 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
     db_tidy <- db_tidy %>%
       dplyr::mutate(age_label = dplyr::case_when(
         age == "Up to 25" ~ "0 - 25",
-        TRUE ~ age))
+        TRUE ~ age)) %>% 
+      dplyr::rename(category = code)
   }
   
   db_tidy <- db_tidy %>%

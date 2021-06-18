@@ -48,17 +48,28 @@ mod_summary_server <- function(id, db_conn){
       
       preds <- experienceAnalysis::calc_predict_unlabelled_text(
         x = raw_df,
-        file_path=NULL,
-        predictor='comment',
-        preds_column=NULL,
-        column_names=NULL,
-        pipe_path='fitted_pipeline.sav'
+        file_path = NULL,
+        predictor = 'comment',
+        preds_column = NULL,
+        column_names = NULL,
+        pipe_path = 'fitted_pipeline.sav'
       ) %>% 
         dplyr::rename(code = comment_preds)
       
+      criticality <- experienceAnalysis::calc_predict_unlabelled_text(
+        x = raw_df,
+        file_path = NULL,
+        predictor = 'comment',
+        preds_column = NULL,
+        column_names = NULL,
+        pipe_path = 'pipeline_criticality.sav'
+      ) %>% 
+        dplyr::rename(criticality = comment_preds)
+      
       final_df <- dplyr::bind_cols(
         raw_df, 
-        preds)
+        preds,
+        criticality)
 
       DBI::dbWriteTable(db_conn, get_golem_config("trust_name"),
                         final_df, append = TRUE)

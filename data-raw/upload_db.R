@@ -161,8 +161,14 @@ con <- DBI::dbConnect(odbc::odbc(),
                       database = "TEXT_MINING",
                       encoding = "UTF-8")
 
-DBI::dbWriteTable(con, 'trust_b', trust_b, overwrite = TRUE)
+DBI::dbWriteTable(con, 'trust_b', trust_b %>% head(10), overwrite = TRUE)
 
-dbWriteTable(con, 'trust_c', trust_c, overwrite = TRUE)
+DBI::dbWriteTable(con, 'trust_c', trust_c %>% head(10), overwrite = TRUE)
 
 dbDisconnect(con)
+
+write.csv(trust_b %>% dplyr::select(-code), quote = TRUE, row.names = FALSE,
+          file = "tests/text_mining_upload_b.csv")
+
+write.csv(trust_c %>% dplyr::select(-code), quote = TRUE, row.names = FALSE,
+          file = "tests/text_mining_upload_c.csv")
