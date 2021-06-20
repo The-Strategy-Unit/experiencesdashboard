@@ -11,14 +11,15 @@ mod_text_reactable_ui <- function(id){
   ns <- NS(id)
   tagList(
     
-    reactable::reactableOutput(ns("best_table"))
+    reactable::reactableOutput(ns("table"))
   )
 }
 
 #' text_reactable Server Functions
 #'
 #' @noRd 
-mod_text_reactable_server <- function(id, filter_data, filter_category){
+mod_text_reactable_server <- function(id, filter_data, filter_category,
+                                      comment_type){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
@@ -30,22 +31,22 @@ mod_text_reactable_server <- function(id, filter_data, filter_category){
     })
     
     # Create reactive table (best) ----
-    output$best_table <- reactable::renderReactable({
+    output$table <- reactable::renderReactable({
       
-      best_comments <- tidy_trust_data_r() %>% 
+      table_comments <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
-        dplyr::filter(comment_type == "comment_2") %>% 
+        dplyr::filter(comment_type == comment_type) %>% 
         dplyr::select(comment_txt, crit)
       
-      # Trick so table is max 1000 rows, otherwise takes ages to load
-      if (nrow(best_comments) >= 1000) {
-        n_table_best <- 1000
-      } else if (nrow(best_comments) < 1000) {
-        n_table_best <- nrow(best_comments)
-      }
+      # # Trick so table is max 1000 rows, otherwise takes ages to load
+      # if (nrow(best_comments) >= 1000) {
+      #   n_table_best <- 1000
+      # } else if (nrow(best_comments) < 1000) {
+      #   n_table_best <- nrow(best_comments)
+      # }
       
       reactable::reactable(
-        dplyr::sample_n(best_comments, n_table_best),
+        table_comments, # %>% dplyr::sample_n(n_table_best),
         borderless = TRUE,
         highlight = TRUE,
         showSortIcon = FALSE,
@@ -61,7 +62,7 @@ mod_text_reactable_server <- function(id, filter_data, filter_category){
                                    filterable = TRUE,
                                    name = "Criticality",
                                    cell = function(value) {
-                                     class <- paste0("tag crit-best-", value)
+                                     class <- paste0("tag crit-", value)
                                      htmltools::div(class = class, value)
                                    }
           )
