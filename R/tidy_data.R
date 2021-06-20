@@ -103,7 +103,8 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
       dplyr::mutate(age_label = dplyr::case_when(
         age == "Up to 25" ~ "0 - 25",
         TRUE ~ age)) %>% 
-      dplyr::rename(category = code)
+      dplyr::rename(category = code) %>% 
+      dplyr::filter(code != "Miscellaneous")
   }
   
   db_tidy <- db_tidy %>%

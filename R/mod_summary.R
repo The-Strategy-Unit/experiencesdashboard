@@ -43,8 +43,7 @@ mod_summary_server <- function(id, db_conn){
       raw_df <- imported$data()
       
       raw_df <- raw_df %>% 
-        dplyr::filter(!is.na(date)) %>% 
-        dplyr::mutate(date = as.Date(date))
+        dplyr::filter(!is.na(date))
       
       preds <- experienceAnalysis::calc_predict_unlabelled_text(
         x = raw_df,
