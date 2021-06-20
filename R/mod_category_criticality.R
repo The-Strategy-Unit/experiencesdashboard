@@ -39,7 +39,18 @@ mod_category_criticality_ui <- function(id){
                  )
         ),
         tabPanel("Comments", value = "comments",
-                 mod_text_reactable_ui("text_reactable_ui_1")
+                 fluidRow(
+                   column(6, h2(get_golem_config("comment_1")),
+                          p("Click a row to see comments related to that category"),
+                          mod_text_reactable_ui("text_reactable_ui_1")),
+                   
+                   if(isTruthy(get_golem_config("comment_2"))){
+                     
+                     column(6, h2(get_golem_config("comment_2")),
+                            p("Click a row to see comments related to that category"),
+                            mod_text_reactable_ui("text_reactable_ui_2"))
+                   }
+                 )
         ),
         tabPanel("Timeline", value = "timeline",
                  br(),

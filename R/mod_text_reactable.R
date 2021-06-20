@@ -11,26 +11,10 @@ mod_text_reactable_ui <- function(id){
   ns <- NS(id)
   tagList(
     
-    fluidRow(
-      column(12,
-             box(
-               width = NULL,
-               background = "light-blue",
-               textOutput(ns("category_crit_table_txt"))
-             )
-      )
-    ),
-    fluidRow(
-      column(6,
-             reactable::reactableOutput(ns("best_table"))
-      ),
-      column(6,
-             reactable::reactableOutput(ns("improve_table"))
-      )
-    )
+    reactable::reactableOutput(ns("best_table"))
   )
 }
-    
+
 #' text_reactable Server Functions
 #'
 #' @noRd 
