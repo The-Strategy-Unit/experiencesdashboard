@@ -10,7 +10,7 @@ app_server <- function( input, output, session ) {
   # fetch data
   
   pool <- pool::dbPool(drv = odbc::odbc(),
-                       driver = "MySQL ODBC 8.0 Unicode Driver",
+                       driver = "Maria DB",
                        server = Sys.getenv("HOST_NAME"),
                        UID = Sys.getenv("DB_USER"),
                        PWD = Sys.getenv("MYSQL_PASSWORD"),
@@ -235,6 +235,10 @@ app_server <- function( input, output, session ) {
   })
   
   # modules----
+  
+  mod_summary_server("summary_ui_1", db_conn = pool)
+  
+  # patient experience modules----
   
   mod_patient_experience_server("patient_experience_ui_1")
   
