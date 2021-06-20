@@ -68,7 +68,7 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
   if(trust_id == "trust_a"){
     
     db_tidy <- db_tidy %>%
-      dplyr::mutate_at(dplyr::all_of(code_fields), toupper) %>%
+      dplyr::mutate(code = toupper(code)) %>%
       dplyr::left_join(db_codes_exp_data,
                        by = c("code"), copy = TRUE) %>%
       dplyr::mutate(crit = case_when(comment_type == "comment_1" ~ imp_crit * -1,
