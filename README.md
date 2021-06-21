@@ -33,7 +33,8 @@ run). It relates to the file location of report.Rmd and if you know how
 to fix this bug please make a PR 😁.
 
 A hosted version can be found
-[here](https://involve.nottshc.nhs.uk:8443/experience_dashboard/).
+[here](https://involve.nottshc.nhs.uk:8443/experience_dashboard/)
+(note it is in dev and currently very slow- the final product will be much quicker 😄).
 Please note the some of the data has been modified for the purposes of
 demonstration so it should NOT be used for reporting and is not accurate
 in several important ways.
