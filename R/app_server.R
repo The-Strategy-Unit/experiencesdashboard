@@ -17,9 +17,9 @@ app_server <- function( input, output, session ) {
                        database = "TEXT_MINING",
                        Port = 3306)
   
-  db_data <- dplyr::tbl(pool, 
-                        dbplyr::in_schema("TEXT_MINING", 
-                                          get_golem_config("trust_name"))) %>% 
+  db_data <- dplyr::tbl(pool,
+                        dbplyr::in_schema("TEXT_MINING",
+                                          get_golem_config("trust_name"))) %>%
     tidy_all_trusts(conn = pool, trust_id = get_golem_config("trust_name"))
   
   # vector of sentiment names
@@ -35,8 +35,8 @@ app_server <- function( input, output, session ) {
   interpolate_date <- Sys.Date()
   
   store_data <- db_data %>% 
-    dplyr::filter(date > interpolate_date - 3 * 365) %>% 
-    dplyr::select(location_1, age, age_label, gender, ethnicity) %>% 
+    dplyr::filter(date > interpolate_date - 3 * 365) %>%
+    dplyr::select(location_1, age, age_label, gender, ethnicity) %>%
     dplyr::collect()
   
   # render UI---
@@ -262,8 +262,10 @@ app_server <- function( input, output, session ) {
                           filter_data = filter_data,
                           comment_type = "comment_2")
   
-  mod_text_reactable_server("text_reactable_ui_1", filter_data = filter_data,
-                            filter_category = filter_category)
+  mod_text_reactable_server("text_reactable_ui_1", 
+                            filter_data = filter_data,
+                            filter_category = filter_category,
+                            comment_type = "comment_1")
   
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)

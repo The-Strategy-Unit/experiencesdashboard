@@ -6,32 +6,47 @@
   font-size: 12px;
 }
 
-.crit-imp-1 {
-  background: hsl(350, 70%, 95%);
-  color: hsl(350, 45%, 30%);
+.crit_-5 {
+  background: #A50026;
 }
 
-.crit-imp-2 {
-  background: hsl(350, 70%, 80%);
-  color: hsl(350, 45%, 25%);
+.crit_-4 {
+  background: #D73027;
 }
 
-.crit-imp-3 {
-  background: hsl(350, 70%, 65%);
-  color: hsl(350, 45%, 20%);
+.crit_-3 {
+  background: #F46D43;
 }
 
-.crit-best-1 {
-  background: hsl(116, 60%, 95%);
-  color: hsl(116, 30%, 25%);
+.crit_-2 {
+  background: #FDAE61;
 }
 
-.crit-best-2 {
-  background: hsl(116, 60%, 80%);
-  color: hsl(116, 30%, 20%);
+.crit_-1 {
+  background: #FEE08B;
 }
 
-.crit-best-3 {
-  background: hsl(116, 60%, 65%);
-  color: hsl(116, 30%, 15%);
+.crit_0 {
+  background: #FFFFBF;
 }
+
+.crit_1 {
+  background: #D9EF8B;
+}
+
+.crit_2 {
+  background: #A6D96A;
+}
+
+.crit_3 {
+  background: #66BD63;
+}
+
+.crit_4 {
+  background: #1A9850;
+}
+
+.crit_5 {
+  background: #006837;
+}
+
