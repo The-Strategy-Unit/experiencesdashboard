@@ -47,23 +47,23 @@ mod_summary_server <- function(id, db_conn){
       
       preds <- experienceAnalysis::calc_predict_unlabelled_text(
         x = raw_df,
-        file_path = NULL,
-        predictor = 'comment',
+        python_setup = FALSE,
+        text_col_name = 'comment',
         preds_column = NULL,
-        column_names = NULL,
+        column_names = "__all__",
         pipe_path = 'fitted_pipeline.sav'
       ) %>% 
-        dplyr::rename(code = comment_preds)
+        dplyr::select(code = comment_preds)
       
       criticality <- experienceAnalysis::calc_predict_unlabelled_text(
         x = raw_df,
-        file_path = NULL,
-        predictor = 'comment',
+        python_setup = FALSE,
+        text_col_name = 'comment',
         preds_column = NULL,
-        column_names = NULL,
+        column_names = "__all__",
         pipe_path = 'pipeline_criticality.sav'
       ) %>% 
-        dplyr::rename(criticality = comment_preds)
+        dplyr::select(criticality = comment_preds)
       
       final_df <- dplyr::bind_cols(
         raw_df, 
