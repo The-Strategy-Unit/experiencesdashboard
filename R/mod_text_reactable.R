@@ -62,7 +62,7 @@ mod_text_reactable_server <- function(id, filter_data, filter_category,
                                    filterable = TRUE,
                                    name = "Criticality",
                                    cell = function(value) {
-                                     class <- paste0("tag crit-", value)
+                                     class <- paste0("tag crit_", value)
                                      htmltools::div(class = class, value)
                                    }
           )
