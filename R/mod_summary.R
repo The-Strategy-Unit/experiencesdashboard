@@ -69,6 +69,12 @@ mod_summary_server <- function(id, db_conn){
         raw_df, 
         preds,
         criticality)
+      
+      final_df <- final_df %>% 
+        dplyr::mutate(criticality = dplyr::case_when(
+          code == "Couldn't be improved" ~ "3",
+          TRUE ~ criticality
+        ))
 
       DBI::dbWriteTable(db_conn, get_golem_config("trust_name"),
                         final_df, append = TRUE)
