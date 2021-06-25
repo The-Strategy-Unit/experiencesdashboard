@@ -50,7 +50,7 @@ mod_summary_server <- function(id, db_conn){
         python_setup = FALSE,
         text_col_name = 'comment',
         preds_column = NULL,
-        column_names = "__all__",
+        column_names = "all_cols",
         pipe_path = 'fitted_pipeline.sav'
       ) %>% 
         dplyr::select(code = comment_preds)
@@ -60,7 +60,7 @@ mod_summary_server <- function(id, db_conn){
         python_setup = FALSE,
         text_col_name = 'comment',
         preds_column = NULL,
-        column_names = "__all__",
+        column_names = "all_cols",
         pipe_path = 'pipeline_criticality.sav'
       ) %>% 
         dplyr::select(criticality = comment_preds)
