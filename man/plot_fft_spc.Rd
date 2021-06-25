@@ -15,5 +15,5 @@ plot_fft_spc(data)
 
 }
 \description{
-TODO, ADD WHAT IS IN HERE AN WHAT ISNT
+Plot data
 }

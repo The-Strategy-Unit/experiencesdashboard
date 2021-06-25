@@ -26,8 +26,8 @@ mod_click_tables_server <- function(id, filter_data, comment_type){
     calculatedTable <- reactive({
       
       calculate_table(
-        table_data = filter_data(), 
-        count_column = "super_category",
+        table_data = filter_data()$filter_data, 
+        count_column = "category",
         comment_type = comment_type,
         click_column = NULL
       )
@@ -53,8 +53,8 @@ mod_click_tables_server <- function(id, filter_data, comment_type){
       
       category_selected <- calculatedTable()$Category[input$table_rows_selected]
       
-      final_text <- show_text(data = filter_data(), 
-                filter_by_column = "super_category", 
+      final_text <- show_text(data = filter_data()$filter_data, 
+                filter_by_column = "category", 
                 filter_by_text = category_selected, 
                 comment_type_filter = comment_type)
       

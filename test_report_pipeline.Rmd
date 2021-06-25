@@ -1,0 +1,42 @@
+---
+title: "test pipeline"
+author: "Chris Beeley"
+date: "15/06/2021"
+output: html_document
+resource_files:
+- requirements.txt
+---
+
+```{r setup, include=FALSE}
+
+library(magrittr)
+library(reticulate)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is an example document to test the deployment with RSConnect.
+
+```{r}
+
+load("text_data.rda")
+
+# reticulate::py_discover_config()
+
+text_data = text_data %>% head(10)
+text_col = "feedback"
+
+preds <- experienceAnalysis::calc_predict_unlabelled_text(
+  x = text_data,
+  file_path=NULL,
+  predictor='feedback',
+  preds_column=NULL,
+  column_names=NULL,
+  pipe_path='fitted_pipeline.sav'
+)
+
+cbind(text_data, preds) %>% 
+  knitr::kable()
+
+```
+

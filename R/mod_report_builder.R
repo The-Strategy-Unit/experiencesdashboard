@@ -31,7 +31,7 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         params <- list(date_from = all_inputs()$date_from,
                        date_to = all_inputs()$date_to,
                        division = all_inputs()$division,
-                       data = filter_data()
+                       data = filter_data()$filter_data
         )
         
         rmarkdown::render(

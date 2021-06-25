@@ -1,8 +1,36 @@
 default:
   golem_name: experiencesdashboard
-  golem_version: 0.0.0.9000
+  golem_version: 0.2.1
   app_prod: no
+  open: yes
 production:
   app_prod: yes
 dev:
   golem_wd: !expr here::here()
+trust_a:
+  trust_name: trust_a
+  comment_1: What could be improved?
+  comment_2: What did we do well?
+  location_1: Division
+  location_2: Directorate
+  location_3: Team
+  question_1: fft
+  question_2: listening
+  question_3: communication
+  question_4: respect
+  question_5: inv_care
+  question_6: positive_q
+trust_b:
+  trust_name: trust_b
+  comment_1: Comments
+  question_1: fft
+  location_1: Location 1
+  location_2: Location 2
+  location_3: Location 3
+trust_c:
+  trust_name: trust_c
+  comment_1: Please tell us anything we could have done better
+  question_1: fft
+  location_1: Location 1
+  location_2: Location 2
+  location_3: Location 3

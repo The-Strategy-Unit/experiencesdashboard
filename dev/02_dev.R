@@ -40,6 +40,12 @@ usethis::use_package( "shinyjqui" )
 usethis::use_package( "timevis" )
 usethis::use_package( "rmarkdown" )
 usethis::use_package( "pander" )
+usethis::use_package( "pool" )
+usethis::use_package( "odbc" )
+usethis::use_package( "DBI" )
+usethis::use_package( "dbplyr" )
+usethis::use_package( "datamods" )
+usethis::use_package( "experienceAnalysis" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -50,6 +56,9 @@ golem::add_module( name = "fft" ) # Name of the module
 golem::add_module( name = "report_builder" ) # Name of the module
 golem::add_module( name = "click_tables" ) # Name of the module
 golem::add_module( name = "search_text" ) # Name of the module
+golem::add_module( name = "text_reactable" ) # Name of the module
+golem::add_module( name = "demographics" ) # Name of the module
+golem::add_module( name = "summary" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
@@ -73,6 +82,7 @@ usethis::use_test( "sentiment_tidy" )
 usethis::use_test( "show_text" )
 usethis::use_test( "search_text" )
 usethis::use_test( "calculate_table" )
+usethis::use_test( "tidy_data" )
 
 # Documentation
 

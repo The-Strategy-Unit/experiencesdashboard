@@ -1,0 +1,149 @@
+---
+title: "Check comments across trusts"
+author: "Chris Beeley"
+date: "07/05/2021"
+output: html_document
+params:
+  trust: trust_a
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+pool <- pool::dbPool(drv = odbc::odbc(),
+                     driver = "Maria DB",
+                     server = Sys.getenv("HOST_NAME"),
+                     UID = Sys.getenv("DB_USER"),
+                     PWD = Sys.getenv("MYSQL_PASSWORD"),
+                     database = "TEXT_MINING",
+                     Port = 3306)
+
+db_data <- bind_rows(
+  dplyr::tbl(pool, 
+             dbplyr::in_schema("TEXT_MINING", "trust_a")) %>% 
+    experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_a") %>% 
+    select(comment_key, comment_txt, category, subcategory) %>% 
+    mutate(trust = "trust_a") %>% collect(), 
+  dplyr::tbl(pool, 
+             dbplyr::in_schema("TEXT_MINING", "trust_b")) %>% 
+    experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_b") %>% 
+    select(comment_key, comment_txt, category, subcategory) %>% 
+    mutate(trust = "trust_b") %>% collect(),
+  dplyr::tbl(pool, 
+             dbplyr::in_schema("TEXT_MINING", "trust_c")) %>% 
+    experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_c") %>% 
+    select(comment_key, comment_txt, category, subcategory) %>% 
+    mutate(trust = "trust_c") %>% collect()
+)
+
+text_data <- DBI::dbGetQuery(pool,
+  'SELECT * FROM text_data')
+
+pain_privacy_noise <- DBI::dbGetQuery(
+  pool,
+  'SELECT * FROM predictions_text_data_label') %>% 
+  dplyr::left_join(text_data) %>% 
+  dplyr::filter(
+    grepl("pain|privacy|noise", feedback, ignore.case = TRUE)
+  ) %>% 
+  dplyr::select(organization, feedback, label, label_pred, subcategory)
+
+```
+
+## Human codes
+
+This document summarises human made labels for comments containing the words "pain", "noise", and "privacy". The ML results for this are summarised elsewhere.
+
+The list of comments for each is truncated to 25 for the sake of space- click "Next" to see the other comments.
+
+### Pain
+
+```{r, results = "asis"}
+
+db_data %>% 
+  filter(grepl("pain", comment_txt, ignore.case = TRUE),
+         !is.na(category)) %>% 
+  select(trust, comment_txt, category, subcategory) %>% 
+  arrange(trust) %>% 
+  reactable::reactable(defaultPageSize = 25, columns = list(
+    comment_txt = reactable::colDef(minWidth = 350)  # overrides the default
+  ))
+
+```
+
+### Privacy
+
+```{r, results = "asis"}
+
+db_data %>% 
+  filter(grepl("privacy", comment_txt, ignore.case = TRUE),
+         !is.na(category)) %>% 
+  select(trust, comment_txt, category, subcategory) %>% 
+  arrange(trust) %>% 
+  reactable::reactable(defaultPageSize = 25, columns = list(
+    comment_txt = reactable::colDef(minWidth = 350)  # overrides the default
+  ))
+
+```
+
+### Noise
+
+```{r, results = "asis"}
+
+db_data %>% 
+  filter(grepl("noise", comment_txt, ignore.case = TRUE),
+         !is.na(category)) %>% 
+  select(trust, comment_txt, category, subcategory) %>% 
+  arrange(trust) %>% 
+  reactable::reactable(defaultPageSize = 25, columns = list(
+    comment_txt = reactable::colDef(minWidth = 350)  # overrides the default
+  ))
+
+```
+
+## ML
+
+### Pain
+
+```{r, results = "asis"}
+
+pain_privacy_noise %>% 
+  filter(grepl("pain", feedback, ignore.case = TRUE)) %>% 
+  select(organization, feedback, label_pred) %>% 
+  arrange(organization) %>% 
+  reactable::reactable(defaultPageSize = 25, columns = list(
+    feedback = reactable::colDef(minWidth = 350)  # overrides the default
+  ))
+
+```
+
+### Privacy
+
+```{r, results = "asis"}
+
+pain_privacy_noise %>% 
+  filter(grepl("privacy", feedback, ignore.case = TRUE)) %>% 
+  select(organization, feedback, label_pred) %>% 
+  arrange(organization) %>% 
+  reactable::reactable(defaultPageSize = 25, columns = list(
+    feedback = reactable::colDef(minWidth = 350)  # overrides the default
+  ))
+
+```
+
+### Noise
+
+```{r, results = "asis"}
+
+pain_privacy_noise %>% 
+  filter(grepl("noise", feedback, ignore.case = TRUE)) %>% 
+  select(organization, feedback, label_pred) %>% 
+  arrange(organization) %>% 
+  reactable::reactable(defaultPageSize = 25, columns = list(
+    feedback = reactable::colDef(minWidth = 350)  # overrides the default
+  ))
+
+```

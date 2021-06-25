@@ -1,0 +1,68 @@
+---
+title: "Criticality report"
+author: "Chris Beeley"
+date: "07/05/2021"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(nottshc)
+
+## MySQL ----
+
+pool <- pool::dbPool(drv = odbc::odbc(),
+                     driver = "Maria DB",
+                     server = Sys.getenv("HOST_NAME"),
+                     UID = Sys.getenv("DB_USER"),
+                     PWD = Sys.getenv("MYSQL_PASSWORD"),
+                     database = "TEXT_MINING",
+                     Port = 3306)
+
+tidy_trust_data <- dplyr::tbl(pool, 
+             dbplyr::in_schema("TEXT_MINING", "trust_a")) %>% 
+    experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_a") %>% 
+    select(comment_key, comment_txt, category, subcategory, crit) %>% 
+    mutate(trust = "trust_a") %>% collect()
+
+```
+
+## Plot of criticality in NHC
+
+```{r}
+
+tidy_trust_data %>% 
+  mutate(criticality = as.factor(crit)) %>% 
+  filter(!is.na(criticality)) %>% 
+  ggplot(aes(x = criticality)) + geom_bar()
+
+```
+
+## Examples of each
+
+```{r, results = "asis"}
+
+walk(-5 : 5, function(x) {
+  
+  cat("## ", x, "  \n  \n")
+  
+  filter_data <- tidy_trust_data %>% 
+    distinct(comment_key, .keep_all = TRUE) %>% 
+    filter(crit == x)
+  
+  filter_data %>% 
+    sample_n(ifelse(nrow(filter_data) > 19, 20, nrow(filter_data))) %>% 
+    pull(comment_txt) %>%
+    paste(., "  \n  \n") %>% 
+    cat()
+  
+  cat("  \n  \n")
+})
+
+```
+
