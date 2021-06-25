@@ -81,7 +81,8 @@ mod_summary_server <- function(id, db_conn){
       
       showModal(modalDialog(
         title = "Success!",
-        paste0(nrow(final_df), " records successfully imported"),
+        paste0(nrow(final_df), " records successfully imported. Please refresh 
+               your browser to access the new data"),
         easyClose = TRUE
       ))
     })
