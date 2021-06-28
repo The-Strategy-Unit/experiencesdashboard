@@ -58,9 +58,6 @@ app_ui <- function(request) {
         tabItems(
           # First tab content
           tabItem(tabName = "overview",
-                  h1("Overview"),
-                  h2("(This tab will eventually summarise patient and 
-                     staff experience)"),
                   mod_summary_ui("summary_ui_1")
 
           ),

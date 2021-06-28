@@ -12,9 +12,18 @@ mod_summary_ui <- function(id){
   tagList(
     fluidPage(
       
-      fluidRow(
+      h1("Overview"),
+      h2("(This tab will eventually summarise patient and 
+                     staff experience)"),
+      
+      conditionalPanel(
+        get_golem_config("trust_name") == "demo_trust",
+        uiOutput(ns("open_panel"))
+      ),
+
+      # fluidRow(
         actionButton(ns("launch_modal"), "Upload new data")
-      )
+      # )
     )
   )
 }
@@ -25,6 +34,31 @@ mod_summary_ui <- function(id){
 mod_summary_server <- function(id, db_conn){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    # UI
+    
+    output$open_panel <- renderUI({
+      
+      tagList(
+        h3("Download the spreadsheet template below and add your data to it"),
+        
+        downloadButton(session$ns("open_spreadsheet"), "Download template"),
+        
+        h3("Then click upload data below")
+      )
+    })
+    
+    # download spreadsheet
+    
+    output$open_spreadsheet <- downloadHandler(
+      
+      filename = "template.csv",
+      content = function(file) {
+        file.copy("text_mining_template_open.csv", file)
+      }
+    )
+
+    # data module
     
     observeEvent(input$launch_modal, {
       datamods::import_modal(
