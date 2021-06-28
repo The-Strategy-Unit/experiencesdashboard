@@ -34,14 +34,23 @@ app_server <- function( input, output, session ) {
   
   interpolate_date <- Sys.Date()
   
-  store_data <- db_data %>% 
-    dplyr::filter(date > interpolate_date - 3 * 365) %>%
-    dplyr::select(location_1, age, age_label, gender, ethnicity) %>%
-    dplyr::collect()
+  if(get_golem_config("trust_name") != "demo_trust"){
+    
+    store_data <- db_data %>% 
+      dplyr::filter(date > interpolate_date - 3 * 365) %>%
+      dplyr::select(dplyr::any_of("location_1", "age", "age_label", 
+                                  "gender", "ethnicity")) %>%
+      dplyr::collect()
+  }
   
   # render UI---
   
   output$filter_location_1 <- renderUI({
+    
+    if(get_golem_config("trust_name") == "demo_trust"){
+      
+      return()
+    }
     
     location_1_choices <- store_data %>%
       dplyr::distinct(location_1) %>%
@@ -59,6 +68,11 @@ app_server <- function( input, output, session ) {
   })
   
   output$filter_location_2 <- renderUI({
+    
+    if(get_golem_config("trust_name") == "demo_trust"){
+      
+      return()
+    }
     
     location_2_choices <- db_data
     
@@ -83,6 +97,11 @@ app_server <- function( input, output, session ) {
   })
   
   output$filter_location_3 <- renderUI({
+    
+    if(get_golem_config("trust_name") == "demo_trust"){
+      
+      return()
+    }
     
     location_3_choices <- db_data
     
@@ -114,6 +133,11 @@ app_server <- function( input, output, session ) {
   
   output$filter_date <- renderUI({
     
+    if(get_golem_config("trust_name") == "demo_trust"){
+      
+      return()
+    }
+    
     dates <- db_data %>%
       dplyr::summarise(min_date = min(date),
                        max_date = max(date)) %>%
@@ -137,6 +161,12 @@ app_server <- function( input, output, session ) {
   
   # Create reactive data ----
   filter_data <- reactive({
+    
+    if(get_golem_config("trust_name") == "demo_trust"){
+      
+      return(list("filter_data" = db_data %>% dplyr::collect(), 
+                  "demography_number" = NULL))
+    }
     
     return_data <- db_data %>% 
       dplyr::filter(date > !!input$date_range[1],
@@ -191,13 +221,13 @@ app_server <- function( input, output, session ) {
     if(no_responses < 20){
       
       return_data <- return_data %>%
-               dplyr::collect() %>% 
-               dplyr::arrange(date)
+        dplyr::collect() %>% 
+        dplyr::arrange(date)
     } else {
       
       return_data <- demography_data %>% 
-               dplyr::collect() %>% 
-               dplyr::arrange(date)
+        dplyr::collect() %>% 
+        dplyr::arrange(date)
     }
     
     demography_number <- demography_data %>% 

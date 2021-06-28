@@ -17,6 +17,11 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
   data <- data %>%
     dplyr::rename_all(janitor::make_clean_names)
   
+  if(trust_id == "demo_trust"){
+    
+    return(data)
+  }
+  
   if(trust_id == "trust_a"){
     
     data <- data %>%

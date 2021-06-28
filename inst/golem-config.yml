@@ -7,6 +7,9 @@ production:
   app_prod: yes
 dev:
   golem_wd: !expr here::here()
+open:
+  trust_name: demo_trust
+  comment_1: Comments
 trust_a:
   trust_name: trust_a
   comment_1: What could be improved?
