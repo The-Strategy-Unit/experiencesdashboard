@@ -19,7 +19,20 @@ upload_data <- function(data, conn, trust_id){
   
   # TIDY FUNCTION HERE
   db_tidy <- data %>%
-    dplyr::filter(!is.na(date)) %>% 
+    dplyr::filter(!is.na(date)) 
+  
+  if(trust_id == "demo_trust"){
+    
+    db_tidy <- db_tidy %>% 
+      dplyr::mutate(location_1 = sample(c("Location A", "Location B", "Location_C"),
+                                        nrow(db_tidy), replace = TRUE))
+    
+    # delete ALL previous data 
+    
+    DBI::dbExecute(conn, "TRUNCATE TABLE demo_trust")
+  }
+  
+  db_tidy <- db_tidy %>% 
     tidyr::pivot_longer(cols = dplyr::starts_with("comment_"),
                         names_to = "comment_type",
                         values_to = "comment_txt") %>% 
@@ -60,7 +73,7 @@ upload_data <- function(data, conn, trust_id){
     preds,
     criticality)
   
-  success <- DBI::dbWriteTable(pool, trust_id,
+  success <- DBI::dbWriteTable(conn, trust_id,
                                final_df, append = TRUE)
   
   return(success)
