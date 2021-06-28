@@ -34,11 +34,15 @@ app_server <- function( input, output, session ) {
   
   interpolate_date <- Sys.Date()
   
-  store_data <- db_data %>% 
-    dplyr::filter(date > interpolate_date - 3 * 365) %>%
-    dplyr::select(location_1, age, age_label, gender, ethnicity) %>%
-    dplyr::collect()
-  
+  if(get_golem_config("trust_name") != "demo_trust"){
+    
+    store_data <- db_data %>% 
+      dplyr::filter(date > interpolate_date - 3 * 365) %>%
+      dplyr::select(dplyr::any_of(c("location_1", "age", "age_label", 
+                                  "gender", "ethnicity"))) %>%
+      dplyr::collect()
+  }
+
   # render UI---
   
   output$filter_location_1 <- renderUI({
