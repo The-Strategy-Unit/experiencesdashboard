@@ -38,11 +38,11 @@ app_server <- function( input, output, session ) {
     
     store_data <- db_data %>% 
       dplyr::filter(date > interpolate_date - 3 * 365) %>%
-      dplyr::select(dplyr::any_of("location_1", "age", "age_label", 
-                                  "gender", "ethnicity")) %>%
+      dplyr::select(dplyr::any_of(c("location_1", "age", "age_label", 
+                                  "gender", "ethnicity"))) %>%
       dplyr::collect()
   }
-  
+
   # render UI---
   
   output$filter_location_1 <- renderUI({
