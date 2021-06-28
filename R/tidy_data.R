@@ -59,7 +59,6 @@ tidy_all_trusts <- function(data, conn, trust_id = "trust_a") {
     tidyr::pivot_longer(cols = dplyr::starts_with("code"),
                         names_to = c("type_category", "type_num"), names_sep = "_",
                         values_to = "code") %>%
-    dplyr::mutate(code = na_if(code, "XX")) %>%
     dplyr::filter(
       str_sub(comment_type, -1) == str_sub(type_category, -1)) %>% 
     dplyr::mutate(comment_key = paste0(key, "_", type_category)) %>%
