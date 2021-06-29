@@ -17,9 +17,11 @@ upload_data <- function(data, conn, trust_id){
   code_fields <- grep("code", colnames(data), value = TRUE)
   score_fields <- "fft"
   
+  db_tidy <- data
+  
   if(trust_id == "demo_trust"){
     
-    db_tidy <- data %>% 
+    db_tidy <- db_tidy %>% 
       dplyr::mutate(location_1 = sample(c("Location A", "Location B", 
                                           "Location C"),
                                         nrow(db_tidy), replace = TRUE)) %>% 

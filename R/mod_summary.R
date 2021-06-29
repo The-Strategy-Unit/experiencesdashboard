@@ -20,9 +20,9 @@ mod_summary_ui <- function(id){
         get_golem_config("trust_name") == "demo_trust",
         uiOutput(ns("open_panel"))
       ),
-
+      
       # fluidRow(
-        actionButton(ns("launch_modal"), "Upload new data")
+      actionButton(ns("launch_modal"), "Upload new data")
       # )
     )
   )
@@ -52,12 +52,12 @@ mod_summary_server <- function(id, db_conn){
     
     output$open_spreadsheet <- downloadHandler(
       
-      filename = "template.csv",
+      filename = "template.xlsx",
       content = function(file) {
         file.copy("text_mining_template_open.xlsx", file)
       }
     )
-
+    
     # data module
     
     observeEvent(input$launch_modal, {
@@ -76,12 +76,15 @@ mod_summary_server <- function(id, db_conn){
       
       raw_df <- imported$data()
       
-      raw_df <- raw_df %>% 
-        dplyr::filter(!is.na(date))
-      
-      success <- upload_data(data = raw_df, conn = db_conn, 
-                             trust_id = get_golem_config("trust_name"))
-      
+      withProgress(message = 'Processing data. This may take a while. 
+                   Please wait...', value = 0, {
+
+        success <- upload_data(data = raw_df, conn = db_conn, 
+                               trust_id = get_golem_config("trust_name"))
+        
+        incProgress(1)
+      })
+
       if(success){
         
         showModal(modalDialog(
