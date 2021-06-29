@@ -54,7 +54,7 @@ mod_summary_server <- function(id, db_conn){
       
       filename = "template.csv",
       content = function(file) {
-        file.copy("text_mining_template_open.csv", file)
+        file.copy("text_mining_template_open.xlsx", file)
       }
     )
 

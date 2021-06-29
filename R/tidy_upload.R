@@ -17,15 +17,15 @@ upload_data <- function(data, conn, trust_id){
   code_fields <- grep("code", colnames(data), value = TRUE)
   score_fields <- "fft"
   
-  # TIDY FUNCTION HERE
-  db_tidy <- data %>%
-    dplyr::filter(!is.na(date)) 
-  
   if(trust_id == "demo_trust"){
     
-    db_tidy <- db_tidy %>% 
-      dplyr::mutate(location_1 = sample(c("Location A", "Location B", "Location_C"),
-                                        nrow(db_tidy), replace = TRUE))
+    db_tidy <- data %>% 
+      dplyr::mutate(location_1 = sample(c("Location A", "Location B", 
+                                          "Location C"),
+                                        nrow(db_tidy), replace = TRUE)) %>% 
+      dplyr::mutate(date = sample(seq(as.Date("2019-01-01"), 
+                                      as.Date("2021-01-01"), by = "days"), 
+                                  nrow(db_tidy), replace = TRUE))
     
     # delete ALL previous data 
     
