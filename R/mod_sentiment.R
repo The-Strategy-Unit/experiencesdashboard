@@ -14,96 +14,98 @@ mod_sentiment_ui <- function(id) {
     fluidPage(
       fluidRow(
         uiOutput(ns("superUI")),
-        conditionalPanel(condition = 'input.tabs != "upset"', 
-                         selectInput(
-                           ns("select_sentiment"),
-                           label = h5(strong("Select sentiments:")),
-                           choices = c(
-                             "anger",
-                             "anticipation",
-                             "disgust",
-                             "fear",
-                             "joy",
-                             "negative",
-                             "positive",
-                             "sadness",
-                             "surprise",
-                             "trust"
-                           ),
-                           multiple = TRUE,
-                           selected = c("anger", 
-                                        "fear", 
-                                        "negative",
-                                        "sadness")
-                         )
+        conditionalPanel(
+          condition = 'input.tabs != "upset"', 
+          selectInput(
+            ns("select_sentiment"),
+            label = h5(strong("Select sentiments:")),
+            choices = c(
+              "anger",
+              "anticipation",
+              "disgust",
+              "fear",
+              "joy",
+              "negative",
+              "positive",
+              "sadness",
+              "surprise",
+              "trust"
+            ),
+            multiple = TRUE,
+            selected = c("anger", 
+                         "fear", 
+                         "negative",
+                         "sadness")
+          )
         )
       ),
       
-      tabsetPanel(id = "tabs",
-                  type = "tabs",
-                  tabPanel("Comments", value = "comments",
-                           br(),
-                           fluidRow(
-                             column(12,
-                                    box(
-                                      width = NULL, 
-                                      background = "light-blue",
-                                      textOutput(ns("show_comments_box"))
-                                    )
-                             )
-                           ),
-                           fluidRow(
-                             column(12,
-                                    reactable::reactableOutput(ns("sentiment_table"))
-                             )
-                           )
-                  ),
-                  tabPanel("Timeline",
-                           br(),
-                           fluidRow(
-                             column(12,
-                                    box(
-                                      width = NULL, 
-                                      background = "light-blue",
-                                      textOutput(ns("change_time_sentiments_txt"))
-                                    )
-                             )
-                           ),
-                           fluidRow(
-                             column(3,
-                                    selectInput(ns("select_sentiment_plot_facet"), 
-                                                label = h5(strong("Divide plot by:")), 
-                                                choices = list("Category" = 1, 
-                                                               "Division" = 2, 
-                                                               "Division and category" = 3), 
-                                                selected = 1),
-                             ),
-                             column(3,
-                                    selectInput(ns("select_sentiment_plot_position"), 
-                                                label = h5(strong("Show proportion or total:")),
-                                                choices = c("Proportion" = "fill",
-                                                            "Totals" = "stack"),
-                                                selected = "stack"
-                                    )
-                             )      
-                           ),
-                           plotOutput(ns("sentiment_plot_time"))
-                  ),
-                  tabPanel("Sentiment combinations",
-                           value = "upset",
-                           br(),
-                           fluidRow(
-                             column(12,
-                                    box(
-                                      width = NULL, 
-                                      background = "light-blue",
-                                      textOutput(ns("combination_sentiments_txt"))
-                                    )
-                             )
-                           ),
-                           plotOutput(ns("sentiment_plot_upset")
-                           )
-                  )
+      tabsetPanel(
+        id = "tabs",
+        type = "tabs",
+        tabPanel("Comments", value = "comments",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL, 
+                            background = "light-blue",
+                            textOutput(ns("show_comments_box"))
+                          )
+                   )
+                 ),
+                 fluidRow(
+                   column(12,
+                          reactable::reactableOutput(ns("sentiment_table"))
+                   )
+                 )
+        ),
+        tabPanel("Timeline",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL, 
+                            background = "light-blue",
+                            textOutput(ns("change_time_sentiments_txt"))
+                          )
+                   )
+                 ),
+                 fluidRow(
+                   column(3,
+                          selectInput(ns("select_sentiment_plot_facet"), 
+                                      label = h5(strong("Divide plot by:")), 
+                                      choices = list("Category" = 1, 
+                                                     "Division" = 2, 
+                                                     "Division and category" = 3), 
+                                      selected = 1),
+                   ),
+                   column(3,
+                          selectInput(ns("select_sentiment_plot_position"), 
+                                      label = h5(strong("Show proportion or total:")),
+                                      choices = c("Proportion" = "fill",
+                                                  "Totals" = "stack"),
+                                      selected = "stack"
+                          )
+                   )      
+                 ),
+                 plotOutput(ns("sentiment_plot_time"))
+        ),
+        tabPanel("Sentiment combinations",
+                 value = "upset",
+                 br(),
+                 fluidRow(
+                   column(12,
+                          box(
+                            width = NULL, 
+                            background = "light-blue",
+                            textOutput(ns("combination_sentiments_txt"))
+                          )
+                   )
+                 ),
+                 plotOutput(ns("sentiment_plot_upset")
+                 )
+        )
       )
     )
   )
