@@ -1,0 +1,14 @@
+name: experiencesdashboard_c
+title: experiencesdashboard_c
+username: chrisbeeley
+account: chrisbeeley
+server: involve.nottshc.nhs.uk
+hostUrl: https://involve.nottshc.nhs.uk:8443/__api__
+appId: 67
+bundleId: 2857
+url: https://involve.nottshc.nhs.uk:8443/experience_c/
+when: 1624609675.6004
+lastSyncTime: 1624609675.60042
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: dev/01_start.R|dev/02_dev.R|dev/03_deploy.R|dev/run_dev.R|LICENSE|LICENSE.md|NEWS.md|python.Rmd|README.md|README.Rmd|test_report_pipeline.html|test_report_pipeline.Rmd|test_upload.rda|text_data.rda|vignettes/.gitignore|vignettes/experiencesdashboard.Rmd|data-raw

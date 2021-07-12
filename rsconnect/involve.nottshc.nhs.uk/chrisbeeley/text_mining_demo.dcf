@@ -1,0 +1,14 @@
+name: text_mining_demo
+title: text_mining_demo
+username: chrisbeeley
+account: chrisbeeley
+server: involve.nottshc.nhs.uk
+hostUrl: https://involve.nottshc.nhs.uk:8443/__api__
+appId: 92
+bundleId: 2896
+url: https://involve.nottshc.nhs.uk:8443/text_mining_demo/
+when: 1624991587.03786
+lastSyncTime: 1624991587.03787
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: python.Rmd|scratch.R|test_report_pipeline.html|test_report_pipeline.Rmd|vignettes/.gitignore|vignettes/experiencesdashboard.Rmd|data-raw
