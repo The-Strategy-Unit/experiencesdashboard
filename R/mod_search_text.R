@@ -66,7 +66,7 @@ mod_search_text_server <- function(id, filter_data){
         need(input$text_search, "Please enter a search term")
       )
       
-      returnSearchText(text_data = filter_data()$filter_data, 
+      return_search_text(text_data = filter_data()$filter_data, 
                        filter_text = input$text_search, 
                        comment_type_filter = "comment_1")
     })
@@ -77,7 +77,7 @@ mod_search_text_server <- function(id, filter_data){
         need(input$text_search, "Please enter a search term")
       )
       
-      returnSearchText(text_data = filter_data()$filter_data, 
+      return_search_text(text_data = filter_data()$filter_data, 
                        filter_text = input$text_search, 
                        comment_type_filter = "comment_2")
     })
