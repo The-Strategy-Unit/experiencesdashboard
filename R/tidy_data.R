@@ -17,7 +17,12 @@ tidy_all_trusts <- function(data, conn, trust_id) {
   if(trust_id == "demo_trust"){
 
     return(data %>% 
-             dplyr::rename(category = code))
+             dplyr::rename(category = code)) %>% 
+      dplyr::mutate(category = dplyr::case_when(
+        is.null(comment_txt) ~ NA,
+        comment_txt %in% c("NULL", "NA", "N/A") ~ NA,
+        TRUE ~ category
+      ))
   }
   
   if(trust_id == "trust_a"){
@@ -55,6 +60,13 @@ tidy_all_trusts <- function(data, conn, trust_id) {
         TRUE ~ age)) %>% 
       dplyr::rename(category = code)
   }
+  
+  db_tidy <- db_tidy %>% 
+    dplyr::mutate(category = dplyr::case_when(
+      is.null(comment_txt) ~ NA,
+      comment_txt %in% c("NULL", "NA", "N/A") ~ NA,
+      TRUE ~ category
+    ))
   
   # Return
   return(db_tidy)
