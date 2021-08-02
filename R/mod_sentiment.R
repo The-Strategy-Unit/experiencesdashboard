@@ -31,11 +31,7 @@ mod_sentiment_ui <- function(id) {
               "surprise",
               "trust"
             ),
-            multiple = TRUE,
-            selected = c("anger", 
-                         "fear", 
-                         "negative",
-                         "sadness")
+            multiple = TRUE
           )
         )
       ),
@@ -60,36 +56,37 @@ mod_sentiment_ui <- function(id) {
                    )
                  )
         ),
-        tabPanel("Timeline",
-                 br(),
-                 fluidRow(
-                   column(12,
-                          box(
-                            width = NULL, 
-                            background = "light-blue",
-                            textOutput(ns("change_time_sentiments_txt"))
-                          )
+        tabPanel(
+          "Timeline",
+          br(),
+          fluidRow(
+            column(12,
+                   box(
+                     width = NULL, 
+                     background = "light-blue",
+                     textOutput(ns("change_time_sentiments_txt"))
                    )
-                 ),
-                 fluidRow(
-                   column(3,
-                          selectInput(ns("select_sentiment_plot_facet"), 
-                                      label = h5(strong("Divide plot by:")), 
-                                      choices = list("Category" = 1, 
-                                                     "Division" = 2, 
-                                                     "Division and category" = 3), 
-                                      selected = 1),
-                   ),
-                   column(3,
-                          selectInput(ns("select_sentiment_plot_position"), 
-                                      label = h5(strong("Show proportion or total:")),
-                                      choices = c("Proportion" = "fill",
-                                                  "Totals" = "stack"),
-                                      selected = "stack"
-                          )
-                   )      
-                 ),
-                 plotOutput(ns("sentiment_plot_time"))
+            )
+          ),
+          fluidRow(
+            column(3,
+                   selectInput(ns("select_sentiment_plot_facet"), 
+                               label = h5(strong("Divide plot by:")), 
+                               choices = list("Category" = 1, 
+                                              "Division" = 2, 
+                                              "Division and category" = 3), 
+                               selected = 1),
+            ),
+            column(3,
+                   selectInput(ns("select_sentiment_plot_position"), 
+                               label = h5(strong("Show proportion or total:")),
+                               choices = c("Proportion" = "fill",
+                                           "Totals" = "stack"),
+                               selected = "stack"
+                   )
+            )      
+          ),
+          plotOutput(ns("sentiment_plot_time"))
         ),
         tabPanel("Sentiment combinations",
                  value = "upset",
@@ -151,6 +148,12 @@ mod_sentiment_server <- function(id, filter_sentiment){
           dplyr::filter(category %in% input$select_super)
       }
       
+      if(isTruthy(input$select_sentiment)){
+        
+        sentiment_txt_data_tidy <- sentiment_txt_data_tidy %>% 
+          dplyr::filter(category %in% input$select_super)
+      }
+      
       return(sentiment_txt_data_tidy)
     })
     
@@ -169,11 +172,11 @@ mod_sentiment_server <- function(id, filter_sentiment){
         # Now filter for number of selected sentiments
         dplyr::filter(length == length(input$select_sentiment)) %>%
         # Unnest to create long version of data
-        tidyr::unnest(cols = all_sentimtents_unnest) %>% 
+        tidyr::unnest(cols = all_sentiments_unnest) %>% 
         # Group by comment id so that every computation is now for each comment
         dplyr::group_by(id) %>% 
         dplyr::mutate(test_sentiment = dplyr::case_when(
-          all_sentimtents_unnest %in% input$select_sentiment ~ TRUE),
+          all_sentiments_unnest %in% input$select_sentiment ~ TRUE),
           sum_temp = sum(test_sentiment)) %>% 
         dplyr::ungroup() %>% 
         # Filter comments that match the selected sentiments
