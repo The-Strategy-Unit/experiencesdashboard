@@ -13,7 +13,7 @@ mod_patient_experience_ui <- function(id){
     tabsetPanel(
       tabPanel(
         "Summary",
-        p("This module will contain a high level summary of PX data"),
+        mod_summary_ui("summary_ui_1")
       ),
       tabPanel(
         "Report builder",
