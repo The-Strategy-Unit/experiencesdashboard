@@ -64,7 +64,7 @@ upload_data <- function(data, conn, trust_id){
                            "faith"))) %>% 
     clean_dataframe(., comment_txt)
   
-  if(trust_id == "trust_c_dev"){
+  if(trust_id == "trust_c"){
     
     db_tidy <- db_tidy %>% 
       dplyr::mutate(fft = dplyr::case_when(
