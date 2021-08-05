@@ -121,17 +121,16 @@ mod_sentiment_server <- function(id, filter_sentiment){
       
       super_choices <- na.omit(unique(filter_sentiment()$category))
       
-      super_selected <- filter_sentiment() %>% 
-        dplyr::count(category) %>% 
-        dplyr::arrange(desc(n)) %>% 
-        head(5) %>% 
-        dplyr::pull(category)
+      # super_selected <- filter_sentiment() %>% 
+      #   dplyr::count(category) %>% 
+      #   dplyr::arrange(desc(n)) %>% 
+      #   head(5) %>% 
+      #   dplyr::pull(category)
       
       selectInput(
         session$ns("select_super"),
         label = h5(strong("Select categories")),
         choices = super_choices,
-        selected = super_selected,
         multiple = TRUE,
         width = "100%"
       )
@@ -168,7 +167,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
         dplyr::select(id, all_sentiments, comment_txt) %>% 
         # First get number of total sentiments in all comments
         dplyr::mutate(length = lengths(all_sentiments),
-                      all_sentimtents_unnest = all_sentiments) %>%
+                      all_sentiments_unnest = all_sentiments) %>%
         # Now filter for number of selected sentiments
         dplyr::filter(length == length(input$select_sentiment)) %>%
         # Unnest to create long version of data
