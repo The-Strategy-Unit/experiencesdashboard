@@ -1,3 +1,22 @@
+#' Clean an uploaded dataset from a user of the dashboard
+#' @description uploaded data will often have garbage in the comments 
+#' box such as "NULL", "NA", "N/A", etc. Clean these comments before they go 
+#' to the pipeline
+#' @param data a dataframe of uploaded patient experience data
+#' @param text_cols a vector of strings with the name of the text columns
+#' 
+#' @return dataframe with cleaned text
+#' @export
+clean_dataframe <- function(data, text_cols){
+  
+  data %>% 
+    dplyr::mutate({{text_cols}} := dplyr::case_when(
+      grepl("^[?]+$", {{text_cols}}) ~ NA_character_,
+      {{text_cols}} %in% c("NULL", "#NAME?", "") ~ NA_character_,
+      TRUE ~ {{text_cols}}
+    ))
+}
+
 #' Tidy data upload from spreadsheet
 #'
 #' @param data dataframe, loaded within Shiny application
@@ -40,9 +59,29 @@ upload_data <- function(data, conn, trust_id){
                         values_to = "comment_txt") %>% 
     dplyr::select(any_of(c("date", "location_1", "location_2",
                            "location_3", "fft", "comment_type",
-                           "comment_txt")))
+                           "comment_txt",
+                           "gender", "age", "sexuality", "disability",
+                           "faith"))) %>% 
+    clean_dataframe(., comment_txt)
   
-  if(trust_id != "demo_trust"){
+  if(trust_id == "trust_c_dev"){
+    
+    db_tidy <- db_tidy %>% 
+      dplyr::mutate(fft = dplyr::case_when(
+        
+        fft %in% c("Dont know", "Dont Know") ~ NA_integer_,
+        fft == "Very poor" ~ 1L,
+        fft == "Poor" ~ 2L,
+        fft == "Neither good nor poor" ~ 3L, 
+        fft == "Good" ~ 4L,
+        fft == "Very good" ~ 5L
+      ))
+    
+    db_tidy <- db_tidy %>% 
+      dplyr::mutate(date = as.Date(date, format = "%d/%m/%Y"))
+  }
+  
+  if(FALSE){ # trust_id != "demo_trust"){ this is causing problems
     
     db_tidy <- db_tidy %>%
       dplyr::mutate_at(dplyr::all_of(score_fields), ~ dplyr::case_when(

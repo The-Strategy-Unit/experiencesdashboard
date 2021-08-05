@@ -3,6 +3,7 @@
 export("%>%")
 export(calc_sentiment)
 export(calculate_table)
+export(clean_dataframe)
 export(plot_fft_spc)
 export(return_search_text)
 export(run_app)
