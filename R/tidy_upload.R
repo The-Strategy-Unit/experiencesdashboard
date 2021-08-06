@@ -10,11 +10,14 @@
 clean_dataframe <- function(data, text_cols){
   
   data %>% 
-    dplyr::mutate({{text_cols}} := dplyr::case_when(
-      grepl("^[?]+$", {{text_cols}}) ~ NA_character_,
-      {{text_cols}} %in% c("NULL", "#NAME?", "") ~ NA_character_,
-      TRUE ~ {{text_cols}}
-    ))
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::any_of(text_cols), ~ dplyr::case_when(
+          grepl("^[?]+$", .) ~ NA_character_,
+          . %in% c("NULL", "#NAME?", "") ~ NA_character_,
+          TRUE ~ .
+        )))
+  
 }
 
 #' Tidy data upload from spreadsheet
@@ -61,8 +64,10 @@ upload_data <- function(data, conn, trust_id){
                            "location_3", "fft", "comment_type",
                            "comment_txt",
                            "gender", "age", "sexuality", "disability",
-                           "faith"))) %>% 
-    clean_dataframe(., comment_txt)
+                           "faith", "ethnicity"))) %>% 
+    clean_dataframe(., c("comment_txt",
+                         "gender", "age", "sexuality", "disability",
+                         "faith", "ethnicity"))
   
   if(trust_id == "trust_c"){
     
