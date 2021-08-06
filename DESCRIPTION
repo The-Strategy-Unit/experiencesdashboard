@@ -51,7 +51,7 @@ Imports:
     reticulate,
     Rdpack
 Remotes: 
-    CDU-data-science-team/nottshcMethods
+    CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis@development
 Encoding: UTF-8
 LazyData: true
