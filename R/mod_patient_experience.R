@@ -27,10 +27,10 @@ mod_patient_experience_ui <- function(id){
         "Themes/ weighting",
         mod_category_criticality_ui("category_criticality_ui_1")
       ),
-      tabPanel(
-        "Sentiment",
-        mod_sentiment_ui("mod_sentiment_ui_1")
-      ),
+      # tabPanel(
+      #   "Sentiment",
+      #   mod_sentiment_ui("mod_sentiment_ui_1")
+      # ),
       tabPanel(
         "Comment search",
         mod_search_text_ui("search_text_ui_1")

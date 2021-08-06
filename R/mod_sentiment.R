@@ -121,12 +121,6 @@ mod_sentiment_server <- function(id, filter_sentiment){
       
       super_choices <- na.omit(unique(filter_sentiment()$category))
       
-      # super_selected <- filter_sentiment() %>% 
-      #   dplyr::count(category) %>% 
-      #   dplyr::arrange(desc(n)) %>% 
-      #   head(5) %>% 
-      #   dplyr::pull(category)
-      
       selectInput(
         session$ns("select_super"),
         label = h5(strong("Select categories")),
@@ -150,7 +144,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
       if(isTruthy(input$select_sentiment)){
         
         sentiment_txt_data_tidy <- sentiment_txt_data_tidy %>% 
-          dplyr::filter(category %in% input$select_super)
+          dplyr::filter(category %in% input$select_sentiment)
       }
       
       return(sentiment_txt_data_tidy)
@@ -168,18 +162,18 @@ mod_sentiment_server <- function(id, filter_sentiment){
         # First get number of total sentiments in all comments
         dplyr::mutate(length = lengths(all_sentiments),
                       all_sentiments_unnest = all_sentiments) %>%
-        # Now filter for number of selected sentiments
+        # # Now filter for number of selected sentiments
         dplyr::filter(length == length(input$select_sentiment)) %>%
         # Unnest to create long version of data
         tidyr::unnest(cols = all_sentiments_unnest) %>% 
         # Group by comment id so that every computation is now for each comment
-        dplyr::group_by(id) %>% 
+        dplyr::group_by(id) %>%
         dplyr::mutate(test_sentiment = dplyr::case_when(
           all_sentiments_unnest %in% input$select_sentiment ~ TRUE),
-          sum_temp = sum(test_sentiment)) %>% 
-        dplyr::ungroup() %>% 
+          sum_temp = sum(test_sentiment)) %>%
+        dplyr::ungroup() %>%
         # Filter comments that match the selected sentiments
-        dplyr::filter(is.na(sum_temp) == FALSE) %>% 
+        dplyr::filter(is.na(sum_temp) == FALSE) %>%
         dplyr::select(id, comment_txt) %>%
         dplyr::distinct()
       
