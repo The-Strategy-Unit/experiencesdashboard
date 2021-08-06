@@ -7,6 +7,7 @@
 #' @noRd
 app_ui <- function(request) {
   tagList(
+    
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # List the first level UI elements here
@@ -41,7 +42,8 @@ app_ui <- function(request) {
         dashboardthemes::shinyDashboardThemes(
           theme = "grey_light"
         ),
-        
+        HTML(readLines("inst/app/www/github_link.html")),
+
         tabItems(
           tabItem(tabName = "experiences-user",
                   # h1("Service User Experiences"),
