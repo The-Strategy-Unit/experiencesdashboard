@@ -39,10 +39,10 @@ app_server <- function( input, output, session ) {
     store_data <- db_data %>% 
       dplyr::filter(date > interpolate_date - 3 * 365) %>%
       dplyr::select(dplyr::any_of(c("location_1", "age", "age_label", 
-                                  "gender", "ethnicity"))) %>%
+                                    "gender", "ethnicity"))) %>%
       dplyr::collect()
   }
-
+  
   # render UI---
   
   output$filter_location_1 <- renderUI({
@@ -240,28 +240,8 @@ app_server <- function( input, output, session ) {
   
   filter_sentiment <- reactive({
     
-    filter_data()$filter_data %>%
-      dplyr::mutate(linenumber = dplyr::row_number()) %>% 
-      tidytext::unnest_tokens(word, comment_txt) %>%
-      dplyr::left_join(sentiment_nrc, by = "word") %>% 
-      dplyr::count(linenumber, sentiment, name = 'sentiment_count') %>%
-      dplyr::mutate(sentiment_count = dplyr::case_when(
-        is.na(sentiment) ~ NA_integer_,
-        TRUE ~ sentiment_count)) %>%
-      dplyr::select(linenumber, sentiment, sentiment_count) %>%
-      tidyr::pivot_wider(names_from = sentiment, 
-                         values_from = sentiment_count, 
-                         values_fill = 0,
-                         names_sort = TRUE) %>%
-      dplyr::full_join(
-        filter_data()$filter_data %>%
-          dplyr::mutate(linenumber = dplyr::row_number()),
-        by = "linenumber") %>%
-      dplyr::mutate(all_sentiments =  
-                      dplyr::select(., dplyr::all_of(nrc_sentiments)) %>%
-                      split(seq(nrow(.))) %>%
-                      lapply(function(x) unlist(names(x)[x != 0]))
-      )
+    calc_sentiment(filter_data()$filter_data)
+    
   })
   
   # modules----

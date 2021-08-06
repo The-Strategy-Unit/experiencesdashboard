@@ -14,11 +14,15 @@
 #' 2021-04-25
 tidy_all_trusts <- function(data, conn, trust_id) {
   
-
   if(trust_id == "demo_trust"){
 
     return(data %>% 
-             dplyr::rename(category = code))
+             dplyr::rename(category = code)) %>% 
+      dplyr::mutate(category = dplyr::case_when(
+        is.null(comment_txt) ~ NA,
+        comment_txt %in% c("NULL", "NA", "N/A") ~ NA,
+        TRUE ~ category
+      ))
   }
   
   if(trust_id == "trust_a"){
@@ -54,14 +58,14 @@ tidy_all_trusts <- function(data, conn, trust_id) {
       dplyr::mutate(age_label = dplyr::case_when(
         age == "Up to 25" ~ "0 - 25",
         TRUE ~ age)) %>% 
-      dplyr::rename(category = code) %>% 
-      dplyr::filter(category != "Miscellaneous")
+      dplyr::rename(category = code)
   }
   
-  db_tidy <- db_tidy %>%
-    dplyr::mutate(crit = dplyr::case_when(
-      crit %in% -5 : 5 ~ crit,
-      TRUE ~ NA_integer_
+  db_tidy <- db_tidy %>% 
+    dplyr::mutate(category = dplyr::case_when(
+      is.null(comment_txt) ~ NA,
+      comment_txt %in% c("NULL", "NA", "N/A") ~ NA,
+      TRUE ~ category
     ))
   
   # Return
