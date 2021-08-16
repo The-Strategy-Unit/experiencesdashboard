@@ -32,8 +32,3 @@ mod_fft_server <- function(id, filter_data){
   })
 }
     
-## To be copied in the UI
-# 
-    
-## To be copied in the server
-# 

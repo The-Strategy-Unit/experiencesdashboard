@@ -5,10 +5,11 @@ library(tidyverse)
 library(nottshcData)
 library(nottshcMethods)
 library(DBI)
+library(experiencesdashboard)
 
 ## MySQL ----
 
-open_db_data <- get_px_exp(from = "2015-01-01",
+open_db_data <- get_px_exp(from = "2017-01-01",
                            open_data = FALSE, 
                            remove_demographics = FALSE,
                            remove_optout = TRUE)
@@ -23,23 +24,39 @@ trust_a <- open_db_data %>%
 
 trust_a <- trust_a %>% 
   dplyr::select(location_1 = Division2, location_2 = DirT, location_3 = TeamN,
-                date = Date, Improve, Best, fft = Service, gender = Gender, age = Age,
-                ethnicity = Ethnic, sexuality = Sexuality, patient_carer = SU,
-                disability = Disability, faith = Religion) %>% 
+                date = Date, comment_1 = Improve, comment_2 = Best, 
+                fft = Service, gender = Gender, 
+                age = Age, ethnicity = Ethnic, sexuality = Sexuality, 
+                patient_carer = SU, disability = Disability, faith = Religion) %>% 
   tidyr::pivot_longer(cols = c(Improve, Best),
                       names_to = "comment_type",
                       values_to = "comment_txt") %>% 
   clean_dataframe(., comment_txt)
 
+trust_a <- trust_a %>% 
+  dplyr::mutate(gender = dplyr::case_when(
+    gender %in% c("M", "F", "O", NA) ~ gender,
+    TRUE ~ NA_character_
+  )) %>% 
+  dplyr::mutate(ethnicity = dplyr::case_when(
+    substr(ethnicity, 1, 1) == "W" ~ "White",
+    substr(ethnicity, 1, 1) == "M" ~ "Mixed",
+    substr(ethnicity, 1, 1) == "A" ~ "Asian",
+    substr(ethnicity, 1, 1) == "B" ~ "Black",
+    ethnicity == "O" ~ "Other",
+    ethnicity == "GRT" ~ "Gypsy/ Romany/ Traveller",
+    TRUE ~ NA_character_
+  ))
+
 # MUST randomise the demographic features
 
-trust_a <- trust_a %>% 
+random_a <- trust_a %>% 
   dplyr::mutate(dplyr::across(c(gender, age, ethnicity, sexuality, 
                                 patient_carer, disability, faith), 
                               ~ sample(.x, dplyr::n())))
 
 preds <- experienceAnalysis::calc_predict_unlabelled_text(
-  x = trust_a,
+  x = random_a,
   python_setup = FALSE,
   text_col_name = 'comment_txt',
   preds_column = NULL,
@@ -49,7 +66,7 @@ preds <- experienceAnalysis::calc_predict_unlabelled_text(
   dplyr::select(code = comment_txt_preds)
 
 criticality <- experienceAnalysis::calc_predict_unlabelled_text(
-  x = trust_a,
+  x = random_a,
   python_setup = FALSE,
   text_col_name = 'comment_txt',
   preds_column = NULL,
@@ -59,7 +76,7 @@ criticality <- experienceAnalysis::calc_predict_unlabelled_text(
   dplyr::select(crit = comment_txt_preds)
 
 final_df <- dplyr::bind_cols(
-  trust_a, 
+  random_a, 
   preds,
   criticality)
 
