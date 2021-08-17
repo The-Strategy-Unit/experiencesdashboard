@@ -16,23 +16,7 @@ mod_sentiment_ui <- function(id) {
         uiOutput(ns("superUI")),
         conditionalPanel(
           condition = 'input.tabs != "upset"', 
-          selectInput(
-            ns("select_sentiment"),
-            label = h5(strong("Select sentiments:")),
-            choices = c(
-              "anger",
-              "anticipation",
-              "disgust",
-              "fear",
-              "joy",
-              "negative",
-              "positive",
-              "sadness",
-              "surprise",
-              "trust"
-            ),
-            multiple = TRUE
-          )
+          uiOutput(ns("sentimentUI"))
         )
       ),
       
@@ -141,41 +125,37 @@ mod_sentiment_server <- function(id, filter_sentiment){
           dplyr::filter(category %in% input$select_super)
       }
       
-      if(isTruthy(input$select_sentiment)){
-        
-        sentiment_txt_data_tidy <- sentiment_txt_data_tidy %>% 
-          dplyr::filter(category %in% input$select_sentiment)
-      }
-      
       return(sentiment_txt_data_tidy)
     })
     
-    
-    
+    output$sentimentUI <- renderUI({
+      
+      selectInput(
+        ns("select_sentiment"),
+        label = h5(strong("Select sentiments:")),
+        choices = c(
+          "anger",
+          "anticipation",
+          "disgust",
+          "fear",
+          "joy",
+          "negative",
+          "positive",
+          "sadness",
+          "surprise",
+          "trust"
+        ),
+        multiple = TRUE
+      )
+    })
+
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
       req(nrow(sentiment_txt_data_tidy_r()) > 0)
       
       filtered_comments <- sentiment_txt_data_tidy_r() %>% 
-        dplyr::select(id, all_sentiments, comment_txt) %>% 
-        # First get number of total sentiments in all comments
-        dplyr::mutate(length = lengths(all_sentiments),
-                      all_sentiments_unnest = all_sentiments) %>%
-        # # Now filter for number of selected sentiments
-        dplyr::filter(length == length(input$select_sentiment)) %>%
-        # Unnest to create long version of data
-        tidyr::unnest(cols = all_sentiments_unnest) %>% 
-        # Group by comment id so that every computation is now for each comment
-        dplyr::group_by(id) %>%
-        dplyr::mutate(test_sentiment = dplyr::case_when(
-          all_sentiments_unnest %in% input$select_sentiment ~ TRUE),
-          sum_temp = sum(test_sentiment)) %>%
-        dplyr::ungroup() %>%
-        # Filter comments that match the selected sentiments
-        dplyr::filter(is.na(sum_temp) == FALSE) %>%
-        dplyr::select(id, comment_txt) %>%
-        dplyr::distinct()
+        make_sentiment_table()
       
       reactable::reactable(
         filtered_comments[, "comment_txt"],
@@ -197,8 +177,9 @@ mod_sentiment_server <- function(id, filter_sentiment){
     # Create timeline ----
     output$sentiment_plot_time <- renderPlot({
       
-      sentiments_ordered <- c("negative", "anger", "disgust", "fear", "sadness",
-                              "anticipation", "surprise", "joy",  "trust", "positive")
+      sentiments_ordered <- c("negative", "anger", "disgust", "fear", 
+                              "sadness", "anticipation", "surprise", 
+                              "joy", "trust", "positive")
       
       sentiments_ordered_sentence <- stringr::str_to_sentence(sentiments_ordered)
       

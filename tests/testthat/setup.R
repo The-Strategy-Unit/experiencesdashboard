@@ -12,5 +12,7 @@ pool <- pool::dbPool(drv = odbc::odbc(),
 tidy_trust_data <- dplyr::tbl(pool,
                               dbplyr::in_schema("TEXT_MINING",
                                                 test_trust)) %>% 
+  dplyr::arrange(desc(date)) %>% 
+  head(1000) %>% 
   tidy_all_trusts(conn = pool, trust_id = test_trust) %>%
   dplyr::collect()

@@ -5,14 +5,6 @@
 #' @export
 calc_sentiment <- function(data){
   
-  # doing data here is a little wasteful, TBH, but this operation is quick
-  
-  nrc_sentiments <- sentiment_nrc %>%
-    dplyr::select(sentiment) %>%
-    dplyr::distinct() %>%
-    dplyr::pull() %>%
-    sort()
-  
   data %>%
     dplyr::mutate(linenumber = dplyr::row_number()) %>% 
     tidytext::unnest_tokens(word, comment_txt) %>%
@@ -31,7 +23,7 @@ calc_sentiment <- function(data){
         dplyr::mutate(linenumber = dplyr::row_number()),
       by = "linenumber") %>%
     dplyr::mutate(all_sentiments =  
-                    dplyr::select(., dplyr::all_of(nrc_sentiments)) %>%
+                    dplyr::select(., dplyr::any_of(nrc_sentiments)) %>%
                     split(seq(nrow(.))) %>%
                     lapply(function(x) unlist(names(x)[x != 0]))
     )
@@ -56,7 +48,8 @@ tidy_sentiment_txt <- function(data) {
     tidyr::unnest(cols = all_sentiments_unnest) %>% 
     dplyr::distinct() %>% 
     dplyr::mutate(value = TRUE) %>% 
-    tidyr::pivot_wider(id_cols = c("id", "date", "year", "category", "location_1", 
+    tidyr::pivot_wider(id_cols = c("id", "date", "year", "category", 
+                                   "location_1", 
                                    "comment_txt", "all_sentiments"), 
                        names_from = all_sentiments_unnest, 
                        values_from = value) %>% 
@@ -74,4 +67,30 @@ tidy_sentiment_txt <- function(data) {
     ) %>% 
     dplyr::mutate_if(is.logical, as.numeric)
   
+}
+
+#' Produce a table of comments with different sentiments
+#' for example to be drawn with {reactable}
+#' 
+#' @param data dataframe you almost certainly made with 
+#' \code{\link{tidy_sentiment_txt}}
+#' @export
+#' 
+#' @return a table suitable for {reactable}
+make_sentiment_table <- function(data){
+  
+  data %>% 
+    dplyr::select(id, all_sentiments, comment_txt) %>% 
+    # First get number of total sentiments in all comments
+    dplyr::mutate(length = lengths(all_sentiments),
+                  all_sentiments_unnest = all_sentiments) %>%
+    # # Now filter for number of selected sentiments
+    # Unnest to create long version of data
+    tidyr::unnest(cols = all_sentiments_unnest) %>% 
+    # Group by comment id so that every computation is now for each comment
+    dplyr::group_by(id) %>%
+    dplyr::mutate(test_sentiment = dplyr::case_when(
+      all_sentiments_unnest %in% nrc_sentiments ~ TRUE),
+      sum_temp = sum(test_sentiment, na.rm = TRUE)) %>%
+    dplyr::ungroup()
 }

@@ -37,7 +37,7 @@ app_server <- function( input, output, session ) {
   if(get_golem_config("trust_name") != "demo_trust"){
     
     store_data <- db_data %>% 
-      dplyr::filter(date > interpolate_date - 3 * 20) %>%
+      dplyr::filter(date > interpolate_date - 3 * 365) %>%
       dplyr::select(dplyr::any_of(c("location_1", "age", "age_label", 
                                     "gender", "ethnicity"))) %>%
       dplyr::collect()
@@ -139,14 +139,13 @@ app_server <- function( input, output, session ) {
     }
     
     dates <- db_data %>%
-      dplyr::summarise(min_date = min(date),
-                       max_date = max(date)) %>%
+      dplyr::summarise(max_date = max(date)) %>%
       dplyr::collect()
     
     dateRangeInput(
       "date_range",
       label = h5(strong("Select date range:")),
-      start = dates$min_date,
+      start = dates$max_date - 365,
       end = dates$max_date
     )
   })
