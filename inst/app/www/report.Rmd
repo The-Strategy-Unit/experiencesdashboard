@@ -25,8 +25,8 @@ This report summarises data from `r format(params$date_from, "%b %d %Y")` to `r 
 
 calculate_table(
   table_data = params$data, 
-  count_column = "super_category",
-  comment_type = "improve", 
+  count_column = "category",
+  comment_type = "comment_1", 
   click_column = NULL
 ) %>% 
   pander::pandoc.table()
@@ -39,8 +39,8 @@ calculate_table(
 
 calculate_table(
   table_data = params$data, 
-  count_column = "super_category",
-  comment_type = "best", 
+  count_column = "category",
+  comment_type = "comment_2", 
   click_column = NULL
 ) %>% 
   pander::pandoc.table()
@@ -52,7 +52,7 @@ calculate_table(
 ```{r}
 
 graph_data <- experiencesdashboard::split_data_spc(
-  params$data, variable = "service", chunks = 15
+  params$data, variable = "fft", chunks = 15
 )
 
 experiencesdashboard::plot_fft_spc(graph_data)

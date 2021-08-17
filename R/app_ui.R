@@ -42,8 +42,14 @@ app_ui <- function(request) {
         dashboardthemes::shinyDashboardThemes(
           theme = "grey_light"
         ),
-        HTML(readLines("inst/app/www/github_link.html")),
-
+        HTML(
+          readLines(
+            system.file("app", "www", "github_link.html", 
+                        package = "experiencesdashboard")
+          )
+        ),
+        
+        
         tabItems(
           tabItem(tabName = "experiences-user",
                   # h1("Service User Experiences"),
