@@ -9,8 +9,8 @@ app_server <- function( input, output, session ) {
   
   # fetch data
   
-  pool <- pool::dbPool(drv = odbc::odbc(),
-                       driver = "Maria DB",
+  pool <- odbc::dbConnect(drv = odbc::odbc(),
+                       driver = "MySQL ODBC 8.0 Unicode Driver",# "Maria DB",
                        server = Sys.getenv("HOST_NAME"),
                        UID = Sys.getenv("DB_USER"),
                        PWD = Sys.getenv("MYSQL_PASSWORD"),
@@ -37,7 +37,7 @@ app_server <- function( input, output, session ) {
   if(get_golem_config("trust_name") != "demo_trust"){
     
     store_data <- db_data %>% 
-      dplyr::filter(date > interpolate_date - 3 * 365) %>%
+      dplyr::filter(date > interpolate_date - 3 * 20) %>%
       dplyr::select(dplyr::any_of(c("location_1", "age", "age_label", 
                                     "gender", "ethnicity"))) %>%
       dplyr::collect()

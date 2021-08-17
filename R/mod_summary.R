@@ -16,10 +16,10 @@ mod_summary_ui <- function(id){
       h2("(This tab will eventually summarise patient and 
                      staff experience)"),
       
-      conditionalPanel(
-        get_golem_config("trust_name") == "demo_trust",
-        uiOutput(ns("open_panel"))
-      ),
+      # conditionalPanel(
+      #   get_golem_config("trust_name") == "demo_trust",
+      #   uiOutput(ns("open_panel"))
+      # ),
       
       # fluidRow(
       actionButton(ns("launch_modal"), "Upload new data")
@@ -39,10 +39,10 @@ mod_summary_server <- function(id, db_conn){
     
     output$open_panel <- renderUI({
       
-      if(get_golem_config("trust_name") != "demo_trust"){
-        
-        return()
-      }
+      # if(get_golem_config("trust_name") != "demo_trust"){
+      #   
+      #   return()
+      # }
       
       tagList(
         h3("Download the spreadsheet template below and add your data to it"),

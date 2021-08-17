@@ -1,5 +1,5 @@
 
-test_trust <- "trust_c_dev"
+test_trust <- "trust_a"
 
 pool <- pool::dbPool(drv = odbc::odbc(),
                      driver = "Maria DB",
