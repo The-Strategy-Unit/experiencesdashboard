@@ -128,23 +128,23 @@ mod_sentiment_server <- function(id, filter_sentiment){
       return(sentiment_txt_data_tidy)
     })
     
+    # return table with all the sentiments in it
+    
+    all_sentiment_table <- reactive({
+      
+      sentiment_txt_data_tidy_r() %>% 
+        make_sentiment_table()
+    })
+    
     output$sentimentUI <- renderUI({
       
+      choices <- all_sentiment_table() %>% 
+        dplyr::distinct(all_sentiments_unnest)
+      
       selectInput(
-        ns("select_sentiment"),
-        label = h5(strong("Select sentiments:")),
-        choices = c(
-          "anger",
-          "anticipation",
-          "disgust",
-          "fear",
-          "joy",
-          "negative",
-          "positive",
-          "sadness",
-          "surprise",
-          "trust"
-        ),
+        session$ns("select_sentiment"),
+        label = h5(strong("Select sentiments (defaults to all):")),
+        choices = nrc_sentiments,
         multiple = TRUE
       )
     })
@@ -152,13 +152,27 @@ mod_sentiment_server <- function(id, filter_sentiment){
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
-      req(nrow(sentiment_txt_data_tidy_r()) > 0)
+      req(nrow(all_sentiment_table()) > 0)
       
-      filtered_comments <- sentiment_txt_data_tidy_r() %>% 
-        make_sentiment_table()
+      comments <- all_sentiment_table()
+      
+      if(isTruthy(input$select_sentiment)){
+        
+        comments <- comments %>% 
+          dplyr::filter(all_sentiments_unnest %in% input$select_sentiment)
+      }
+      
+      comments <- comments %>% 
+        dplyr::select(comment_txt, all_sentiments) %>% 
+        dplyr::distinct()
+      
+      if(nrow(comments) == 0){
+        
+        comments <- data.frame("No data found" = "Please expand your selection")
+      }
       
       reactable::reactable(
-        filtered_comments[, "comment_txt"],
+        comments,
         borderless = TRUE,
         highlight = TRUE,
         showSortIcon = FALSE,
@@ -169,7 +183,9 @@ mod_sentiment_server <- function(id, filter_sentiment){
         columns = list(
           comment_txt = reactable::colDef(minWidth = 200, 
                                           sortable = FALSE, 
-                                          name = "What could we do better?")
+                                          name = "What could we do better?"),
+          all_sentiments = reactable::colDef(sortable = TRUE,
+                                             name = "Sentiments")
         )
       )
     })

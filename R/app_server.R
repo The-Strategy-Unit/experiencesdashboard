@@ -10,7 +10,7 @@ app_server <- function( input, output, session ) {
   # fetch data
   
   pool <- odbc::dbConnect(drv = odbc::odbc(),
-                       driver = "MySQL ODBC 8.0 Unicode Driver",# "Maria DB",
+                       driver = "Maria DB",
                        server = Sys.getenv("HOST_NAME"),
                        UID = Sys.getenv("DB_USER"),
                        PWD = Sys.getenv("MYSQL_PASSWORD"),
