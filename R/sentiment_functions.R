@@ -96,3 +96,55 @@ make_sentiment_table <- function(data, sentiment_names){
       sum_temp = sum(test_sentiment, na.rm = TRUE)) %>%
     dplyr::ungroup()
 }
+
+#' Plot sentiment graph over time, faceting by category and/ or location
+#' 
+#' @param data reactive and TIDY sentiment object
+#' @param sentiment_names all of the nrc sentiments in a vector of strings
+#' @param select_sentiment value of selected sentiments (from input$)
+#' @param select_fill_type string "fill" or "stack" corresponding to 
+#' arguments to geom_histogram()
+#' @param select_facet integer 1, 2, 3, corresponding to facet by
+#' category, location, category & location respectively
+plot_sentiment <- function(data, sentiment_names, select_sentiment,
+                           select_fill_type, select_facet){
+  
+  sentiments_ordered_sentence <- stringr::str_to_sentence(sentiment_names)
+  
+  sentiment_plot_time_temp <- data %>% 
+    tidyr::unnest(cols = all_sentiments) %>% 
+    dplyr::filter(all_sentiments %in% select_sentiment) %>% 
+    dplyr::select(date, all_sentiments, category, location_1) %>%
+    tidyr::drop_na() %>% 
+    dplyr::mutate(all_sentiments = factor(
+      x = all_sentiments,
+      levels = sentiments_ordered,
+      labels = sentiments_ordered_sentence)) %>%
+    ggplot2::ggplot(ggplot2::aes(date, 
+                                 fill = all_sentiments,
+                                 colour = all_sentiments)) +
+    ggplot2::geom_histogram(position = select_fill_type, 
+                            binwidth = 20) +
+    ggplot2::scale_x_date() +
+    ggplot2::scale_fill_viridis_d(direction = -1) +
+    ggplot2::scale_colour_viridis_d(direction = -1) +
+    ggplot2::labs(x = "Date", 
+                  y = NULL, 
+                  fill = "Selected\nsentiments",
+                  colour = "Selected\nsentiments") +
+    ggplot2::theme(text = ggplot2::element_text(size = 16))
+  
+  # Add facet ----
+  if (select_fill_type == 1){
+    sentiment_plot_time_temp <- sentiment_plot_time_temp +
+      ggplot2::facet_grid(~ category)
+  } else if (select_fill_type == 2) {
+    sentiment_plot_time_temp <- sentiment_plot_time_temp +
+      ggplot2::facet_grid(~ location_1)
+  } else if (select_fill_type == 3) {
+    sentiment_plot_time_temp <- sentiment_plot_time_temp +
+      ggplot2::facet_grid(location_1 ~ category)
+  }
+  
+  sentiment_plot_time_temp
+}
