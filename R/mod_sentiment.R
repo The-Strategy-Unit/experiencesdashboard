@@ -54,12 +54,7 @@ mod_sentiment_ui <- function(id) {
           ),
           fluidRow(
             column(3,
-                   selectInput(ns("select_sentiment_plot_facet"), 
-                               label = h5(strong("Divide plot by:")), 
-                               choices = list("Category" = 1, 
-                                              "Division" = 2, 
-                                              "Division and category" = 3), 
-                               selected = 1),
+                   uiOutput(ns("divide_plotUI")),
             ),
             column(3,
                    selectInput(ns("select_sentiment_plot_position"), 
@@ -103,17 +98,33 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
     
     output$superUI <- renderUI({
       
-      super_choices <- na.omit(
-        unique(sentiment_txt_data_tidy_r()$category)
+      isolate(
+        super_choices <- na.omit(
+          unique(sentiment_txt_data_tidy_r()$category)
+        )
       )
       
       selectInput(
         session$ns("select_super"),
-        label = h5(strong("Select categories")),
+        label = h5(strong("Select categories (defaults to all)")),
         choices = super_choices,
         multiple = TRUE,
         width = "100%"
       )
+    })
+    
+    output$divide_plotUI <- renderUI({
+      
+      choices <- list(1, 2, 3) # wait for it...
+      
+      names(choices) <- c("Category", get_golem_config("location_1"), 
+                          paste0(get_golem_config("location_1"), 
+                                 " and category"))
+      
+      selectInput(ns("select_sentiment_plot_facet"), 
+                  label = h5(strong("Divide plot by:")), 
+                  choices = choices, 
+                  selected = 1)
     })
     
     # Create reactive dataframe ----
@@ -208,9 +219,10 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
         dplyr::filter(all_sentiments %in% input$select_sentiment) %>% 
         dplyr::select(date, all_sentiments, category, location_1) %>%
         tidyr::drop_na() %>% 
-        dplyr::mutate(all_sentiments = factor(x = all_sentiments,
-                                              levels = sentiments_ordered,
-                                              labels = sentiments_ordered_sentence)) %>%
+        dplyr::mutate(all_sentiments = factor(
+          x = all_sentiments,
+          levels = sentiments_ordered,
+          labels = sentiments_ordered_sentence)) %>%
         ggplot2::ggplot(ggplot2::aes(date, 
                                      fill = all_sentiments,
                                      colour = all_sentiments)) +
@@ -228,7 +240,7 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
       # Add facet ----
       if (input$select_sentiment_plot_facet == 1){
         sentiment_plot_time_temp +
-          ggplot2::facet_grid(~category)
+          ggplot2::facet_grid(~ category)
       } else if (input$select_sentiment_plot_facet == 2) {
         sentiment_plot_time_temp +
           ggplot2::facet_grid(~ location_1)
