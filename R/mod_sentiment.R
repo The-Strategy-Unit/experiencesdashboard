@@ -95,7 +95,7 @@ mod_sentiment_ui <- function(id) {
 #' mod_sentiment Server Function
 #'
 #' @noRd 
-mod_sentiment_server <- function(id, filter_sentiment, nrc_sentiments){
+mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
   
   moduleServer( id, function(input, output, session){
     
@@ -103,7 +103,9 @@ mod_sentiment_server <- function(id, filter_sentiment, nrc_sentiments){
     
     output$superUI <- renderUI({
       
-      super_choices <- na.omit(unique(filter_sentiment()$category))
+      super_choices <- na.omit(
+        unique(sentiment_txt_data_tidy_r()$category)
+      )
       
       selectInput(
         session$ns("select_super"),
@@ -117,7 +119,9 @@ mod_sentiment_server <- function(id, filter_sentiment, nrc_sentiments){
     # Create reactive dataframe ----
     sentiment_txt_data_tidy_r <- reactive({
       
-      sentiment_txt_data_tidy <- tidy_sentiment_txt(filter_sentiment())
+      sentiment_txt_data_tidy <- calc_sentiment(filter_data()$filter_data, 
+                                                nrc_sentiments) %>% 
+        tidy_sentiment_txt()
       
       if(isTruthy(input$select_super)){
         
@@ -148,7 +152,7 @@ mod_sentiment_server <- function(id, filter_sentiment, nrc_sentiments){
         multiple = TRUE
       )
     })
-
+    
     # Create reactive table ----
     output$sentiment_table <- reactable::renderReactable({
       
@@ -256,24 +260,6 @@ mod_sentiment_server <- function(id, filter_sentiment, nrc_sentiments){
         session$clientData$`output_mod_sentiment_ui_1-sentiment_plot_upset_width` / 2.3
       }
     )
-    
-    # Write output text for text boxes ----
-    output$combination_sentiments_txt <- renderText({
-      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF UPSET PLOT. 
-             EXPLAIN DIFFERENCE BETWEEN SET SIZE AND INTERSECTION SIZE.")
-    })
-    
-    output$change_time_sentiments_txt <- renderText({
-      paste0("TODO NOTE: ADD INFORMATION TO GUIDE INTERPRETATION OF CHANGE 
-             IN SENTIMENT OVER TIME. ADD INFORMATION EXPLAINING THE DIFFERENCE 
-             BETWEEEN TOTALS AND PROPORTIONS.")
-    })
-    
-    output$show_comments_box <- renderText({
-      paste0("TODO NOTE: ADD INFORMATION EXPLAINING HOW TO FILTER FOR 
-             SENTIMENTS IN THE COMMENTS.")
-    })
-    
   })
   
 }
