@@ -52,7 +52,7 @@ app_server <- function( input, output, session ) {
       return()
     }
     
-    location_1_choices <- store_data %>%
+    location_1_choices <- date_filter() %>%
       dplyr::distinct(location_1) %>%
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
       dplyr::filter(!is.na(location_1))
@@ -74,7 +74,7 @@ app_server <- function( input, output, session ) {
       return()
     }
     
-    location_2_choices <- db_data
+    location_2_choices <- date_filter()
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
       
@@ -103,7 +103,7 @@ app_server <- function( input, output, session ) {
       return()
     }
     
-    location_3_choices <- db_data
+    location_3_choices <- date_filter()
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
       
@@ -131,25 +131,6 @@ app_server <- function( input, output, session ) {
     )
   })
   
-  output$filter_date <- renderUI({
-    
-    if(get_golem_config("trust_name") == "demo_trust"){
-      
-      return()
-    }
-    
-    dates <- db_data %>%
-      dplyr::summarise(max_date = max(date)) %>%
-      dplyr::collect()
-    
-    dateRangeInput(
-      "date_range",
-      label = h5(strong("Select date range:")),
-      start = dates$max_date - 365,
-      end = dates$max_date
-    )
-  })
-  
   all_inputs <- reactive({
     list(
       "date_from" = input$date_range[1],
@@ -159,6 +140,13 @@ app_server <- function( input, output, session ) {
   })
   
   # Create reactive data ----
+  
+  date_filter <- reactive({
+    
+    db_data %>% 
+      dplyr::filter(date > !!input$date_range[1],
+                    date < !!input$date_range[2])
+  })
   filter_data <- reactive({
     
     if(get_golem_config("trust_name") == "demo_trust"){
@@ -167,9 +155,7 @@ app_server <- function( input, output, session ) {
                   "demography_number" = NULL))
     }
     
-    return_data <- db_data %>% 
-      dplyr::filter(date > !!input$date_range[1],
-                    date < !!input$date_range[2])
+    return_data <- date_filter()
     
     # filter location
     
