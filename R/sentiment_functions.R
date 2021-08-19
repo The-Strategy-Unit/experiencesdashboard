@@ -94,7 +94,8 @@ make_sentiment_table <- function(data, sentiment_names){
     dplyr::mutate(test_sentiment = dplyr::case_when(
       all_sentiments_unnest %in% sentiment_names ~ TRUE),
       sum_temp = sum(test_sentiment, na.rm = TRUE)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>% 
+    dplyr::filter(!is.na(all_sentiments_unnest))
 }
 
 #' Plot sentiment graph over time, faceting by category and/ or location
@@ -113,7 +114,7 @@ plot_sentiment <- function(data, sentiment_names, select_sentiment,
   
   sentiment_plot_time_temp <- data %>% 
     tidyr::unnest(cols = all_sentiments) %>% 
-    # dplyr::filter(all_sentiments %in% select_sentiment) %>% 
+    dplyr::filter(all_sentiments %in% select_sentiment) %>%
     dplyr::select(date, all_sentiments, category, location_1) %>%
     tidyr::drop_na() %>% 
     dplyr::mutate(all_sentiments = factor(

@@ -113,6 +113,25 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
       )
     })
     
+    debounce_select_super <- reactive({
+      input$select_super
+    }) %>% 
+      debounce(3000)
+    
+    output$sentimentUI <- renderUI({
+      
+      choices <- all_sentiment_table() %>% 
+        dplyr::distinct(all_sentiments_unnest) %>% 
+        dplyr::pull()
+      
+      selectInput(
+        session$ns("select_sentiment"),
+        label = h5(strong("Select sentiments (defaults to all):")),
+        choices = choices,
+        multiple = TRUE
+      )
+    })
+    
     output$divide_plotUI <- renderUI({
       
       choices <- list(1, 2, 3) # wait for it...
@@ -134,10 +153,10 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
                                                 nrc_sentiments) %>% 
         tidy_sentiment_txt()
       
-      if(isTruthy(input$select_super)){
+      if(isTruthy(debounce_select_super())){
         
         sentiment_txt_data_tidy <- sentiment_txt_data_tidy %>% 
-          dplyr::filter(category %in% input$select_super)
+          dplyr::filter(category %in% debounce_select_super())
       }
       
       return(sentiment_txt_data_tidy)
@@ -149,19 +168,6 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
       
       sentiment_txt_data_tidy_r() %>% 
         make_sentiment_table(nrc_sentiments)
-    })
-    
-    output$sentimentUI <- renderUI({
-      
-      choices <- all_sentiment_table() %>% 
-        dplyr::distinct(all_sentiments_unnest)
-      
-      selectInput(
-        session$ns("select_sentiment"),
-        label = h5(strong("Select sentiments (defaults to all):")),
-        choices = nrc_sentiments,
-        multiple = TRUE
-      )
     })
     
     # Create reactive table ----
@@ -208,12 +214,21 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
     # Create timeline ----
     output$sentiment_plot_time <- renderPlot({
       
+      if(!isTruthy(input$select_sentiment)){
+        
+        choices <- all_sentiment_table() %>% 
+          dplyr::distinct(all_sentiments_unnest) %>% 
+          dplyr::pull()
+      } else {
+        
+        choices <- input$select_sentiment
+      }
       
-
       plot_sentiment(sentiment_txt_data_tidy_r(), 
                      sentiment_names = nrc_sentiments,
-                     select_sentiment = input$select_sentiment,
-                     select_fill_type = input$select_sentiment_plot_position)
+                     select_sentiment = choices,
+                     select_fill_type = input$select_sentiment_plot_position,
+                     select_facet = input$select_sentiment_plot_facet)
       
     }
     , height = function() {
