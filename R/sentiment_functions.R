@@ -113,7 +113,7 @@ plot_sentiment <- function(data, sentiment_names, select_sentiment,
   
   sentiment_plot_time_temp <- data %>% 
     tidyr::unnest(cols = all_sentiments) %>% 
-    dplyr::filter(all_sentiments %in% select_sentiment) %>% 
+    # dplyr::filter(all_sentiments %in% select_sentiment) %>% 
     dplyr::select(date, all_sentiments, category, location_1) %>%
     tidyr::drop_na() %>% 
     dplyr::mutate(all_sentiments = factor(
@@ -135,13 +135,16 @@ plot_sentiment <- function(data, sentiment_names, select_sentiment,
     ggplot2::theme(text = ggplot2::element_text(size = 16))
   
   # Add facet ----
-  if (select_fill_type == 1){
+  if (select_facet == 1){
+    
     sentiment_plot_time_temp <- sentiment_plot_time_temp +
       ggplot2::facet_grid(~ category)
-  } else if (select_fill_type == 2) {
+  } else if (select_facet == 2) {
+    
     sentiment_plot_time_temp <- sentiment_plot_time_temp +
       ggplot2::facet_grid(~ location_1)
-  } else if (select_fill_type == 3) {
+  } else if (select_facet == 3) {
+    
     sentiment_plot_time_temp <- sentiment_plot_time_temp +
       ggplot2::facet_grid(location_1 ~ category)
   }
