@@ -225,7 +225,7 @@ app_server <- function( input, output, session ) {
   
   filter_sentiment <- reactive({
     
-    calc_sentiment(filter_data()$filter_data)
+    calc_sentiment(filter_data()$filter_data, nrc_sentiments)
     
   })
   
@@ -237,7 +237,9 @@ app_server <- function( input, output, session ) {
   
   mod_patient_experience_server("patient_experience_ui_1")
   
-  mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
+  mod_sentiment_server("mod_sentiment_ui_1", 
+                       filter_sentiment = filter_sentiment,
+                       nrc_sentiments = nrc_sentiments)
   
   filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                                      filter_data = filter_data)

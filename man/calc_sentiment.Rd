@@ -4,10 +4,12 @@
 \alias{calc_sentiment}
 \title{Produce sentiment dataframe for tidying}
 \usage{
-calc_sentiment(data)
+calc_sentiment(data, sentiment_names)
 }
 \arguments{
 \item{data}{dataframe- raw from the database}
+
+\item{sentiment_names}{all of the nrc sentiments in a vector of strings}
 }
 \value{
 dataframe with sentiment columns

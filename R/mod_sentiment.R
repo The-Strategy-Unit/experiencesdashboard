@@ -95,7 +95,7 @@ mod_sentiment_ui <- function(id) {
 #' mod_sentiment Server Function
 #'
 #' @noRd 
-mod_sentiment_server <- function(id, filter_sentiment){
+mod_sentiment_server <- function(id, filter_sentiment, nrc_sentiments){
   
   moduleServer( id, function(input, output, session){
     
@@ -133,7 +133,7 @@ mod_sentiment_server <- function(id, filter_sentiment){
     all_sentiment_table <- reactive({
       
       sentiment_txt_data_tidy_r() %>% 
-        make_sentiment_table()
+        make_sentiment_table(nrc_sentiments)
     })
     
     output$sentimentUI <- renderUI({
