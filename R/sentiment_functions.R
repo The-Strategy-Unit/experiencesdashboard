@@ -1,9 +1,10 @@
 #' Produce sentiment dataframe for tidying
 #' @description Take the raw dataframe and mark it up for sentiment analysis
 #' @param data dataframe- raw from the database
+#' @param sentiment_names all of the nrc sentiments in a vector of strings
 #' @return dataframe with sentiment columns
 #' @export
-calc_sentiment <- function(data){
+calc_sentiment <- function(data, sentiment_names){
   
   data %>%
     dplyr::mutate(linenumber = dplyr::row_number()) %>% 
@@ -23,7 +24,7 @@ calc_sentiment <- function(data){
         dplyr::mutate(linenumber = dplyr::row_number()),
       by = "linenumber") %>%
     dplyr::mutate(all_sentiments =  
-                    dplyr::select(., dplyr::any_of(nrc_sentiments)) %>%
+                    dplyr::select(., dplyr::any_of(sentiment_names)) %>%
                     split(seq(nrow(.))) %>%
                     lapply(function(x) unlist(names(x)[x != 0]))
     )
@@ -74,10 +75,11 @@ tidy_sentiment_txt <- function(data) {
 #' 
 #' @param data dataframe you almost certainly made with 
 #' \code{\link{tidy_sentiment_txt}}
+#' @param sentiment_names all of the nrc sentiments in a vector of strings
 #' @export
 #' 
 #' @return a table suitable for {reactable}
-make_sentiment_table <- function(data){
+make_sentiment_table <- function(data, sentiment_names){
   
   data %>% 
     dplyr::select(id, all_sentiments, comment_txt) %>% 
@@ -90,7 +92,7 @@ make_sentiment_table <- function(data){
     # Group by comment id so that every computation is now for each comment
     dplyr::group_by(id) %>%
     dplyr::mutate(test_sentiment = dplyr::case_when(
-      all_sentiments_unnest %in% nrc_sentiments ~ TRUE),
+      all_sentiments_unnest %in% sentiment_names ~ TRUE),
       sum_temp = sum(test_sentiment, na.rm = TRUE)) %>%
     dplyr::ungroup()
 }
