@@ -119,7 +119,7 @@ plot_sentiment <- function(data, sentiment_names, select_sentiment,
     tidyr::drop_na() %>% 
     dplyr::mutate(all_sentiments = factor(
       x = all_sentiments,
-      levels = sentiments_ordered,
+      levels = sentiment_names,
       labels = sentiments_ordered_sentence)) %>%
     ggplot2::ggplot(ggplot2::aes(date, 
                                  fill = all_sentiments,
