@@ -90,7 +90,7 @@ mod_sentiment_ui <- function(id) {
 #' mod_sentiment Server Function
 #'
 #' @noRd 
-mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
+mod_sentiment_server <- function(id, filter_data, nrc_sentiments, comment_label){
   
   moduleServer( id, function(input, output, session){
     
@@ -149,7 +149,10 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
     # Create reactive dataframe ----
     sentiment_txt_data_tidy_r <- reactive({
       
-      sentiment_txt_data_tidy <- calc_sentiment(filter_data()$filter_data, 
+      filter_sentiment <- filter_data()$filter_data %>% 
+        dplyr::filter(comment_type == comment_label)
+      
+      sentiment_txt_data_tidy <- calc_sentiment(filter_sentiment, 
                                                 nrc_sentiments) %>% 
         tidy_sentiment_txt()
       
@@ -204,7 +207,7 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
         columns = list(
           comment_txt = reactable::colDef(minWidth = 200, 
                                           sortable = FALSE, 
-                                          name = "What could we do better?"),
+                                          name = get_golem_config(comment_label)),
           all_sentiments = reactable::colDef(sortable = TRUE,
                                              name = "Sentiments")
         )

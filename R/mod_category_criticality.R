@@ -112,15 +112,30 @@ mod_category_criticality_server <- function(id, filter_data){
     # Create reactive data ----
     tidy_trust_data_r <- reactive({
       
-      filter_data()$filter_data %>%
-        dplyr::filter(category %in% input$select_super)
+      return_data <- filter_data()$filter_data
+      
+      if(isTruthy(input$select_super)){
+        
+        return_data <- return_data %>%
+          dplyr::filter(category %in% input$select_super)
+      }
+      
+      return_data
+      
     })
     
     # Create sentiment plot over time ----
     output$category_crit_time_plot <- renderPlot({
+      
       category_crit_time_plot <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
         tidyr::drop_na(category) %>% 
+        dplyr::mutate(
+          comment_type = factor(comment_type, levels = unique(comment_type),
+                                labels = c(get_golem_config("comment_1"),
+                                           get_golem_config("comment_2"))))
+      
+      category_crit_time_plot <- category_crit_time_plot %>% 
         ggplot2::ggplot(ggplot2::aes(x = date, 
                                      fill = factor(crit, exclude = NA))) +
         ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram,
@@ -145,11 +160,11 @@ mod_category_criticality_server <- function(id, filter_data){
       # Add facet ----
       if (input$category_crit_time_facet == 1) {
         category_crit_time_plot +
-          ggplot2::facet_grid(category ~ factor(comment_type))
+          ggplot2::facet_grid(category ~ comment_type)
         
       } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
-          ggplot2::facet_grid(location_1 ~ factor(comment_type))
+          ggplot2::facet_grid(location_1 ~ comment_type)
       }}
       , height = function() {
         session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3

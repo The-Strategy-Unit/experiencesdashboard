@@ -10,12 +10,12 @@ app_server <- function( input, output, session ) {
   # fetch data
   
   pool <- odbc::dbConnect(drv = odbc::odbc(),
-                       driver = "Maria DB",
-                       server = Sys.getenv("HOST_NAME"),
-                       UID = Sys.getenv("DB_USER"),
-                       PWD = Sys.getenv("MYSQL_PASSWORD"),
-                       database = "TEXT_MINING",
-                       Port = 3306)
+                          driver = "Maria DB",
+                          server = Sys.getenv("HOST_NAME"),
+                          UID = Sys.getenv("DB_USER"),
+                          PWD = Sys.getenv("MYSQL_PASSWORD"),
+                          database = "TEXT_MINING",
+                          Port = 3306)
   
   db_data <- dplyr::tbl(pool,
                         dbplyr::in_schema("TEXT_MINING",
@@ -207,12 +207,16 @@ app_server <- function( input, output, session ) {
       
       return_data <- return_data %>%
         dplyr::collect() %>% 
-        dplyr::arrange(date)
+        dplyr::arrange(date) %>% 
+        # this is a fudge and should be done in tidy_all_trusts()
+        dplyr::mutate(crit = as.double(crit))
     } else {
       
       return_data <- demography_data %>% 
         dplyr::collect() %>% 
-        dplyr::arrange(date)
+        dplyr::arrange(date) %>% 
+        # this is a fudge and should be done in tidy_all_trusts()
+        dplyr::mutate(crit = as.double(crit))
     }
     
     demography_number <- demography_data %>% 
@@ -236,9 +240,17 @@ app_server <- function( input, output, session ) {
   
   mod_patient_experience_server("patient_experience_ui_1")
   
+  # sentiment module is run twice, once for each comment, where they exist
+  
   mod_sentiment_server("mod_sentiment_ui_1", 
                        filter_data = filter_data,
-                       nrc_sentiments = nrc_sentiments)
+                       nrc_sentiments = nrc_sentiments,
+                       comment_label = "comment_1")
+  
+  mod_sentiment_server("mod_sentiment_ui_2", 
+                       filter_data = filter_data,
+                       nrc_sentiments = nrc_sentiments,
+                       comment_label = "comment_2")
   
   filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                                      filter_data = filter_data)

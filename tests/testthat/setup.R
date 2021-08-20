@@ -16,3 +16,5 @@ tidy_trust_data <- dplyr::tbl(pool,
   head(1000) %>% 
   tidy_all_trusts(conn = pool, trust_id = test_trust) %>%
   dplyr::collect()
+
+
