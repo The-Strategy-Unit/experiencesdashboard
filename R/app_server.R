@@ -261,7 +261,12 @@ app_server <- function( input, output, session ) {
   mod_text_reactable_server("text_reactable_ui_1", 
                             filter_data = filter_data,
                             filter_category = filter_category,
-                            comment_type = "comment_1")
+                            comment_select = "comment_1")
+  
+  mod_text_reactable_server("text_reactable_ui_2", 
+                            filter_data = filter_data,
+                            filter_category = filter_category,
+                            comment_select = "comment_2")
   
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)

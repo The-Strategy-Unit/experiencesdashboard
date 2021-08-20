@@ -103,9 +103,8 @@ mod_category_criticality_server <- function(id, filter_data){
       
       selectInput(
         session$ns("select_super"),
-        label = h5(strong("Select categories:")),
+        label = h5(strong("Select categories (defaults to all):")),
         choices = choices,
-        selected = sample(choices, 2),
         multiple = TRUE
       )
     })
