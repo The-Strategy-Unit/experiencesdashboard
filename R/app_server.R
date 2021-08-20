@@ -245,12 +245,12 @@ app_server <- function( input, output, session ) {
   mod_sentiment_server("mod_sentiment_ui_1", 
                        filter_data = filter_data,
                        nrc_sentiments = nrc_sentiments,
-                       comment_type = get_golem_config("comment_1"))
+                       comment_label = "comment_1")
   
   mod_sentiment_server("mod_sentiment_ui_2", 
                        filter_data = filter_data,
                        nrc_sentiments = nrc_sentiments,
-                       comment_type = get_golem_config("comment_2"))
+                       comment_label = "comment_2")
   
   filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                                      filter_data = filter_data)
