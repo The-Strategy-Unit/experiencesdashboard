@@ -47,7 +47,6 @@ app_ui <- function(request) {
         dashboardthemes::shinyDashboardThemes(
           theme = "grey_light"
         ),
-        # HTML(readLines("inst/app/www/github_link.html")),
         HTML('<a href="https://github.com/CDU-data-science-team/experiencesdashboard" 
              class="github-corner" aria-label="View source on GitHub"><svg width="80" 
              height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position: 
@@ -71,7 +70,6 @@ app_ui <- function(request) {
              60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media 
              (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner 
              .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>'),
-
         tabItems(
           tabItem(tabName = "experiences-user",
                   # h1("Service User Experiences"),

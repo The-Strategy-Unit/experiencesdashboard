@@ -26,7 +26,7 @@ This report summarises data from `r format(params$date_from, "%b %d %Y")` to `r 
 calculate_table(
   table_data = params$data, 
   count_column = "category",
-  comment_type = "improve", 
+  comment_type = "comment_1", 
   click_column = NULL
 ) %>% 
   pander::pandoc.table()
@@ -40,7 +40,7 @@ calculate_table(
 calculate_table(
   table_data = params$data, 
   count_column = "category",
-  comment_type = "best", 
+  comment_type = "comment_2", 
   click_column = NULL
 ) %>% 
   pander::pandoc.table()
