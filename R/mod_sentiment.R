@@ -90,7 +90,7 @@ mod_sentiment_ui <- function(id) {
 #' mod_sentiment Server Function
 #'
 #' @noRd 
-mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
+mod_sentiment_server <- function(id, filter_data, nrc_sentiments, comment_type){
   
   moduleServer( id, function(input, output, session){
     
@@ -204,7 +204,7 @@ mod_sentiment_server <- function(id, filter_data, nrc_sentiments){
         columns = list(
           comment_txt = reactable::colDef(minWidth = 200, 
                                           sortable = FALSE, 
-                                          name = "What could we do better?"),
+                                          name = comment_type),
           all_sentiments = reactable::colDef(sortable = TRUE,
                                              name = "Sentiments")
         )
