@@ -207,12 +207,16 @@ app_server <- function( input, output, session ) {
       
       return_data <- return_data %>%
         dplyr::collect() %>% 
-        dplyr::arrange(date)
+        dplyr::arrange(date) %>% 
+        # this is a fudge and should be done in tidy_all_trusts()
+        dplyr::mutate(crit = as.double(crit))
     } else {
       
       return_data <- demography_data %>% 
         dplyr::collect() %>% 
-        dplyr::arrange(date)
+        dplyr::arrange(date) %>% 
+        # this is a fudge and should be done in tidy_all_trusts()
+        dplyr::mutate(crit = as.double(crit))
     }
     
     demography_number <- demography_data %>% 

@@ -132,10 +132,10 @@ mod_category_criticality_server <- function(id, filter_data){
         tidyr::drop_na(category) %>% 
         dplyr::mutate(
           comment_type = factor(comment_type, levels = unique(comment_type),
-                                labels = c(get_golem_config("comment_1"), 
+                                labels = c(get_golem_config("comment_1"),
                                            get_golem_config("comment_2"))))
       
-      category_crit_time_plot %>% 
+      category_crit_time_plot <- category_crit_time_plot %>% 
         ggplot2::ggplot(ggplot2::aes(x = date, 
                                      fill = factor(crit, exclude = NA))) +
         ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram,
@@ -160,11 +160,11 @@ mod_category_criticality_server <- function(id, filter_data){
       # Add facet ----
       if (input$category_crit_time_facet == 1) {
         category_crit_time_plot +
-          ggplot2::facet_grid(category ~ factor(comment_type))
+          ggplot2::facet_grid(category ~ comment_type)
         
       } else if (input$category_crit_time_facet == 2) {
         category_crit_time_plot +
-          ggplot2::facet_grid(location_1 ~ factor(comment_type))
+          ggplot2::facet_grid(location_1 ~ comment_type)
       }}
       , height = function() {
         session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
