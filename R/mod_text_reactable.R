@@ -19,15 +19,22 @@ mod_text_reactable_ui <- function(id){
 #'
 #' @noRd 
 mod_text_reactable_server <- function(id, filter_data, filter_category,
-                                      comment_type){
+                                      comment_select){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
     # Create reactive data ----
     tidy_trust_data_r <- reactive({
       
-      filter_data()$filter_data %>%
-        dplyr::filter(category %in% filter_category())
+      return_data <- filter_data()$filter_data
+      
+      if(isTruthy(filter_category())){
+        
+        return_data <- return_data %>% 
+          dplyr::filter(category %in% filter_category())
+      }
+      
+      return_data
     })
     
     # Create reactive table ----
@@ -35,15 +42,8 @@ mod_text_reactable_server <- function(id, filter_data, filter_category,
       
       table_comments <- tidy_trust_data_r() %>% 
         tidyr::drop_na(crit) %>% 
-        dplyr::filter(comment_type == comment_type) %>% 
+        dplyr::filter(comment_type == comment_select) %>% 
         dplyr::select(comment_txt, crit)
-      
-      # # Trick so table is max 1000 rows, otherwise takes ages to load
-      # if (nrow(best_comments) >= 1000) {
-      #   n_table_best <- 1000
-      # } else if (nrow(best_comments) < 1000) {
-      #   n_table_best <- nrow(best_comments)
-      # }
       
       reactable::reactable(
         table_comments, # %>% dplyr::sample_n(n_table_best),
