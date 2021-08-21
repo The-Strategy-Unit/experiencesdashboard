@@ -87,7 +87,7 @@ final_df$crit[is.na(final_df$comment_txt)] = NA
 
 final_df <- final_df %>% 
   dplyr::mutate(age = dplyr::recode(
-    age, `1` = "Under 12", `2` = "12-17", `3` = "18-25", `4` = "26-39",
+    age, `1` = "0 - 11", `2` = "12-17", `3` = "18-25", `4` = "26-39",
     `5` = "40-64", `6` = "65-79", `7` = "80+", .default = NA_character_))
 
 # add code and crit

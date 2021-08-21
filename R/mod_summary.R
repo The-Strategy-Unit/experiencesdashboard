@@ -13,9 +13,9 @@ mod_summary_ui <- function(id){
     fluidPage(
       
       h1("Overview"),
-      h2("(This tab will eventually summarise patient and 
-                     staff experience)"),
       
+      textOutput(ns("summary_text")),
+
       # conditionalPanel(
       #   get_golem_config("trust_name") == "demo_trust",
       #   uiOutput(ns("open_panel"))
@@ -31,9 +31,21 @@ mod_summary_ui <- function(id){
 #' summary Server Functions
 #'
 #' @noRd 
-mod_summary_server <- function(id, db_conn){
+mod_summary_server <- function(id, db_conn, db_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    # summary
+    
+    output$summary_text <- renderText({
+      
+      n_responses <- db_data %>% 
+        dplyr::distinct(across(-comment_type)) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      glue::glue("There are {n_responses} in the database")
+    })
     
     # UI
     
