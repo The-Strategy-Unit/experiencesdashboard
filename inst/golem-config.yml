@@ -18,11 +18,6 @@ trust_a:
   location_2: Directorate
   location_3: Team
   question_1: fft
-  question_2: listening
-  question_3: communication
-  question_4: respect
-  question_5: inv_care
-  question_6: positive_q
 trust_b:
   trust_name: trust_b
   comment_1: Comments

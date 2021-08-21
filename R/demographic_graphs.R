@@ -16,7 +16,8 @@ compare_demographics <- function(pass_data, variable){
     ggplot2::ggplot(ggplot2::aes(x = .data[[variable]], y = value, 
                                  group = name, fill = name)) + 
     ggplot2::geom_col(position = "dodge") + nottshcMethods::theme_nottshc() +
-    ggplot2::ylab("%") + ggplot2::ylim(0, 100) + ggplot2::coord_flip()
+    ggplot2::ylab("%") + ggplot2::ylim(0, 100) + ggplot2::coord_flip() + 
+    ggplot2::theme(legend.position = "none")
 }
 
 demographic_distribution <- function(pass_data, variable){
