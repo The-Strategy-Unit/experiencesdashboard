@@ -61,11 +61,11 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       
       tagList(
 
-      p(glue::glue("There are {n_responses} responses in the database from 
+      p(glue::glue("There are {n_responses} comments in the database from 
                  {n_individuals} individuals.")),
       
       p(glue::glue("The current selected data comprises {current_responses} 
-                   responses in the database from {current_individuals} 
+                   comments in the database from {current_individuals} 
                    individuals."))
       )
     })
@@ -114,7 +114,8 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       
       req(imported$data())
       
-      raw_df <- imported$data()
+      raw_df <- imported$data() %>% 
+        dplyr::mutate(pt_id = dplyr::row_number())
       
       withProgress(message = 'Processing data. This may take a while. 
                    Please wait...', value = 0, {

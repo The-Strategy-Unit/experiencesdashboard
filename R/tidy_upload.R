@@ -64,7 +64,7 @@ upload_data <- function(data, conn, trust_id){
                            "location_3", "fft", "comment_type",
                            "comment_txt",
                            "gender", "age", "sexuality", "disability",
-                           "faith", "ethnicity"))) %>% 
+                           "faith", "ethnicity", "pt_id"))) %>% 
     clean_dataframe(., c("comment_txt",
                          "gender", "age", "sexuality", "disability",
                          "faith", "ethnicity"))
@@ -86,14 +86,6 @@ upload_data <- function(data, conn, trust_id){
       dplyr::mutate(date = as.Date(date, format = "%d/%m/%Y"))
   }
   
-  if(FALSE){ # trust_id != "demo_trust"){ this is causing problems
-    
-    db_tidy <- db_tidy %>%
-      dplyr::mutate_at(dplyr::all_of(score_fields), ~ dplyr::case_when(
-        . %in% 0 : 5 ~ .,
-        TRUE ~ NA_real_)) 
-  }
-  
   preds <- experienceAnalysis::calc_predict_unlabelled_text(
     x = db_tidy,
     python_setup = FALSE,
@@ -102,7 +94,7 @@ upload_data <- function(data, conn, trust_id){
     column_names = "all_cols",
     pipe_path = 'fitted_pipeline.sav'
   ) %>% 
-    dplyr::select(code = comment_txt_preds)
+    dplyr::select(category = comment_txt_preds)
   
   criticality <- experienceAnalysis::calc_predict_unlabelled_text(
     x = db_tidy,
