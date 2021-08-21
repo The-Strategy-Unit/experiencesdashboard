@@ -64,12 +64,10 @@ mod_demographics_server <- function(id, filter_data, store_data){
       
       choices <- store_data %>% 
         dplyr::arrange(age) %>% 
-        dplyr::distinct(age_label, .keep_all = TRUE) %>%
-        dplyr::filter(!is.na(age_label))
+        dplyr::distinct(age, .keep_all = TRUE) %>%
+        dplyr::filter(!is.na(age))
       
       choices <- factor(choices$age, 
-                        levels = choices$age, 
-                        labels = choices$age_label, 
                         exclude = NULL)
       
       selectInput(session$ns("select_age"), 
@@ -109,8 +107,6 @@ mod_demographics_server <- function(id, filter_data, store_data){
       filter_data()$filter_data %>% 
         dplyr::arrange(age) %>% 
         dplyr::mutate(age = factor(age, 
-                                   levels = age, 
-                                   labels = age_label, 
                                    exclude = NULL)) %>% 
         demographic_distribution(variable = "age")
     })
@@ -131,7 +127,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$compare_age <- renderPlot({
       
-      compare_demographics(filter_data()$filter_data, "age_label")
+      compare_demographics(filter_data()$filter_data, "age")
     })
     
     output$compare_gender <- renderPlot({

@@ -73,16 +73,16 @@ upload_data <- function(data, conn, trust_id){
     
     db_tidy <- db_tidy %>% 
       dplyr::mutate(fft = dplyr::case_when(
-        
         fft %in% c("Dont know", "Dont Know") ~ NA_integer_,
         fft == "Very poor" ~ 1L,
         fft == "Poor" ~ 2L,
         fft == "Neither good nor poor" ~ 3L, 
         fft == "Good" ~ 4L,
         fft == "Very good" ~ 5L
-      ))
-    
-    db_tidy <- db_tidy %>% 
+      )) %>%
+      dplyr::mutate(age = dplyr::case_when(
+        age == "Up to 25" ~ "0 - 25",
+        TRUE ~ age)) %>% 
       dplyr::mutate(date = as.Date(date, format = "%d/%m/%Y"))
   }
   
