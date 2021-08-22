@@ -31,13 +31,24 @@ previous_quarter <- function(date){
 #' @export
 verbatim_summary <- function(data, comment_selection){
   
-  data %>% 
+  return_data <- data %>% 
     dplyr::filter(comment_type == comment_selection) %>% 
-    dplyr::filter(!is.na(comment_txt) & !is.na(category)) %>% 
-    dplyr::arrange(location_3, category) %>% 
-    dplyr::mutate(comment_with_location = paste0(comment_txt, 
-                                                 " (", location_3, "- ",
-                                                 category, ")")) %>% 
-    dplyr::pull(comment_with_location)
+    dplyr::filter(!is.na(comment_txt) & !is.na(category)) %>%
+    dplyr::filter(category != "Couldn't be improved")
   
+  if(nrow(return_data) == 0){
+    
+    return(data.frame())
+  } else {
+    
+    return(
+      return_data %>% 
+        dplyr::arrange(location_3, category) %>% 
+        dplyr::mutate(comment_with_location = paste0(comment_txt, 
+                                                     " (", location_3, "- ",
+                                                     category, ")")) %>% 
+        dplyr::pull(comment_with_location)
+    )
+    
+  }
 }

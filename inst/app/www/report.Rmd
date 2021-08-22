@@ -15,6 +15,11 @@ params:
 
 knitr::opts_chunk$set(echo = FALSE)
 
+# produce dataset for unique individuals
+  
+unique_data <- params$data %>% 
+  dplyr::distinct(pt_id, .keep_all = TRUE)
+
 # where is this report for?
 
 if(isTruthy(params$inputs$location_3)){
@@ -32,7 +37,6 @@ if(isTruthy(params$inputs$location_3)){
   
   location <- "the whole trust"
 }
-
 
 ```
 
@@ -78,6 +82,13 @@ if("category_table" %in% params$options){
 
 if("verbatim_comments" %in% params$options){
   
+  cat("## Verbatim comments  \n")
+  
+  cat("Note that in the interests of brevity comments where the respondent 
+      indicated 'couldn't be improved' are omitted  \n")
+  
+  cat("  \n")
+  
   cat("###", params$comment_1,  ": Comments  \n")
   
   comment_1_summary <- verbatim_summary(params$data, "comment_1")
@@ -85,11 +96,15 @@ if("verbatim_comments" %in% params$options){
   if(length(comment_1_summary) > 1000){
     
     cat("Error. Too many comments. Please reduce your selection  \n")
+    
+    cat("  \n")
   } else {
     
     cat(
       paste0("<p>", comment_1_summary, "</p>", collapse = "")
     )
+    
+    cat("  \n")
   }
   
   cat("###", params$comment_2,  ": Comments  \n")
@@ -99,12 +114,46 @@ if("verbatim_comments" %in% params$options){
   if(length(comment_2_summary) > 1000){
     
     cat("Error. Too many comments. Please reduce your selection  \n")
+    
+    cat("  \n")
   } else {
     
     cat(
       paste0("<p>", comment_2_summary, "</p>", collapse = "")
     )
+    
+    cat("  \n")
   }
+}
+
+```
+
+```{r, results = "asis"}
+
+if("sample_demographics" %in% params$options){
+
+  cat("## Demographic features of sample  \n")
+  
+  cat("### Age  \n")
+  
+  print(demographic_distribution(unique_data, "age"))
+  
+  cat("  \n")
+  cat("  \n")
+  
+  cat("### Gender  \n")
+  
+  print(demographic_distribution(unique_data, "gender"))
+  
+  cat("  \n")
+  cat("  \n")
+  
+  cat("### Ethnicity  \n")
+  
+  print(demographic_distribution(unique_data, "ethnicity"))
+  
+  cat("  \n")
+    
 }
 
 ```
@@ -116,13 +165,8 @@ if("fft_graph" %in% params$options){
   
   cat("## FFT  \n")
   
-  # only for unique individuals
-  
-  fft_data <- params$data %>% 
-    dplyr::distinct(pt_id, .keep_all = TRUE)
-  
   graph_data <- split_data_spc(
-    fft_data, variable = "fft", chunks = 15
+    unique_data, variable = "fft", chunks = 15
   )
   
   print(plot_fft_spc(graph_data))
