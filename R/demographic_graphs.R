@@ -16,8 +16,16 @@ compare_demographics <- function(pass_data, variable){
     ggplot2::ggplot(ggplot2::aes(x = .data[[variable]], y = value, 
                                  group = name, fill = name)) + 
     ggplot2::geom_col(position = "dodge") + nottshcMethods::theme_nottshc() +
-    ggplot2::ylab("%") + ggplot2::ylim(0, 100) + ggplot2::coord_flip()
+    ggplot2::ylab("%") + ggplot2::ylim(0, 100) + ggplot2::coord_flip() + 
+    ggplot2::theme(legend.position = "none")
 }
+
+#' Draw the distribution of demographics in the sample
+#' @param pass_data A dataframe, filtered to unique individuals
+#' @param variable String. Name of variable- "age", "gender", "ethnicity"
+#'
+#' @return a ggplot2 graph
+#' @export
 
 demographic_distribution <- function(pass_data, variable){
   

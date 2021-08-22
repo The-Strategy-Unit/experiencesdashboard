@@ -9,8 +9,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 split_data_spc <- function(data, variable = "fft", chunks){
   
   if(chunks == "monthly"){
@@ -40,8 +38,6 @@ split_data_spc <- function(data, variable = "fft", chunks){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plot_fft_spc <- function(data){
   
   data %>% 

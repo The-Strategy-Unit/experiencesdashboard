@@ -9,13 +9,13 @@ app_server <- function( input, output, session ) {
   
   # fetch data
   
-  pool <- pool::dbPool(drv = odbc::odbc(),
-                       driver = "Maria DB",
-                       server = Sys.getenv("HOST_NAME"),
-                       UID = Sys.getenv("DB_USER"),
-                       PWD = Sys.getenv("MYSQL_PASSWORD"),
-                       database = "TEXT_MINING",
-                       Port = 3306)
+  pool <- odbc::dbConnect(drv = odbc::odbc(),
+                          driver = "Maria DB",
+                          server = Sys.getenv("HOST_NAME"),
+                          UID = Sys.getenv("DB_USER"),
+                          PWD = Sys.getenv("MYSQL_PASSWORD"),
+                          database = "TEXT_MINING",
+                          Port = 3306)
   
   db_data <- dplyr::tbl(pool,
                         dbplyr::in_schema("TEXT_MINING",
@@ -38,11 +38,11 @@ app_server <- function( input, output, session ) {
     
     store_data <- db_data %>% 
       dplyr::filter(date > interpolate_date - 3 * 365) %>%
-      dplyr::select(dplyr::any_of(c("location_1", "age", "age_label", 
-                                  "gender", "ethnicity"))) %>%
+      dplyr::select(dplyr::any_of(c("location_1", "age", 
+                                    "gender", "ethnicity"))) %>%
       dplyr::collect()
   }
-
+  
   # render UI---
   
   output$filter_location_1 <- renderUI({
@@ -52,7 +52,7 @@ app_server <- function( input, output, session ) {
       return()
     }
     
-    location_1_choices <- store_data %>%
+    location_1_choices <- date_filter() %>%
       dplyr::distinct(location_1) %>%
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
       dplyr::filter(!is.na(location_1))
@@ -74,7 +74,7 @@ app_server <- function( input, output, session ) {
       return()
     }
     
-    location_2_choices <- db_data
+    location_2_choices <- date_filter()
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
       
@@ -103,7 +103,7 @@ app_server <- function( input, output, session ) {
       return()
     }
     
-    location_3_choices <- db_data
+    location_3_choices <- date_filter()
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
       
@@ -131,35 +131,24 @@ app_server <- function( input, output, session ) {
     )
   })
   
-  output$filter_date <- renderUI({
-    
-    if(get_golem_config("trust_name") == "demo_trust"){
-      
-      return()
-    }
-    
-    dates <- db_data %>%
-      dplyr::summarise(min_date = min(date),
-                       max_date = max(date)) %>%
-      dplyr::collect()
-    
-    dateRangeInput(
-      "date_range",
-      label = h5(strong("Select date range:")),
-      start = dates$min_date,
-      end = dates$max_date
-    )
-  })
-  
   all_inputs <- reactive({
     list(
       "date_from" = input$date_range[1],
       "date_to" = input$date_range[2],
-      "location_1" = input$select_location_1
+      "location_1" = input$select_location_1,
+      "location_2" = input$select_location_2,
+      "location_3" = input$select_location_3
     )
   })
   
   # Create reactive data ----
+  
+  date_filter <- reactive({
+    
+    db_data %>% 
+      dplyr::filter(date > !!input$date_range[1],
+                    date < !!input$date_range[2])
+  })
   filter_data <- reactive({
     
     if(get_golem_config("trust_name") == "demo_trust"){
@@ -168,9 +157,7 @@ app_server <- function( input, output, session ) {
                   "demography_number" = NULL))
     }
     
-    return_data <- db_data %>% 
-      dplyr::filter(date > !!input$date_range[1],
-                    date < !!input$date_range[2])
+    return_data <- date_filter()
     
     # filter location
     
@@ -199,7 +186,7 @@ app_server <- function( input, output, session ) {
     if(isTruthy(demographic_filters()$select_age)){
       
       demography_data <- demography_data %>% 
-        dplyr::filter(age_label %in% !!demographic_filters()$select_age)
+        dplyr::filter(age %in% !!demographic_filters()$select_age)
     }
     
     if(isTruthy(demographic_filters()$select_gender)){
@@ -215,6 +202,7 @@ app_server <- function( input, output, session ) {
     }
     
     no_responses <- demography_data %>% 
+      dplyr::distinct(pt_id) %>% 
       dplyr::tally() %>% 
       dplyr::pull(n)
     
@@ -234,45 +222,40 @@ app_server <- function( input, output, session ) {
       dplyr::tally() %>% 
       dplyr::pull(n)
     
+    # also return a dataset with unique individuals
+    
+    unique_data <- return_data %>% 
+      dplyr::distinct(pt_id, .keep_all = TRUE)
+    
     return(list("filter_data" = return_data, 
+                "unique_data" = unique_data,
                 "demography_number" = demography_number))
   })
   
   filter_sentiment <- reactive({
     
-    filter_data()$filter_data %>%
-      dplyr::mutate(linenumber = dplyr::row_number()) %>% 
-      tidytext::unnest_tokens(word, comment_txt) %>%
-      dplyr::left_join(sentiment_nrc, by = "word") %>% 
-      dplyr::count(linenumber, sentiment, name = 'sentiment_count') %>%
-      dplyr::mutate(sentiment_count = dplyr::case_when(
-        is.na(sentiment) ~ NA_integer_,
-        TRUE ~ sentiment_count)) %>%
-      dplyr::select(linenumber, sentiment, sentiment_count) %>%
-      tidyr::pivot_wider(names_from = sentiment, 
-                         values_from = sentiment_count, 
-                         values_fill = 0,
-                         names_sort = TRUE) %>%
-      dplyr::full_join(
-        filter_data()$filter_data %>%
-          dplyr::mutate(linenumber = dplyr::row_number()),
-        by = "linenumber") %>%
-      dplyr::mutate(all_sentiments =  
-                      dplyr::select(., dplyr::all_of(nrc_sentiments)) %>%
-                      split(seq(nrow(.))) %>%
-                      lapply(function(x) unlist(names(x)[x != 0]))
-      )
+    calc_sentiment(filter_data()$filter_data, nrc_sentiments)
   })
   
   # modules----
   
-  mod_summary_server("summary_ui_1", db_conn = pool)
+  mod_summary_server("summary_ui_1", db_conn = pool, db_data, filter_data)
   
   # patient experience modules----
   
   mod_patient_experience_server("patient_experience_ui_1")
   
-  mod_sentiment_server("mod_sentiment_ui_1", filter_sentiment = filter_sentiment)
+  # sentiment module is run twice, once for each comment, where they exist
+  
+  mod_sentiment_server("mod_sentiment_ui_1", 
+                       filter_data = filter_data,
+                       nrc_sentiments = nrc_sentiments,
+                       comment_label = "comment_1")
+  
+  mod_sentiment_server("mod_sentiment_ui_2", 
+                       filter_data = filter_data,
+                       nrc_sentiments = nrc_sentiments,
+                       comment_label = "comment_2")
   
   filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                                      filter_data = filter_data)
@@ -295,7 +278,12 @@ app_server <- function( input, output, session ) {
   mod_text_reactable_server("text_reactable_ui_1", 
                             filter_data = filter_data,
                             filter_category = filter_category,
-                            comment_type = "comment_1")
+                            comment_select = "comment_1")
+  
+  mod_text_reactable_server("text_reactable_ui_2", 
+                            filter_data = filter_data,
+                            filter_category = filter_category,
+                            comment_select = "comment_2")
   
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)

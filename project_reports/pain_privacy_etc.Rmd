@@ -25,17 +25,17 @@ db_data <- bind_rows(
   dplyr::tbl(pool, 
              dbplyr::in_schema("TEXT_MINING", "trust_a")) %>% 
     experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_a") %>% 
-    select(comment_key, comment_txt, category, subcategory) %>% 
+    select(comment_txt, category, subcategory) %>% 
     mutate(trust = "trust_a") %>% collect(), 
   dplyr::tbl(pool, 
              dbplyr::in_schema("TEXT_MINING", "trust_b")) %>% 
     experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_b") %>% 
-    select(comment_key, comment_txt, category, subcategory) %>% 
+    select(comment_txt, category, subcategory) %>% 
     mutate(trust = "trust_b") %>% collect(),
   dplyr::tbl(pool, 
              dbplyr::in_schema("TEXT_MINING", "trust_c")) %>% 
     experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_c") %>% 
-    select(comment_key, comment_txt, category, subcategory) %>% 
+    select(comment_txt, category, subcategory) %>% 
     mutate(trust = "trust_c") %>% collect()
 )
 

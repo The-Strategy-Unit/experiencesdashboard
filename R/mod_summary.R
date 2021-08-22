@@ -12,9 +12,18 @@ mod_summary_ui <- function(id){
   tagList(
     fluidPage(
       
-      fluidRow(
-        actionButton(ns("launch_modal"), "Upload new data")
-      )
+      h1("Overview"),
+      
+      uiOutput(ns("summary_text")),
+
+      # conditionalPanel(
+      #   get_golem_config("trust_name") == "demo_trust",
+      #   uiOutput(ns("open_panel"))
+      # ),
+      
+      # fluidRow(
+      actionButton(ns("launch_modal"), "Upload new data")
+      # )
     )
   )
 }
@@ -22,9 +31,74 @@ mod_summary_ui <- function(id){
 #' summary Server Functions
 #'
 #' @noRd 
-mod_summary_server <- function(id, db_conn){
+mod_summary_server <- function(id, db_conn, db_data, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    # summary
+    
+    output$summary_text <- renderUI({
+      
+      n_responses <- db_data %>% 
+        dplyr::filter(!is.na(comment_txt)) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      n_individuals <- db_data %>% 
+        dplyr::distinct(pt_id) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      current_responses <- filter_data()$filter_data %>% 
+        dplyr::filter(!is.na(comment_txt)) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      current_individuals <- filter_data()$filter_data %>% 
+        dplyr::distinct(pt_id) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      tagList(
+
+      p(glue::glue("There are {n_responses} comments in the database from 
+                 {n_individuals} individuals.")),
+      
+      p(glue::glue("The current selected data comprises {current_responses} 
+                   comments in the database from {current_individuals} 
+                   individuals."))
+      )
+    })
+    
+    # UI
+    
+    output$open_panel <- renderUI({
+      
+      # if(get_golem_config("trust_name") != "demo_trust"){
+      #   
+      #   return()
+      # }
+      
+      tagList(
+        h3("Download the spreadsheet template below and add your data to it"),
+        
+        downloadButton(session$ns("open_spreadsheet"), "Download template"),
+        
+        h3("Then click upload data below")
+      )
+    })
+    
+    # download spreadsheet
+    
+    output$open_spreadsheet <- downloadHandler(
+      
+      filename = "template.xlsx",
+      content = function(file) {
+        file.copy("text_mining_template_open.xlsx", file)
+      }
+    )
+    
+    # data module
     
     observeEvent(input$launch_modal, {
       datamods::import_modal(
@@ -40,51 +114,35 @@ mod_summary_server <- function(id, db_conn){
       
       req(imported$data())
       
-      raw_df <- imported$data()
+      raw_df <- imported$data() %>% 
+        dplyr::mutate(pt_id = dplyr::row_number())
       
-      raw_df <- raw_df %>% 
-        dplyr::filter(!is.na(date))
-      
-      preds <- experienceAnalysis::calc_predict_unlabelled_text(
-        x = raw_df,
-        python_setup = FALSE,
-        text_col_name = 'comment',
-        preds_column = NULL,
-        column_names = "all_cols",
-        pipe_path = 'fitted_pipeline.sav'
-      ) %>% 
-        dplyr::select(code = comment_preds)
-      
-      criticality <- experienceAnalysis::calc_predict_unlabelled_text(
-        x = raw_df,
-        python_setup = FALSE,
-        text_col_name = 'comment',
-        preds_column = NULL,
-        column_names = "all_cols",
-        pipe_path = 'pipeline_criticality.sav'
-      ) %>% 
-        dplyr::select(criticality = comment_preds)
-      
-      final_df <- dplyr::bind_cols(
-        raw_df, 
-        preds,
-        criticality)
-      
-      final_df <- final_df %>% 
-        dplyr::mutate(criticality = dplyr::case_when(
-          code == "Couldn't be improved" ~ "3",
-          TRUE ~ criticality
-        ))
+      withProgress(message = 'Processing data. This may take a while. 
+                   Please wait...', value = 0, {
 
-      DBI::dbWriteTable(db_conn, get_golem_config("trust_name"),
-                        final_df, append = TRUE)
-      
-      showModal(modalDialog(
-        title = "Success!",
-        paste0(nrow(final_df), " records successfully imported. Please refresh 
+        success <- upload_data(data = raw_df, conn = db_conn, 
+                               trust_id = get_golem_config("trust_name"))
+        
+        incProgress(1)
+      })
+
+      if(success){
+        
+        showModal(modalDialog(
+          title = "Success!",
+          paste0(nrow(raw_df), " records successfully imported. Please refresh 
                your browser to access the new data"),
-        easyClose = TRUE
-      ))
+          easyClose = TRUE
+        ))
+      } else {
+        
+        showModal(modalDialog(
+          title = "Error!",
+          "There was a problem importing your data. Try reuploading and check 
+          in the 'View' section to ensure that the data is well formatted",
+          easyClose = TRUE
+        ))
+      }
     })
   })
 }

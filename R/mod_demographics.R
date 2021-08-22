@@ -10,7 +10,9 @@
 mod_demographics_ui <- function(id){
   ns <- NS(id)
   tagList(
-    fluidRow(textOutput(ns("total_responses"))),
+    fluidRow(
+      column(12, h3(textOutput(ns("total_responses"))))
+    ),
     hr(),
     fluidRow(
       column(4, uiOutput(ns("age_UI"))),
@@ -23,6 +25,7 @@ mod_demographics_ui <- function(id){
       column(4, plotOutput(ns("ethnicity_graph")))
     ),
     hr(),
+    h3("Categories with fewer than 10 individuals are excluded"),
     fluidRow(
       column(4, plotOutput(ns("compare_age"))),
       column(4, plotOutput(ns("compare_gender"))),
@@ -62,14 +65,12 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$age_UI <- renderUI({
       
-      choices <- store_data %>% 
+      choices <- filter_data()$unique_data %>% 
         dplyr::arrange(age) %>% 
-        dplyr::distinct(age_label, .keep_all = TRUE) %>%
-        dplyr::filter(!is.na(age_label))
+        dplyr::distinct(age, .keep_all = TRUE) %>%
+        dplyr::filter(!is.na(age))
       
       choices <- factor(choices$age, 
-                        levels = choices$age, 
-                        labels = choices$age_label, 
                         exclude = NULL)
       
       selectInput(session$ns("select_age"), 
@@ -80,7 +81,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$gender_UI <- renderUI({
       
-      choices <- store_data %>% 
+      choices <- filter_data()$unique_data %>% 
         dplyr::arrange(gender) %>% 
         dplyr::distinct(gender)
       
@@ -92,7 +93,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$ethnicity_UI <- renderUI({
       
-      choices <- store_data %>% 
+      choices <- filter_data()$unique_data %>% 
         dplyr::arrange(ethnicity) %>% 
         dplyr::distinct(ethnicity)
       
@@ -106,24 +107,22 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$age_graph <- renderPlot({
       
-      filter_data()$filter_data %>% 
+      filter_data()$unique_data %>% 
         dplyr::arrange(age) %>% 
         dplyr::mutate(age = factor(age, 
-                                   levels = age, 
-                                   labels = age_label, 
                                    exclude = NULL)) %>% 
         demographic_distribution(variable = "age")
     })
     
     output$gender_graph <- renderPlot({
       
-      filter_data()$filter_data %>% 
+      filter_data()$unique_data %>% 
         demographic_distribution(variable = "gender")
     })
     
     output$ethnicity_graph <- renderPlot({
       
-      filter_data()$filter_data %>% 
+      filter_data()$unique_data %>% 
         demographic_distribution(variable = "ethnicity")
     })
     
@@ -131,17 +130,17 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$compare_age <- renderPlot({
       
-      compare_demographics(filter_data()$filter_data, "age_label")
+      compare_demographics(filter_data()$unique_data, "age")
     })
     
     output$compare_gender <- renderPlot({
       
-      compare_demographics(filter_data()$filter_data, "gender")
+      compare_demographics(filter_data()$unique_data, "gender")
     })
     
     output$compare_ethnicity <- renderPlot({
       
-      compare_demographics(filter_data()$filter_data, "ethnicity")
+      compare_demographics(filter_data()$unique_data, "ethnicity")
     })
     
     reactive(

@@ -27,7 +27,7 @@ pool <- pool::dbPool(drv = odbc::odbc(),
 tidy_trust_data <- dplyr::tbl(pool, 
              dbplyr::in_schema("TEXT_MINING", "trust_a")) %>% 
     experiencesdashboard::tidy_all_trusts(conn = pool, trust_id = "trust_a") %>% 
-    select(comment_key, comment_txt, category, subcategory, crit) %>% 
+    select(comment_txt, category, subcategory, crit) %>% 
     mutate(trust = "trust_a") %>% collect()
 
 ```
@@ -52,7 +52,6 @@ walk(-5 : 5, function(x) {
   cat("## ", x, "  \n  \n")
   
   filter_data <- tidy_trust_data %>% 
-    distinct(comment_key, .keep_all = TRUE) %>% 
     filter(crit == x)
   
   filter_data %>% 
