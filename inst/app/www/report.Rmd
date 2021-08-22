@@ -7,6 +7,8 @@ params:
   inputs: NA
   data: NA
   options: NA
+  comment_1: NA
+  comment_2: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -40,11 +42,11 @@ This report summarises data from `r format(params$dates[1], "%b %d %Y")` to `r f
 
 ```{r, results = "asis"}
 
-if(params$options %in% "category_table"){
+if("category_table" %in% params$options){
   
   cat("## Themes  \n")
   
-  cat("### What could we do better?  \n")
+  cat("###", params$comment_1,  "  \n")
   
   calculate_table(
     table_data = params$data, 
@@ -54,38 +56,80 @@ if(params$options %in% "category_table"){
   ) %>% 
     pander::pandoc.table()
   
+  cat("  \n")
+  
+  cat("###", params$comment_2,  "  \n")
+  
+  calculate_table(
+    table_data = params$data, 
+    count_column = "category",
+    comment_type = "comment_2", 
+    click_column = NULL
+  ) %>% 
+    pander::pandoc.table()
+  
+  cat("  \n")
+  
 }
 
 ```
 
-### What did we do well?
-
 ```{r, results = "asis"}
 
-calculate_table(
-  table_data = params$data, 
-  count_column = "category",
-  comment_type = "comment_2", 
-  click_column = NULL
-) %>% 
-  pander::pandoc.table()
+if("verbatim_comments" %in% params$options){
+  
+  cat("###", params$comment_1,  ": Comments  \n")
+  
+  comment_1_summary <- verbatim_summary(params$data, "comment_1")
+  
+  if(length(comment_1_summary) > 1000){
+    
+    cat("Error. Too many comments. Please reduce your selection  \n")
+  } else {
+    
+    cat(
+      paste0("<p>", comment_1_summary, "</p>", collapse = "")
+    )
+  }
+  
+  cat("###", params$comment_2,  ": Comments  \n")
+  
+  comment_2_summary <- verbatim_summary(params$data, "comment_1")
+  
+  if(length(comment_2_summary) > 1000){
+    
+    cat("Error. Too many comments. Please reduce your selection  \n")
+  } else {
+    
+    cat(
+      paste0("<p>", comment_2_summary, "</p>", collapse = "")
+    )
+  }
+}
 
 ```
 
-## SPC
 
-```{r}
+```{r, results = "asis"}
 
-# only for unique individuals
-
-fft_data <- params$data %>% 
-  dplyr::distinct(pt_id, .keep_all = TRUE)
-
-graph_data <- experiencesdashboard::split_data_spc(
-  fft_data, variable = "fft", chunks = 15
-)
-
-experiencesdashboard::plot_fft_spc(graph_data)
+if("fft_graph" %in% params$options){
+  
+  cat("## FFT  \n")
+  
+  # only for unique individuals
+  
+  fft_data <- params$data %>% 
+    dplyr::distinct(pt_id, .keep_all = TRUE)
+  
+  graph_data <- split_data_spc(
+    fft_data, variable = "fft", chunks = 15
+  )
+  
+  print(plot_fft_spc(graph_data))
+  
+  cat("  \n")
+  
+}
 
 ```
 
