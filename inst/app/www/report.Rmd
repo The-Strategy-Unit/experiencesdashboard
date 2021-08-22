@@ -3,35 +3,58 @@ title: "Summary report"
 author: "Chris Beeley"
 output: word_document
 params:
+  dates: NA
+  inputs: NA
   data: NA
-  date_from: NA
-  date_to: NA
-  division: NA
+  options: NA
 ---
 
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(echo = FALSE)
 
+# where is this report for?
+
+if(isTruthy(params$inputs$location_3)){
+  
+  location <- params$inputs$location_3
+  
+} else if(isTruthy(params$inputs$location_2)){
+  
+  location <- params$inputs$location_2
+  
+} else if(isTruthy(params$inputs$location_1)){
+  
+  location <- params$inputs$location_1
+} else { # nothing selected
+  
+  location <- "the whole trust"
+}
+
+
 ```
 
 ## Summary
 
-This report summarises data from `r format(params$date_from, "%b %d %Y")` to `r format(params$date_to, "%b %d %Y")`, within `r params$division`.
-
-## Themes
-
-### What could we do better?
+This report summarises data from `r format(params$dates[1], "%b %d %Y")` to `r format(params$dates[2], "%b %d %Y")`, within `r location`.
 
 ```{r, results = "asis"}
 
-calculate_table(
-  table_data = params$data, 
-  count_column = "category",
-  comment_type = "comment_1", 
-  click_column = NULL
-) %>% 
-  pander::pandoc.table()
+if(params$options %in% "category_table"){
+  
+  cat("## Themes  \n")
+  
+  cat("### What could we do better?  \n")
+  
+  calculate_table(
+    table_data = params$data, 
+    count_column = "category",
+    comment_type = "comment_1", 
+    click_column = NULL
+  ) %>% 
+    pander::pandoc.table()
+  
+}
 
 ```
 

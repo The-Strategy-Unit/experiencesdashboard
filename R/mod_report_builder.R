@@ -52,7 +52,8 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         
         params <- list(dates = dates,
                        inputs = all_inputs(),
-                       data = filter_data()$filter_data
+                       data = filter_data()$filter_data,
+                       options = input$report_components
         )
         
         rmarkdown::render(
