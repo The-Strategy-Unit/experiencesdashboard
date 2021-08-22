@@ -11,8 +11,23 @@ mod_report_builder_ui <- function(id, filter_data, filter_sentiment){
   ns <- NS(id)
   tagList(
     
-    downloadButton(ns("download_report"),
-                   "Download report")
+    fluidRow(
+      column(6,
+             selectInput(ns("time_period"), "Reporting period",
+                         choices = c("Previous quarter" = "quarter",
+                                     "Previous 12 months" = "year",
+                                     "Current selection" = "custom")),
+             checkboxGroupInput(
+               ns("report_components"), "Report features",
+               choices = c("% categories table" = "category_table",
+                           "Verbatim comments" = "verbatim_comments",
+                           "Sample demographics" = "sample_demographics",
+                           "FFT graph" = "fft_graph"),
+               selected = c("category_table", "fft_graph")),
+             downloadButton(ns("download_report"),
+                            "Download report")
+      )
+    )
   )
 }
 
@@ -28,10 +43,47 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
       filename = paste0("CustomReport_", Sys.Date(), ".docx"),
       content = function(file){
         
-        params <- list(date_from = all_inputs()$date_from,
-                       date_to = all_inputs()$date_to,
-                       division = all_inputs()$division,
-                       data = filter_data()$filter_data
+        # check they asked for something
+        
+        if(is.null(input$report_components)){
+          
+          showModal(
+            modalDialog(
+              title = "Error!",
+              HTML("Please select something to report on!"),
+              easyClose = TRUE
+            )
+          )
+        }
+        
+        # check there is enough data
+        
+        if(nrow(filter_data()$filter_data) < 10){
+          
+          showModal(
+            modalDialog(
+              title = "Error!",
+              HTML("Not enough data. Please expand your selection"),
+              easyClose = TRUE
+            )
+          )
+        }
+        
+        # calculate parameters
+        
+        dates <- switch(input$time_period,
+                        quarter = previous_quarter(Sys.Date()),
+                        year = c(Sys.Date(), Sys.Date() - 365),
+                        custom = c(all_inputs()$date_from[1],
+                                   all_inputs()$date_to[2])
+        )
+        
+        params <- list(dates = dates,
+                       inputs = all_inputs(),
+                       data = filter_data()$filter_data,
+                       options = input$report_components,
+                       comment_1 = get_golem_config("comment_1"),
+                       comment_2 = get_golem_config("comment_2")
         )
         
         rmarkdown::render(
