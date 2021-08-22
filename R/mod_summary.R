@@ -14,7 +14,7 @@ mod_summary_ui <- function(id){
       
       h1("Overview"),
       
-      textOutput(ns("summary_text")),
+      uiOutput(ns("summary_text")),
 
       # conditionalPanel(
       #   get_golem_config("trust_name") == "demo_trust",
@@ -31,20 +31,43 @@ mod_summary_ui <- function(id){
 #' summary Server Functions
 #'
 #' @noRd 
-mod_summary_server <- function(id, db_conn, db_data){
+mod_summary_server <- function(id, db_conn, db_data, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
     # summary
     
-    output$summary_text <- renderText({
+    output$summary_text <- renderUI({
       
       n_responses <- db_data %>% 
-        dplyr::distinct(across(-comment_type)) %>% 
+        dplyr::filter(!is.na(comment_txt)) %>% 
         dplyr::tally() %>% 
         dplyr::pull(n)
       
-      glue::glue("There are {n_responses} in the database")
+      n_individuals <- db_data %>% 
+        dplyr::distinct(pt_id) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      current_responses <- filter_data()$filter_data %>% 
+        dplyr::filter(!is.na(comment_txt)) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      current_individuals <- filter_data()$filter_data %>% 
+        dplyr::distinct(pt_id) %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n)
+      
+      tagList(
+
+      p(glue::glue("There are {n_responses} comments in the database from 
+                 {n_individuals} individuals.")),
+      
+      p(glue::glue("The current selected data comprises {current_responses} 
+                   comments in the database from {current_individuals} 
+                   individuals."))
+      )
     })
     
     # UI
@@ -91,7 +114,8 @@ mod_summary_server <- function(id, db_conn, db_data){
       
       req(imported$data())
       
-      raw_df <- imported$data()
+      raw_df <- imported$data() %>% 
+        dplyr::mutate(pt_id = dplyr::row_number())
       
       withProgress(message = 'Processing data. This may take a while. 
                    Please wait...', value = 0, {

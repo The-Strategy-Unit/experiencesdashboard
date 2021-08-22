@@ -9,13 +9,13 @@ library(experiencesdashboard)
 
 ## MySQL ----
 
-open_db_data <- get_px_exp(from = "2017-01-01",
+open_db_data <- get_px_exp(from = "2019-01-01",
                            open_data = FALSE, 
                            remove_demographics = FALSE,
                            remove_optout = TRUE)
 
 trust_a <- open_db_data %>% 
-  arrange(Date) %>% 
+  arrange(Date) %>%
   collect()
 
 # final dataset needs location_1, location_2 location_3, date, 
@@ -28,7 +28,8 @@ trust_a <- trust_a %>%
                 fft = Service, gender = Gender, 
                 age = Age, ethnicity = Ethnic, sexuality = Sexuality, 
                 patient_carer = SU, disability = Disability, faith = Religion) %>% 
-  tidyr::pivot_longer(cols = c(Improve, Best),
+  dplyr::mutate(pt_id = dplyr::row_number()) %>% 
+  tidyr::pivot_longer(cols = c(comment_1, comment_2),
                       names_to = "comment_type",
                       values_to = "comment_txt") %>% 
   clean_dataframe(., comment_txt)
@@ -46,27 +47,23 @@ trust_a <- trust_a %>%
     ethnicity == "O" ~ "Other",
     ethnicity == "GRT" ~ "Gypsy/ Romany/ Traveller",
     TRUE ~ NA_character_
-  ))
-
-# MUST randomise the demographic features
-
-random_a <- trust_a %>% 
-  dplyr::mutate(dplyr::across(c(gender, age, ethnicity, sexuality, 
-                                patient_carer, disability, faith), 
-                              ~ sample(.x, dplyr::n())))
+  )) %>% 
+  dplyr::mutate(age = dplyr::recode(
+    age, `1` = "0 - 11", `2` = "12-17", `3` = "18-25", `4` = "26-39",
+    `5` = "40-64", `6` = "65-79", `7` = "80+", .default = NA_character_))
 
 preds <- experienceAnalysis::calc_predict_unlabelled_text(
-  x = random_a,
+  x = trust_a,
   python_setup = FALSE,
   text_col_name = 'comment_txt',
   preds_column = NULL,
   column_names = "all_cols",
   pipe_path = 'fitted_pipeline.sav'
 ) %>% 
-  dplyr::select(code = comment_txt_preds)
+  dplyr::select(category = comment_txt_preds)
 
 criticality <- experienceAnalysis::calc_predict_unlabelled_text(
-  x = random_a,
+  x = trust_a,
   python_setup = FALSE,
   text_col_name = 'comment_txt',
   preds_column = NULL,
@@ -76,19 +73,26 @@ criticality <- experienceAnalysis::calc_predict_unlabelled_text(
   dplyr::select(crit = comment_txt_preds)
 
 final_df <- dplyr::bind_cols(
-  random_a, 
+  trust_a, 
   preds,
-  criticality)
+  criticality) %>% 
+  dplyr::mutate(category = dplyr::case_when(
+    is.null(comment_txt) ~ NA_character_,
+    comment_txt %in% c("NULL", "NA", "N/A") ~ NA_character_,
+    TRUE ~ category
+  )) %>% 
+  dplyr::mutate(crit = dplyr::case_when(
+    is.null(comment_txt) ~ NA_integer_,
+    comment_txt %in% c("NULL", "NA", "N/A") ~ NA_integer_,
+    TRUE ~ as.integer(crit)
+  ))
 
-# blank comments should give blank predictions
-
-final_df$code[is.na(final_df$comment_txt)] = NA
-final_df$crit[is.na(final_df$comment_txt)] = NA
+# MUST randomise the demographic features
 
 final_df <- final_df %>% 
-  dplyr::mutate(age = dplyr::recode(
-    age, `1` = "0 - 11", `2` = "12-17", `3` = "18-25", `4` = "26-39",
-    `5` = "40-64", `6` = "65-79", `7` = "80+", .default = NA_character_))
+  dplyr::mutate(dplyr::across(c(gender, age, ethnicity, sexuality, 
+                                patient_carer, disability, faith), 
+                              ~ sample(.x, dplyr::n())))
 
 # add code and crit
 

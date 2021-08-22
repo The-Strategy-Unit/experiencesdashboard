@@ -38,7 +38,7 @@ app_server <- function( input, output, session ) {
     
     store_data <- db_data %>% 
       dplyr::filter(date > interpolate_date - 3 * 365) %>%
-      dplyr::select(dplyr::any_of(c("location_1", "age", "age_label", 
+      dplyr::select(dplyr::any_of(c("location_1", "age", 
                                     "gender", "ethnicity"))) %>%
       dplyr::collect()
   }
@@ -184,7 +184,7 @@ app_server <- function( input, output, session ) {
     if(isTruthy(demographic_filters()$select_age)){
       
       demography_data <- demography_data %>% 
-        dplyr::filter(age_label %in% !!demographic_filters()$select_age)
+        dplyr::filter(age %in% !!demographic_filters()$select_age)
     }
     
     if(isTruthy(demographic_filters()$select_gender)){
@@ -200,6 +200,7 @@ app_server <- function( input, output, session ) {
     }
     
     no_responses <- demography_data %>% 
+      dplyr::distinct(pt_id) %>% 
       dplyr::tally() %>% 
       dplyr::pull(n)
     
@@ -207,23 +208,25 @@ app_server <- function( input, output, session ) {
       
       return_data <- return_data %>%
         dplyr::collect() %>% 
-        dplyr::arrange(date) %>% 
-        # this is a fudge and should be done in tidy_all_trusts()
-        dplyr::mutate(crit = as.double(crit))
+        dplyr::arrange(date)
     } else {
       
       return_data <- demography_data %>% 
         dplyr::collect() %>% 
-        dplyr::arrange(date) %>% 
-        # this is a fudge and should be done in tidy_all_trusts()
-        dplyr::mutate(crit = as.double(crit))
+        dplyr::arrange(date)
     }
     
     demography_number <- demography_data %>% 
       dplyr::tally() %>% 
       dplyr::pull(n)
     
+    # also return a dataset with unique individuals
+    
+    unique_data <- return_data %>% 
+      dplyr::distinct(pt_id, .keep_all = TRUE)
+    
     return(list("filter_data" = return_data, 
+                "unique_data" = unique_data,
                 "demography_number" = demography_number))
   })
   
@@ -234,7 +237,7 @@ app_server <- function( input, output, session ) {
   
   # modules----
   
-  mod_summary_server("summary_ui_1", db_conn = pool, db_data)
+  mod_summary_server("summary_ui_1", db_conn = pool, db_data, filter_data)
   
   # patient experience modules----
   
