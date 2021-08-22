@@ -135,7 +135,9 @@ app_server <- function( input, output, session ) {
     list(
       "date_from" = input$date_range[1],
       "date_to" = input$date_range[2],
-      "location_1" = input$select_location_1
+      "location_1" = input$select_location_1,
+      "location_2" = input$select_location_2,
+      "location_3" = input$select_location_3
     )
   })
   

@@ -11,8 +11,21 @@ mod_report_builder_ui <- function(id, filter_data, filter_sentiment){
   ns <- NS(id)
   tagList(
     
-    downloadButton(ns("download_report"),
-                   "Download report")
+    fluidRow(
+      column(6,
+             selectInput(ns("time_period"), "Reporting period",
+                         choices = c("Previous quarter" = "quarter",
+                                     "Previous 12 months" = "year",
+                                     "Current selection" = "custom")),
+             checkboxGroupInput(
+               ns("report_components"), "Report features",
+               choices = c("% categories table" = "category_table",
+                           "Verbatim comments" = "verbatim__comments",
+                           "Sample demographics" = "sample_demographics")),
+             downloadButton(ns("download_report"),
+                            "Download report")
+      )
+    )
   )
 }
 
@@ -28,9 +41,17 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
       filename = paste0("CustomReport_", Sys.Date(), ".docx"),
       content = function(file){
         
-        params <- list(date_from = all_inputs()$date_from,
-                       date_to = all_inputs()$date_to,
-                       division = all_inputs()$division,
+        # calculate parameters
+        
+        dates <- switch(input$time_period,
+                        quarter = previous_quarter(Sys.Date()),
+                        year = c(Sys.Date(), Sys.Date() - 365),
+                        custom = c(all_inputs()$date_from[1],
+                                   all_inputs()$date_to[2])
+        )
+        
+        params <- list(dates = dates,
+                       inputs = all_inputs(),
                        data = filter_data()$filter_data
         )
         
