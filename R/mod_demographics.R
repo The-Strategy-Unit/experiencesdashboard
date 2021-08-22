@@ -10,7 +10,9 @@
 mod_demographics_ui <- function(id){
   ns <- NS(id)
   tagList(
-    fluidRow(textOutput(ns("total_responses"))),
+    fluidRow(
+      column(12, h3(textOutput(ns("total_responses"))))
+    ),
     hr(),
     fluidRow(
       column(4, uiOutput(ns("age_UI"))),
@@ -23,6 +25,7 @@ mod_demographics_ui <- function(id){
       column(4, plotOutput(ns("ethnicity_graph")))
     ),
     hr(),
+    h3("Categories with fewer than 10 individuals are excluded"),
     fluidRow(
       column(4, plotOutput(ns("compare_age"))),
       column(4, plotOutput(ns("compare_gender"))),
@@ -62,7 +65,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$age_UI <- renderUI({
       
-      choices <- store_data %>% 
+      choices <- filter_data()$unique_data %>% 
         dplyr::arrange(age) %>% 
         dplyr::distinct(age, .keep_all = TRUE) %>%
         dplyr::filter(!is.na(age))
@@ -78,7 +81,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$gender_UI <- renderUI({
       
-      choices <- store_data %>% 
+      choices <- filter_data()$unique_data %>% 
         dplyr::arrange(gender) %>% 
         dplyr::distinct(gender)
       
@@ -90,7 +93,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$ethnicity_UI <- renderUI({
       
-      choices <- store_data %>% 
+      choices <- filter_data()$unique_data %>% 
         dplyr::arrange(ethnicity) %>% 
         dplyr::distinct(ethnicity)
       
