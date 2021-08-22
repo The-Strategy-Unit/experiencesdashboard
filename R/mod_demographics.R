@@ -104,7 +104,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$age_graph <- renderPlot({
       
-      filter_data()$filter_data %>% 
+      filter_data()$unique_data %>% 
         dplyr::arrange(age) %>% 
         dplyr::mutate(age = factor(age, 
                                    exclude = NULL)) %>% 
@@ -113,13 +113,13 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$gender_graph <- renderPlot({
       
-      filter_data()$filter_data %>% 
+      filter_data()$unique_data %>% 
         demographic_distribution(variable = "gender")
     })
     
     output$ethnicity_graph <- renderPlot({
       
-      filter_data()$filter_data %>% 
+      filter_data()$unique_data %>% 
         demographic_distribution(variable = "ethnicity")
     })
     
@@ -127,17 +127,17 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     output$compare_age <- renderPlot({
       
-      compare_demographics(filter_data()$filter_data, "age")
+      compare_demographics(filter_data()$unique_data, "age")
     })
     
     output$compare_gender <- renderPlot({
       
-      compare_demographics(filter_data()$filter_data, "gender")
+      compare_demographics(filter_data()$unique_data, "gender")
     })
     
     output$compare_ethnicity <- renderPlot({
       
-      compare_demographics(filter_data()$filter_data, "ethnicity")
+      compare_demographics(filter_data()$unique_data, "ethnicity")
     })
     
     reactive(
