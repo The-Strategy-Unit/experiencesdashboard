@@ -10,7 +10,9 @@ params:
 ---
 
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(echo = FALSE)
+
 ```
 
 ## Summary
@@ -51,8 +53,13 @@ calculate_table(
 
 ```{r}
 
+# only for unique individuals
+
+fft_data <- params$data %>% 
+  dplyr::distinct(pt_id, .keep_all = TRUE)
+
 graph_data <- experiencesdashboard::split_data_spc(
-  params$data, variable = "fft", chunks = 15
+  fft_data, variable = "fft", chunks = 15
 )
 
 experiencesdashboard::plot_fft_spc(graph_data)
