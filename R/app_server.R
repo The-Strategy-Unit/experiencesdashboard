@@ -198,7 +198,7 @@ app_server <- function( input, output, session ) {
     if(isTruthy(demographic_filters()$select_ethnicity)){
       
       demography_data <- demography_data %>% 
-        dplyr::filter(gender %in% !!demographic_filters()$select_gender)
+        dplyr::filter(ethnicity %in% !!demographic_filters()$select_ethnicity)
     }
     
     no_responses <- demography_data %>% 
