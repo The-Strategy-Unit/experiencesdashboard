@@ -33,3 +33,11 @@ trust_c:
   location_1: Location 1
   location_2: Location 2
   location_3: Location 3
+trust_e:
+  trust_name: trust_e
+  comment_1: What was good about your visit?
+  comment_2: What would have made your visit better?
+  question_1: fft
+  location_1: Location 1
+  location_2: Location 2
+  location_3: Location 3
