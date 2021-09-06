@@ -19,23 +19,24 @@ This is an example document to test the deployment with RSConnect.
 
 ```{r}
 
-load("text_data.rda")
+df <- data.frame("comment_txt" = c("The food was rubbish", 
+                                   "This service saved my life",
+                                   "The doctor was very rude",
+                                   "Parking was a nightmare",
+                                   "They never answer the phone",
+                                   "I didn't understand my discharge plan"))
 
 # reticulate::py_discover_config()
 
-text_data = text_data %>% head(10)
-text_col = "feedback"
-
 preds <- experienceAnalysis::calc_predict_unlabelled_text(
-  x = text_data,
-  file_path=NULL,
-  predictor='feedback',
+  x = df,
+  predictor='comment_txt',
   preds_column=NULL,
   column_names=NULL,
   pipe_path='fitted_pipeline.sav'
 )
 
-cbind(text_data, preds) %>% 
+cbind(df, preds) %>% 
   knitr::kable()
 
 ```

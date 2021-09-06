@@ -86,26 +86,20 @@ upload_data <- function(data, conn, trust_id){
       dplyr::mutate(date = as.Date(date, format = "%d/%m/%Y"))
   }
   
-  preds <- experienceAnalysis::calc_predict_unlabelled_text(
-    x = db_tidy,
-    python_setup = FALSE,
-    text_col_name = 'comment_txt',
-    preds_column = NULL,
-    column_names = "all_cols",
-    pipe_path = 'fitted_pipeline.sav'
-  ) %>% 
+  preds <- pxtextmineR::factory_predict_unlabelled_text_r(
+    dataset = db_tidy,
+    predictor = "comment_txt",
+    pipe_path_or_object = "fitted_pipeline.sav",
+    column_names = "preds_only") %>% 
     dplyr::select(category = comment_txt_preds)
   
-  criticality <- experienceAnalysis::calc_predict_unlabelled_text(
-    x = db_tidy,
-    python_setup = FALSE,
-    text_col_name = 'comment_txt',
-    preds_column = NULL,
-    column_names = "all_cols",
-    pipe_path = 'pipeline_criticality.sav'
-  ) %>% 
+  criticality <- pxtextmineR::factory_predict_unlabelled_text_r(
+    dataset = db_tidy,
+    predictor = "comment_txt",
+    pipe_path_or_object = "pipeline_criticality.sav",
+    column_names = "preds_only") %>% 
     dplyr::select(crit = comment_txt_preds)
-
+  
   final_df <- dplyr::bind_cols(
     db_tidy, 
     preds,
