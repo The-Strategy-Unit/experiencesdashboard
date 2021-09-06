@@ -63,11 +63,7 @@ mod_category_criticality_ui <- function(id){
                  ),
                  fluidRow(
                    column(3,
-                          selectInput(ns("category_crit_time_facet"), 
-                                      label = h5(strong("Divide plot by:")), 
-                                      choices = list("Comment and category" = 1, 
-                                                     "Comment and division" = 2), 
-                                      selected = 1)
+                          uiOutput(ns("dividePlotUI")),
                    ),
                    column(3,
                           selectInput(ns("category_crit_time_geom_histogram"), 
@@ -107,6 +103,21 @@ mod_category_criticality_server <- function(id, filter_data){
         choices = choices,
         multiple = TRUE
       )
+    })
+    
+    output$dividePlotUI <- renderUI({
+      
+      choices <- list(1, 2) # wait for it...
+      
+      names(choices) <- c("Comment and category",  
+                          paste0("Comment and ", 
+                                 get_golem_config("location_1")))
+      
+      selectInput(
+        ns("category_crit_time_facet"), 
+        label = h5(strong("Divide plot by:")), 
+        choices = choices, 
+        selected = 1)
     })
     
     # Create reactive data ----

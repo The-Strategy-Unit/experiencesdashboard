@@ -103,7 +103,17 @@ upload_data <- function(data, conn, trust_id){
   final_df <- dplyr::bind_cols(
     db_tidy, 
     preds,
-    criticality)
+    criticality)  %>% 
+    dplyr::mutate(category = dplyr::case_when(
+      is.null(comment_txt) ~ NA_character_,
+      comment_txt %in% c("NULL", "NA", "N/A") ~ NA_character_,
+      TRUE ~ category
+    )) %>% 
+    dplyr::mutate(crit = dplyr::case_when(
+      is.null(comment_txt) ~ NA_integer_,
+      comment_txt %in% c("NULL", "NA", "N/A") ~ NA_integer_,
+      TRUE ~ as.integer(crit)
+    ))
   
   success <- DBI::dbWriteTable(conn, trust_id,
                                final_df, append = TRUE)
