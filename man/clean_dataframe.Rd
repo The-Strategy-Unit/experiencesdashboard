@@ -4,12 +4,10 @@
 \alias{clean_dataframe}
 \title{Clean an uploaded dataset from a user of the dashboard}
 \usage{
-clean_dataframe(data, text_cols)
+clean_dataframe(data)
 }
 \arguments{
 \item{data}{a dataframe of uploaded patient experience data}
-
-\item{text_cols}{a vector of strings with the name of the text columns}
 }
 \value{
 dataframe with cleaned text

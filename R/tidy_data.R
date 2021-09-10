@@ -14,20 +14,11 @@
 #' 2021-04-25
 tidy_all_trusts <- function(data, conn, trust_id) {
   
-  if(trust_id == "demo_trust"){
-    
-    return(data %>% 
-             dplyr::rename(category = code)) %>% 
-      dplyr::mutate(category = dplyr::case_when(
-        is.null(comment_txt) ~ NA,
-        comment_txt %in% c("NULL", "NA", "N/A") ~ NA,
-        TRUE ~ category
-      ))
-  }
-  
-  db_tidy <- data 
-  
-  # Return
-  return(db_tidy)
-  
+  data %>%  
+    dplyr::mutate(category = dplyr::case_when(
+      is.null(comment_txt) ~ NA_character_,
+      is.na(comment_txt) ~ NA_character_,
+      comment_txt %in% c("NULL", "NA", "N/A") ~ NA_character_,
+      TRUE ~ category
+    ))
 }

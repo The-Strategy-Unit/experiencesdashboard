@@ -3,17 +3,16 @@
 #' box such as "NULL", "NA", "N/A", etc. Clean these comments before they go 
 #' to the pipeline
 #' @param data a dataframe of uploaded patient experience data
-#' @param text_cols a vector of strings with the name of the text columns
 #' 
 #' @return dataframe with cleaned text
 #' @export
-clean_dataframe <- function(data, text_cols){
+clean_dataframe <- function(data){
   
   data %>% 
     dplyr::mutate(
       dplyr::across(
-        dplyr::any_of(text_cols), ~ dplyr::case_when(
-          grepl("^[?]+$", .) ~ NA_character_,
+        where(is.character), ~ dplyr::case_when(
+          grepl("^[?]+$", .) ~ NA_character_, # remove multiple question marks
           . %in% c("NULL", "#NAME?", "") ~ NA_character_,
           TRUE ~ .
         )))
@@ -65,9 +64,7 @@ upload_data <- function(data, conn, trust_id){
                            "comment_txt",
                            "gender", "age", "sexuality", "disability",
                            "faith", "ethnicity", "pt_id"))) %>% 
-    clean_dataframe(., c("comment_txt",
-                         "gender", "age", "sexuality", "disability",
-                         "faith", "ethnicity"))
+    clean_dataframe()
   
   if(trust_id == "trust_c"){
     
@@ -105,11 +102,13 @@ upload_data <- function(data, conn, trust_id){
     preds,
     criticality)  %>% 
     dplyr::mutate(category = dplyr::case_when(
+      is.na(comment_txt) ~ NA_character_,
       is.null(comment_txt) ~ NA_character_,
       comment_txt %in% c("NULL", "NA", "N/A") ~ NA_character_,
       TRUE ~ category
     )) %>% 
     dplyr::mutate(crit = dplyr::case_when(
+      is.na(comment_txt) ~ NA_integer_,
       is.null(comment_txt) ~ NA_integer_,
       comment_txt %in% c("NULL", "NA", "N/A") ~ NA_integer_,
       TRUE ~ as.integer(crit)

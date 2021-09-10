@@ -36,7 +36,6 @@ trust_c:
 trust_d:
   trust_name: trust_d
   comment_1: Comment 1
-  comment_2: Comment 2
   question_1: fft
   location_1: Location 1
   location_2: Location 2
