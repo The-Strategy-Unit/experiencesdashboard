@@ -43,7 +43,7 @@ mod_patient_experience_server <- function(id){
         )
       )
       
-      if(FALSE){
+      if(isTruthy(get_golem_config("comment_2"))){
         
         ui_list <- c(ui_list, 
                      list(
@@ -57,23 +57,36 @@ mod_patient_experience_server <- function(id){
                          )
                        )
                      ))
+      } else {
+        
+        ui_list <- c(ui_list,
+                     list(
+                       tabPanel(
+                         "Sentiment",
+                         mod_sentiment_ui("mod_sentiment_ui_1")
+                       )
+                     ))
       }
+      
+      ui_list <- c(ui_list, 
+                   list(
+                     tabPanel(
+                       "Comment search",
+                       mod_search_text_ui("search_text_ui_1")
+                     ),
+                     tabPanel(
+                       "Demographics",
+                       mod_demographics_ui("demographics_ui_1")
+                     ))
+      )
       
       do.call(tabsetPanel, ui_list)
       
     })
     
-    #   tabPanel(
-    #     "Comment search",
-    #     mod_search_text_ui("search_text_ui_1")
-    #   ),
-    #   tabPanel(
-    #     "Demographics",
-    #     mod_demographics_ui("demographics_ui_1")
-    #   )
-    #   )
+    
     # 
-    # if(isTruthy(get_golem_config("comment_2"))){
+    # 
     #   
     #   tagList(
     #     tabsetPanel(
@@ -98,10 +111,6 @@ mod_patient_experience_server <- function(id){
     #       tabPanel(
     #         "Themes/ weighting",
     #         mod_category_criticality_ui("category_criticality_ui_1")
-    #       ),
-    #       tabPanel(
-    #         "Sentiment",
-    #         mod_sentiment_ui("mod_sentiment_ui_1")
     #       ),
     #       tabPanel(
     #         "Comment search",
