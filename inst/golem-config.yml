@@ -1,6 +1,6 @@
 default:
   golem_name: experiencesdashboard
-  golem_version: 0.2.1
+  golem_version: 0.4.2
   app_prod: no
   open: yes
 production:
@@ -14,10 +14,13 @@ trust_a:
   trust_name: trust_a
   comment_1: What could be improved?
   comment_2: What did we do well?
+  question_1: fft
   location_1: Division
   location_2: Directorate
   location_3: Team
-  question_1: fft
+  gender: TRUE
+  age: TRUE
+  ethnicity: TRUE
 trust_b:
   trust_name: trust_b
   comment_1: Comments
@@ -33,6 +36,9 @@ trust_c:
   location_1: Location 1
   location_2: Location 2
   location_3: Location 3
+  gender: TRUE
+  age: TRUE
+  ethnicity: TRUE
 trust_d:
   trust_name: trust_d
   comment_1: Comment 1
@@ -48,6 +54,9 @@ trust_e:
   location_1: Location 1
   location_2: Location 2
   location_3: Location 3
+  gender: TRUE
+  age: TRUE
+  ethnicity: TRUE
 care_opinion:
   trust_name: care_opinion
   comment_1: Story

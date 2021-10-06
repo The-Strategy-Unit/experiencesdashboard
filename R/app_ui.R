@@ -19,12 +19,6 @@ app_ui <- function(request) {
         width = 300,
         sidebarMenu(
           
-          # menuItem("Summary", 
-          #          tabName = "overview",
-          #          icon = shiny::icon("dashboard")
-          #          # , badgeLabel = "planned", badgeColor = "orange"
-          # ),
-          
           menuItem("Patient experience", 
                    tabName = "experiences-user",
                    icon = shiny::icon("comment"),
