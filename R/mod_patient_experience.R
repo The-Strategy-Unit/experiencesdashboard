@@ -32,16 +32,32 @@ mod_patient_experience_server <- function(id){
         tabPanel(
           "Report builder",
           mod_report_builder_ui("report_builder_ui_1")
-        ),
-        tabPanel(
-          "FFT",
-          mod_fft_ui("fft_ui_1")
-        ),
-        tabPanel(
-          "Themes/ weighting",
-          mod_category_criticality_ui("category_criticality_ui_1")
         )
       )
+      
+      # do we have FFT data?
+      
+      if(isTruthy(get_golem_config("question_1"))){
+        
+        ui_list <- c(ui_list,
+                     list(
+                       tabPanel(
+                         "FFT",
+                         mod_fft_ui("fft_ui_1")
+                       )
+                     ))
+      }
+      
+      ui_list <- c(ui_list,
+                   list(
+                     tabPanel(
+                       "Themes/ weighting",
+                       mod_category_criticality_ui("category_criticality_ui_1")
+                     )
+                   )
+      )
+      
+      # do we have two or one comment?
       
       if(isTruthy(get_golem_config("comment_2"))){
         
