@@ -61,4 +61,7 @@ care_opinion:
   trust_name: care_opinion
   comment_1: Story
   location_1: Service code
+nhs_uk:
+  trust_name: nhs_uk
+  comment_1: Story
 
