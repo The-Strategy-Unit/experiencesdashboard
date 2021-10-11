@@ -161,9 +161,91 @@ con <- DBI::dbConnect(odbc::odbc(),
                       database = "TEXT_MINING",
                       encoding = "UTF-8")
 
-DBI::dbWriteTable(con, 'trust_b', trust_b %>% head(10), overwrite = TRUE)
+# DBI::dbWriteTable(con, 'trust_b', trust_b %>% head(10), overwrite = TRUE)
+# 
+# DBI::dbWriteTable(con, 'trust_c', trust_c %>% head(10), overwrite = TRUE)
 
-DBI::dbWriteTable(con, 'trust_c', trust_c %>% head(10), overwrite = TRUE)
+# now care opinion----
+
+apiKey = "SUBSCRIPTION_KEY erh7pre3y6untfcx8k3zbzvtca6sgphnyyw36rxy"
+
+# produce empty list to lappend
+
+opinionList = list()
+
+# set skip at 0 and give opinions length value > 0
+
+skip = 0
+
+continue = TRUE
+
+while(continue){
+  
+  opinions = httr::GET(
+    paste0("https://www.patientopinion.org.uk/api/v2/opinions?publishedafter=2017-10-01&take=100&skip=",
+           skip),
+    httr::add_headers(Authorization = apiKey))
+  
+  if(length(httr::content(opinions)) == 0){
+    
+    continue = FALSE
+  }
+  
+  opinionList = c(opinionList, httr::content(opinions))
+  
+  skip = skip + 100
+  
+}
+
+# if there are no new stories just miss this entire bit out
+
+title = lapply(opinionList, "[[", "title")
+story = lapply(opinionList, "[[", "body")
+date = lapply(opinionList, "[[", "dateOfPublication")
+criticality = lapply(opinionList, "[[", "criticality")
+
+# location is inside $links
+
+linkList = lapply(opinionList, "[[", "links")
+location = lapply(linkList, function(x) x[[5]][['id']])
+
+# there are null values in some of these, need converting to NA
+# before they're put in the dataframe
+
+date[sapply(date, is.null)] = NA
+criticality[sapply(criticality, is.null)] = NA
+
+care_opinion = tibble::tibble("Title" = unlist(title),
+                                 "PO" = unlist(story),
+                                 "Date" = as.Date(substr(unlist(date), 1, 10)),
+                                 "criticality" = unlist(criticality),
+                                 "location" = unlist(location))
+
+care_opinion <- care_opinion %>% 
+  dplyr::select(location_1 = location, comment_txt = PO, date = Date) %>% 
+  dplyr::mutate(comment_type = "comment_1")
+
+# predict comments
+
+preds_theme <- pxtextmineR::factory_predict_unlabelled_text_r(
+  dataset = care_opinion,
+  predictor = "comment_txt",
+  pipe_path_or_object = "fitted_pipeline.sav",
+  column_names = "preds_only") %>% 
+  dplyr::rename(category = comment_txt_preds)
+
+preds_crit <- pxtextmineR::factory_predict_unlabelled_text_r(
+  dataset = care_opinion,
+  predictor = "comment_txt",
+  pipe_path_or_object = "pipeline_criticality.sav",
+  column_names = "preds_only") %>% 
+  dplyr::rename(crit = comment_txt_preds)
+
+care_opinion <- cbind(
+  care_opinion, preds_theme, preds_crit
+)
+
+DBI::dbWriteTable(con, 'care_opinion', care_opinion, append = TRUE)
 
 dbDisconnect(con)
 

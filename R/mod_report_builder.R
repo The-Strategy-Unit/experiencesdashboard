@@ -17,13 +17,9 @@ mod_report_builder_ui <- function(id, filter_data, filter_sentiment){
                          choices = c("Previous quarter" = "quarter",
                                      "Previous 12 months" = "year",
                                      "Current selection" = "custom")),
-             checkboxGroupInput(
-               ns("report_components"), "Report features",
-               choices = c("% categories table" = "category_table",
-                           "Verbatim comments" = "verbatim_comments",
-                           "Sample demographics" = "sample_demographics",
-                           "FFT graph" = "fft_graph"),
-               selected = c("category_table", "fft_graph")),
+             
+             uiOutput(ns("report_componentsUI")),
+             
              downloadButton(ns("download_report"),
                             "Download report")
       )
@@ -38,6 +34,37 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
                                       all_inputs){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    output$report_componentsUI <- renderUI({
+      
+      choices = c("% categories table" = "category_table",
+                  "Verbatim comments" = "verbatim_comments")
+      
+      # do we have demographic data?
+      
+      demographic_ui <- isTruthy(get_golem_config("gender")) | 
+        isTruthy(get_golem_config("age")) | 
+        isTruthy(get_golem_config("ethnicity"))
+      
+      if(demographic_ui){
+        
+        choices = c(choices, "Sample demographics" = "sample_demographics")
+      }
+      
+      # do we have FFT data?
+      
+      if(isTruthy(get_golem_config("question_1"))){
+        
+        choices = c(choices, "FFT graph" = "fft_graph")
+      }
+      
+      # draw final choices
+
+      checkboxGroupInput(
+        session$ns("report_components"), "Report features",
+        choices = choices,
+        selected = c("category_table", "fft_graph"))
+    })
     
     output$download_report <- downloadHandler(
       filename = paste0("CustomReport_", Sys.Date(), ".docx"),
