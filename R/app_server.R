@@ -47,7 +47,7 @@ app_server <- function( input, output, session ) {
   
   output$filter_location_1 <- renderUI({
     
-    if(get_golem_config("trust_name") == "demo_trust"){
+    if(!isTruthy(get_golem_config("location_1"))){
       
       return()
     }
@@ -69,10 +69,11 @@ app_server <- function( input, output, session ) {
   
   output$filter_location_2 <- renderUI({
     
-    if(get_golem_config("trust_name") == "demo_trust"){
+    if(!isTruthy(get_golem_config("location_2"))){
       
       return()
     }
+    
     
     location_2_choices <- date_filter()
     
@@ -98,7 +99,7 @@ app_server <- function( input, output, session ) {
   
   output$filter_location_3 <- renderUI({
     
-    if(get_golem_config("trust_name") == "demo_trust"){
+    if(!isTruthy(get_golem_config("location_3"))){
       
       return()
     }
