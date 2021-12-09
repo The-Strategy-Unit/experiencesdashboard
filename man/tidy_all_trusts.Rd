@@ -4,7 +4,7 @@
 \alias{tidy_all_trusts}
 \title{Tidy patient experience data}
 \usage{
-tidy_all_trusts(data, conn, trust_id)
+tidy_all_trusts(data, conn)
 }
 \arguments{
 \item{data}{dataframe or SQL object, that you can make with get_px_exp()}

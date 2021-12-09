@@ -20,7 +20,7 @@ app_server <- function( input, output, session ) {
   db_data <- dplyr::tbl(pool,
                         dbplyr::in_schema("TEXT_MINING",
                                           get_golem_config("trust_name"))) %>%
-    tidy_all_trusts(conn = pool, trust_id = get_golem_config("trust_name"))
+    tidy_all_trusts(conn = pool)
   
   # vector of sentiment names
   
