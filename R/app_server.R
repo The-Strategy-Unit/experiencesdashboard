@@ -30,6 +30,12 @@ app_server <- function( input, output, session ) {
     dplyr::pull() %>%
     sort()
   
+  # find out if there is data in the table
+  
+  data_exists <- db_data %>%
+    dplyr::tally() %>% 
+    dplyr::pull(n) > 0
+  
   # store values of demographics and location_1 from last 3 years
   
   interpolate_date <- Sys.Date()
@@ -47,11 +53,8 @@ app_server <- function( input, output, session ) {
   
   output$filter_location_1 <- renderUI({
     
-    if(!isTruthy(get_golem_config("location_1"))){
+    req(get_golem_config("location_1"))
       
-      return()
-    }
-    
     location_1_choices <- date_filter() %>%
       dplyr::distinct(location_1) %>%
       dplyr::mutate(location_1 = dplyr::na_if(location_1, "Unknown")) %>%
@@ -69,12 +72,8 @@ app_server <- function( input, output, session ) {
   
   output$filter_location_2 <- renderUI({
     
-    if(!isTruthy(get_golem_config("location_2"))){
-      
-      return()
-    }
-    
-    
+    req(get_golem_config("location_2"))
+
     location_2_choices <- date_filter()
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
@@ -99,11 +98,8 @@ app_server <- function( input, output, session ) {
   
   output$filter_location_3 <- renderUI({
     
-    if(!isTruthy(get_golem_config("location_3"))){
+    req(get_golem_config("location_3"))
       
-      return()
-    }
-    
     location_3_choices <- date_filter()
     
     if(isTruthy(input$select_location_1)){ # filter by location_1 if exists
@@ -150,6 +146,7 @@ app_server <- function( input, output, session ) {
       dplyr::filter(date > !!input$date_range[1],
                     date < !!input$date_range[2])
   })
+  
   filter_data <- reactive({
     
     if(get_golem_config("trust_name") == "demo_trust"){
