@@ -54,6 +54,7 @@ app_server <- function( input, output, session ) {
   output$filter_location_1 <- renderUI({
     
     req(get_golem_config("location_1"))
+    req(data_exists)
       
     location_1_choices <- date_filter() %>%
       dplyr::distinct(location_1) %>%
@@ -73,6 +74,7 @@ app_server <- function( input, output, session ) {
   output$filter_location_2 <- renderUI({
     
     req(get_golem_config("location_2"))
+    req(data_exists)
 
     location_2_choices <- date_filter()
     
@@ -99,6 +101,7 @@ app_server <- function( input, output, session ) {
   output$filter_location_3 <- renderUI({
     
     req(get_golem_config("location_3"))
+    req(data_exists)
       
     location_3_choices <- date_filter()
     

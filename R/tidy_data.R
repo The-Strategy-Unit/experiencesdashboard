@@ -27,6 +27,8 @@ tidy_all_trusts <- function(data, conn) {
         comment_txt %in% c("NULL", "NA", "N/A") ~ NA_character_,
         TRUE ~ category
       ))
+  } else {
     
+    data
   }
 }
