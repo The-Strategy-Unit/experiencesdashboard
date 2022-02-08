@@ -101,6 +101,13 @@ upload_data <- function(data, conn, trust_id){
       dplyr::mutate(date = as.Date(date, format = "%d/%m/%Y"))
   }
   
+  if(trust_id == "trust_d"){
+    
+    db_tidy <- db_tidy %>% 
+      dplyr::mutate(fft = 6 - fft) %>%
+      dplyr::mutate(date = lubridate::as_date(date, format = "%m/%d/%Y"))
+  }
+  
   preds <- pxtextmineR::factory_predict_unlabelled_text_r(
     dataset = db_tidy,
     predictor = "comment_txt",

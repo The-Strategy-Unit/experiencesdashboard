@@ -15,7 +15,7 @@ mod_summary_ui <- function(id){
       h1("Overview"),
       
       uiOutput(ns("summary_text")),
-
+      
       # conditionalPanel(
       #   get_golem_config("trust_name") == "demo_trust",
       #   uiOutput(ns("open_panel"))
@@ -60,11 +60,11 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
         dplyr::pull(n)
       
       tagList(
-
-      p(glue::glue("There are {n_responses} comments in the database from 
+        
+        p(glue::glue("There are {n_responses} comments in the database from 
                  {n_individuals} individuals.")),
-      
-      p(glue::glue("The current selected data comprises {current_responses} 
+        
+        p(glue::glue("The current selected data comprises {current_responses} 
                    comments in the database from {current_individuals} 
                    individuals."))
       )
@@ -119,13 +119,13 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       
       withProgress(message = 'Processing data. This may take a while. 
                    Please wait...', value = 0, {
-
-        success <- upload_data(data = raw_df, conn = db_conn, 
-                               trust_id = get_golem_config("trust_name"))
-        
-        incProgress(1)
-      })
-
+                     
+                     success <- upload_data(data = raw_df, conn = db_conn, 
+                                            trust_id = get_golem_config("trust_name"))
+                     
+                     incProgress(1)
+                   })
+      
       if(success){
         
         showModal(modalDialog(
