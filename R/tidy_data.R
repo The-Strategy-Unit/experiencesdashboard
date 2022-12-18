@@ -12,7 +12,7 @@
 #' Chris Beeley
 #' @section Last updated date:
 #' 2021-04-25
-tidy_all_trusts <- function(data, conn) {
+tidy_all_trusts <- function(data) {
   
   # this line only works if there is data in the table
   
