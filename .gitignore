@@ -8,3 +8,6 @@ inst/doc
 doc
 Meta
 scratch.R
+renv/
+renv*
+.Rprofile
