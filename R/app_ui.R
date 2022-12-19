@@ -31,7 +31,7 @@ app_ui <- function(request) {
           dateRangeInput(
             "date_range",
             label = h5(strong("Select date range:")),
-            start = Sys.Date() - 365,
+            start = as.Date("2019-01-01"),
             end = Sys.Date()
           )
         )
