@@ -2,7 +2,7 @@
 test_trust <- "trust_b"
 
 pool <- pool::dbPool(drv = odbc::odbc(),
-                     driver = "Maria DB",
+                     driver = Sys.getenv("odbc_driver"),
                      server = Sys.getenv("HOST_NAME"),
                      UID = Sys.getenv("DB_USER"),
                      PWD = Sys.getenv("MYSQL_PASSWORD"),
