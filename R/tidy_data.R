@@ -1,9 +1,6 @@
 #' Tidy patient experience data
 #'
 #' @param data dataframe or SQL object, that you can make with get_px_exp()
-#' @param conn connection, that you can make with connect_mysql()- by default
-#' this will be done automatically
-#' @param trust_id string. Which trust are you tidying data for?
 #'
 #' @return
 #' @export
