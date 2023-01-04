@@ -46,6 +46,7 @@ usethis::use_package( "DBI" )
 usethis::use_package( "dbplyr" )
 usethis::use_package( "datamods" )
 usethis::use_package( "experienceAnalysis" )
+usethis::use_package( "textdata" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
