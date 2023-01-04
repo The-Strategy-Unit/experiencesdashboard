@@ -18,5 +18,5 @@ tidy_trust_data <- dplyr::tbl(pool,
   dplyr::collect()
 
 test <- dplyr::tbl(pool, dbplyr::in_schema("TEXT_MINING", test_trust)) %>% 
-  tidy_all_trusts() # %>%
+  tidy_all_trusts() %>%
   dplyr::collect()
