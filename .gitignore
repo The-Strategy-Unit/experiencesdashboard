@@ -11,4 +11,5 @@ scratch.R
 renv/
 renv*
 .Rprofile
-data/sentiment_nrc.rda
+data/
+R/editable Table.R
