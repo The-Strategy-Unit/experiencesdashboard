@@ -16,14 +16,50 @@ mod_summary_ui <- function(id){
       
       uiOutput(ns("summary_text")),
       
-      # conditionalPanel(
-      #   get_golem_config("trust_name") == "demo_trust",
-      #   uiOutput(ns("open_panel"))
-      # ),
+      fluidRow(
+        column(width = 1,
+        actionButton(ns("launch_modal"), "Upload new data", icon = icon('person-circle-plus'))
+        )
+      ),
+      tags$br(),
+      tags$hr(),
       
-      # fluidRow(
-      actionButton(ns("launch_modal"), "Upload new data")
-      # )
+      #############################
+      # add button for editing the table
+      fluidRow(
+        column(
+          width = 1,
+          actionButton(ns("del_pat"), "Delete",
+                       class = "btn-success",
+                       # style = "color: #fff;",
+                       icon = icon('trash-can')
+          ),
+        ),
+        column(
+          width = 1,
+          actionButton(ns("save_to_db"), "Save to database",
+                       class = "btn-success",
+                       # style = "color: #fff;",
+                       icon = icon('save'),
+          ),
+        )
+      ),
+      
+      tags$br(),
+      p("Double click a row to edit its value and press ctrl+enter to confirm"),
+      # display the table
+      fluidRow(
+        column(width = 12,
+               title = "Patient experience table",
+               DT::DTOutput(ns('pat_table')) %>% shinycssloaders::withSpinner()
+        )
+      )
+      
+      ##################################### 
+      # # conditionalPanel(
+      # #   get_golem_config("trust_name") == "demo_trust",
+      # #   uiOutput(ns("open_panel"))
+      # # ),
     )
   )
 }
@@ -34,6 +70,7 @@ mod_summary_ui <- function(id){
 mod_summary_server <- function(id, db_conn, db_data, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    # db_data <- dplyr::tbl(db_conn, dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name")))
     
     # summary
     
@@ -70,36 +107,170 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       )
     })
     
-    # UI
+    #########################
+    # Read data from source e.g. database ####
+    dt_out <- reactiveValues(data = db_data %>% dplyr::collect() , noedit=0L)
+    proxy <-  DT::dataTableProxy(ns("pat_table"))
     
-    output$open_panel <- renderUI({
-      
-      # if(get_golem_config("trust_name") != "demo_trust"){
-      #   
-      #   return()
-      # }
-      
-      tagList(
-        h3("Download the spreadsheet template below and add your data to it"),
-        
-        downloadButton(session$ns("open_spreadsheet"), "Download template"),
-        
-        h3("Then click upload data below")
+    # isolate(
+    # req(dt_out$data)
+    # rownames(dt_out$data) <-  uuid::UUIDgenerate(n=nrow(dt_out$data)) # add unique identifier that can be used to identify each row.
+    # )
+    # reactive (str(dt_out$data))
+    
+    output$pat_table <- DT::renderDT(
+      dt_out$data,
+      selection = 'multiple',
+      # rownames = F, editable = 'row',
+      editable = list('target' = 'row', disable = list(columns = c(0))), # prevent editing of the first n second col
+      extensions = 'Buttons',
+      options = list(
+        pageLength = 10, lengthMenu = c(10, 15, 20, 50),
+        dom = 'Blfrtip',
+        buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+        scrollX = TRUE
       )
-    })
-    
-    # download spreadsheet
-    
-    output$open_spreadsheet <- downloadHandler(
-      
-      filename = "template.xlsx",
-      content = function(file) {
-        file.copy("text_mining_template_open.xlsx", file)
-      }
     )
     
-    # data module
+    # Edit a row and effect it in the UI view ####
+    observeEvent(input$pat_table_cell_edit, {
+
+      # for debugging and logging
+      # print(names(dt_out$data))
+      info = input$pat_table_cell_edit
+      print(info)
+      i = info$row
+      j = info$col
+      k = info$value
+
+      t = dt_out$data[unique(i),] %>%  unlist(use.name=F) %>% tidyr::replace_na('')
+      t2 = unlist(k, use.name=F)[-1]
+
+      # track the numbers of rows that has been edited
+      if (sum(t2 == t)!=length(colnames(dt_out$data))){
+        dt_out$noedit = dt_out$noedit + 1
+      }
+
+      isolate(
+        dt_out$data <- DT::editData(dt_out$data, info, ns('pat_table'), resetPaging = F)
+      )
+    })
+
+
+    # delete data ####
+    deleteData <- reactive({
+      print(input$pat_table_rows_selected) # for debugging and logging 
+      isolate(
+        dt_out$data <<- dt_out$data %>% dplyr::filter(!rownames(.) %in% input$pat_table_rows_selected)
+      )
+      DT::replaceData(proxy, dt_out$data, resetPaging = F)  # update the data on the UI
+    })
+
+    observeEvent(input$del_pat, priority = 20,{
+      showModal(
+        if(length(input$pat_table_rows_selected) < 1 ){
+          modalDialog(
+            title = "Warning",
+            paste("Please select row(s)." ),easyClose = TRUE
+          )
+        } else{
+          modalDialog(
+            paste('Are you sure you want to delete', length(input$pat_table_rows_selected), 'rows?'),
+            easyClose = F,
+            footer = tagList(
+              modalButton("Cancel"),
+              actionButton(ns("delete_row"), "Delete", icon = icon('trash')),
+            )
+          )
+        })
+      observeEvent(input$delete_row, {
+        deleteData()
+        removeModal()
+        dt_out$noedit = dt_out$noedit + 1
+      })
+    })
+
+    # SAVE (write edited data to source) ####
+    observeEvent(input$save_to_db, {
+
+      req(input$save_to_db)
+
+      if((dt_out$noedit < 1)){
+        showModal(modalDialog(
+          title = "Error!",
+          "There is not changes made to be save to the database",
+          easyClose = TRUE
+        ))
+
+      } else {
+
+        showModal(
+          modalDialog(
+            title = "Save data to database!",
+            HTML("Are you sure you want to overwrite existing data with this newly created data?"),
+            easyClose = TRUE,
+            footer = tagList(
+              modalButton("Cancel"),
+              actionButton(ns("update_source"), "Update", icon = icon('database')),
+            )
+          )
+        )
+        observeEvent(input$update_source, {
+          success <- TRUE #DBI::dbWriteTable(db_conn, get_golem_config("trust_name"), dt_out$data, overwrite = TRUE)
+          removeModal()
+
+          if(success){
+
+            showModal(modalDialog(
+              title = "Success!",
+              paste0("Records successfully written to database. Please refresh
+               your browser to visualise the new data"),
+              easyClose = TRUE
+            ))
+          } else {
+
+            showModal(modalDialog(
+              title = "Error!",
+              "There was a problem accssing the database. Please try again",
+              easyClose = TRUE
+            ))
+          }
+          dt_out$noedit = 0
+        })
+      }
+    })
     
+    ########################
+    # # UI ###############################################
+    # 
+    # output$open_panel <- renderUI({
+    #   
+    #   # if(get_golem_config("trust_name") != "demo_trust"){
+    #   #   
+    #   #   return()
+    #   # }
+    #   
+    #   tagList(
+    #     h3("Download the spreadsheet template below and add your data to it"),
+    #     
+    #     downloadButton(session$ns("open_spreadsheet"), "Download template"),
+    #     
+    #     h3("Then click upload data below")
+    #   )
+    # })
+    # 
+    # # download spreadsheet
+    # 
+    # output$open_spreadsheet <- downloadHandler(
+    #   
+    #   filename = "template.xlsx",
+    #   content = function(file) {
+    #     file.copy("text_mining_template_open.xlsx", file)
+    #   }
+    # )
+    # 
+    # data module
+
     observeEvent(input$launch_modal, {
       datamods::import_modal(
         id = session$ns("myid"),
@@ -107,38 +278,37 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
         title = "Import data to be used in application"
       )
     })
-    
+
     imported <- datamods::import_server("myid", return_class = "tbl_df")
-    
+
     observe({
-      
+
       req(imported$data())
-      
-      raw_df <- imported$data() %>% 
+
+      raw_df <- imported$data() %>%
         dplyr::mutate(pt_id = dplyr::row_number())
-      
-      withProgress(message = 'Processing data. This may take a while. 
+
+      withProgress(message = 'Processing data. This may take a while.
                    Please wait...', value = 0, {
-                     
-                     success <- upload_data(data = raw_df, conn = db_conn, 
-                                            trust_id = get_golem_config("trust_name"))
-                     
+
+                     success <- T # upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
+
                      incProgress(1)
                    })
-      
+
       if(success){
-        
+
         showModal(modalDialog(
           title = "Success!",
-          paste0(nrow(raw_df), " records successfully imported. Please refresh 
+          paste0(nrow(raw_df), " records successfully imported. Please refresh
                your browser to access the new data"),
           easyClose = TRUE
         ))
       } else {
-        
+
         showModal(modalDialog(
           title = "Error!",
-          "There was a problem importing your data. Try reuploading and check 
+          "There was a problem importing your data. Try reuploading and check
           in the 'View' section to ensure that the data is well formatted",
           easyClose = TRUE
         ))
