@@ -54,12 +54,6 @@ mod_summary_ui <- function(id){
                DT::DTOutput(ns('pat_table')) %>% shinycssloaders::withSpinner()
         )
       )
-      
-      ##################################### 
-      # # conditionalPanel(
-      # #   get_golem_config("trust_name") == "demo_trust",
-      # #   uiOutput(ns("open_panel"))
-      # # ),
     )
   )
 }
@@ -107,7 +101,6 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       )
     })
     
-    #########################
     # Read data from source e.g. database ####
     dt_out <- reactiveValues(data = db_data %>% dplyr::collect() , noedit=0L)
     proxy <-  DT::dataTableProxy(ns("pat_table"))
@@ -127,6 +120,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       options = list(
         pageLength = 10, lengthMenu = c(10, 15, 20, 50),
         dom = 'Blfrtip',
+        search = list(caseInsensitive = F),
         buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
         scrollX = TRUE
       )
@@ -240,35 +234,6 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       }
     })
     
-    ########################
-    # # UI ###############################################
-    # 
-    # output$open_panel <- renderUI({
-    #   
-    #   # if(get_golem_config("trust_name") != "demo_trust"){
-    #   #   
-    #   #   return()
-    #   # }
-    #   
-    #   tagList(
-    #     h3("Download the spreadsheet template below and add your data to it"),
-    #     
-    #     downloadButton(session$ns("open_spreadsheet"), "Download template"),
-    #     
-    #     h3("Then click upload data below")
-    #   )
-    # })
-    # 
-    # # download spreadsheet
-    # 
-    # output$open_spreadsheet <- downloadHandler(
-    #   
-    #   filename = "template.xlsx",
-    #   content = function(file) {
-    #     file.copy("text_mining_template_open.xlsx", file)
-    #   }
-    # )
-    # 
     # data module
 
     observeEvent(input$launch_modal, {
