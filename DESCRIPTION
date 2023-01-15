@@ -52,7 +52,8 @@ Imports:
     Rdpack,
     readxl,
     pxtextmineR,
-    textdata
+    textdata,
+    shinycssloaders
 Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,
