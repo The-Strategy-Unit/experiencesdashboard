@@ -102,20 +102,15 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     })
     
     # Read data from source e.g. database ####
-    dt_out <- reactiveValues(data = db_data %>% dplyr::collect() , noedit=0L)
+    dt_out <- reactiveValues(data = db_data %>% dplyr::collect() %>% dplyr::filter(hidden==0) %>% dplyr::select(row_id, everything()), 
+                             noedit=0L)
     proxy <-  DT::dataTableProxy(ns("pat_table"))
-    
-    # isolate(
-    # req(dt_out$data)
-    # rownames(dt_out$data) <-  uuid::UUIDgenerate(n=nrow(dt_out$data)) # add unique identifier that can be used to identify each row.
-    # )
-    # reactive (str(dt_out$data))
     
     output$pat_table <- DT::renderDT(
       dt_out$data,
       selection = 'multiple',
-      # rownames = F, editable = 'row',
-      editable = list('target' = 'row', disable = list(columns = c(0))), # prevent editing of the first n second col
+      rownames = F, # editable = 'row',
+      editable = list('target' = 'row', disable = list(columns = c(0,1))), # prevent editing of the first n second col
       extensions = 'Buttons',
       options = list(
         pageLength = 10, lengthMenu = c(10, 15, 20, 50),
@@ -154,10 +149,19 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     # delete data ####
     deleteData <- reactive({
       print(input$pat_table_rows_selected) # for debugging and logging 
-      isolate(
-        dt_out$data <<- dt_out$data %>% dplyr::filter(!rownames(.) %in% input$pat_table_rows_selected)
-      )
+      print(input$pat_table_cell_edit$row) # for debugging and logging 
+      
+      isolate({
+        # dt_out$data <<- dt_out$data %>% dplyr::filter(!rownames(.) %in% input$pat_table_rows_selected)
+        rowselected <<- dt_out$data[input$pat_table_rows_selected, "row_id"]
+        dt_out$data <<- dt_out$data %>% dplyr::filter(row_id %in% rowselected)
+      })
       DT::replaceData(proxy, dt_out$data, resetPaging = F)  # update the data on the UI
+      
+      # update datababse
+      query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})", 
+                              ids = input$pat_table_rows_selected, .con = pool)
+      DBI::dbGetQuery(pool, query)
     })
 
     observeEvent(input$del_pat, priority = 20,{
