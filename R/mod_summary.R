@@ -102,7 +102,8 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     })
     
     # Read data from source e.g. database ####
-    dt_out <- reactiveValues(data = db_data %>% dplyr::collect() %>% dplyr::filter(hidden==0) %>% dplyr::select(row_id, everything()), 
+    dt_out <- reactiveValues(data = db_data %>% dplyr::collect() %>% dplyr::filter(hidden==0) %>% 
+                                    dplyr::select(-hidden) %>% dplyr::select(row_id, everything()), 
                              noedit=0L)
     proxy <-  DT::dataTableProxy(ns("pat_table"))
     
