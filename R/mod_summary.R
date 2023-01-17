@@ -110,7 +110,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       dt_out$data,
       selection = 'multiple',
       rownames = F, # editable = 'row',
-      editable = list('target' = 'row', disable = list(columns = c(0,1))), # prevent editing of the first n second col
+      editable = list('target' = 'row', disable = list(columns = c(0))), # prevent editing of the first n second col
       extensions = 'Buttons',
       options = list(
         pageLength = 10, lengthMenu = c(10, 15, 20, 50),
