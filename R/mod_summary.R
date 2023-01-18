@@ -129,23 +129,44 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       # print(names(dt_out$data))
       info = input$pat_table_cell_edit
       print(info)
-      i = info$row
-      j = info$col
-      k = info$value
+      # i = info$row
+      # j = info$col
+      # k = info$value
       
       # 
       # # track the numbers of rows that has been edited
       # t = dt_out$data[unique(i),] %>%  unlist(use.name=F) %>% tidyr::replace_na('')
       # t2 = unlist(k, use.name=F) %>% tidyr::replace_na('')
+      
       # if (sum(t2 == t)!=length(colnames(dt_out$data))){
       #   dt_out$noedit = dt_out$noedit + 1
       # }
-      dt_out$noedit <- dt_out$noedit + 1
+      # dt_out$data <- DT::editData(dt_out$data, info, ns('pat_table'), rownames = F, resetPaging = F)
       
-      dt_out$data <- DT::editData(dt_out$data, info, ns('pat_table'), rownames = F, resetPaging = F)
+      old_dt <- dt_out$data
+      tryCatch({
+        dt_out$data <- DT::editData(dt_out$data, info, rownames = F)
       
-      dt_out$index <- unique(dt_out$index %>% append((k[1])))# track row ids that has been edited
-      cat(unlist(dt_out$index)) # for debugging
+      
+        print(identical(old_dt, dt_out$data))
+        
+        if (!identical(old_dt, dt_out$data)){
+          DT::replaceData(proxy, dt_out$data, rownames = F, resetPaging = F)
+          dt_out$noedit <- dt_out$noedit + 1
+          dt_out$index <- unique(dt_out$index %>% append((info$value[1])))# track row ids that has been edited
+        }
+        cat('number of edits: ', dt_out$noedit)
+        cat('\n')
+        cat('edited rows: ', unlist(dt_out$index)) # for debugging
+        },
+        error = function(e) {
+          showModal(modalDialog(
+            title = "Error!",
+            paste(e),
+            easyClose = TRUE
+          ))
+        }
+      )
     })
 
     # delete data ####
