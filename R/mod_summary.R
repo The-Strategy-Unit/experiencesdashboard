@@ -104,7 +104,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     # Read data from source e.g. database ####
     dt_out <- reactiveValues(data = db_data %>% dplyr::collect() %>% dplyr::filter(hidden==0) %>% 
                                     dplyr::select(-hidden) %>% dplyr::select(row_id, everything()), 
-                             noedit=0L)
+                             noedit=0L, index=list())
     proxy <-  DT::dataTableProxy(ns("pat_table"))
     
     output$pat_table <- DT::renderDT(
@@ -132,37 +132,39 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       i = info$row
       j = info$col
       k = info$value
-
-      t = dt_out$data[unique(i),] %>%  unlist(use.name=F) %>% tidyr::replace_na('')
-      t2 = unlist(k, use.name=F)[-1]
-
-      # track the numbers of rows that has been edited
-      if (sum(t2 == t)!=length(colnames(dt_out$data))){
-        dt_out$noedit = dt_out$noedit + 1
-      }
-
-      isolate(
-        dt_out$data <- DT::editData(dt_out$data, info, ns('pat_table'), resetPaging = F)
-      )
+      
+      # 
+      # # track the numbers of rows that has been edited
+      # t = dt_out$data[unique(i),] %>%  unlist(use.name=F) %>% tidyr::replace_na('')
+      # t2 = unlist(k, use.name=F) %>% tidyr::replace_na('')
+      # if (sum(t2 == t)!=length(colnames(dt_out$data))){
+      #   dt_out$noedit = dt_out$noedit + 1
+      # }
+      dt_out$noedit <- dt_out$noedit + 1
+      
+      dt_out$data <- DT::editData(dt_out$data, info, ns('pat_table'), rownames = F, resetPaging = F)
+      
+      dt_out$index <- unique(dt_out$index %>% append((k[1])))# track row ids that has been edited
+      cat(unlist(dt_out$index)) # for debugging
     })
-
 
     # delete data ####
     deleteData <- reactive({
       print(input$pat_table_rows_selected) # for debugging and logging 
-      print(input$pat_table_cell_edit$row) # for debugging and logging 
       
       isolate({
         # dt_out$data <<- dt_out$data %>% dplyr::filter(!rownames(.) %in% input$pat_table_rows_selected)
-        rowselected <<- dt_out$data[input$pat_table_rows_selected, "row_id"]
-        dt_out$data <<- dt_out$data %>% dplyr::filter(row_id %in% rowselected)
+        rowselected <<- dt_out$data[input$pat_table_rows_selected, "row_id"] %>%  unlist(use.name=F)
+        dt_out$data <<- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
       })
       DT::replaceData(proxy, dt_out$data, resetPaging = F)  # update the data on the UI
       
+      # print(rowselected)
+      
       # update datababse
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})", 
-                              ids = input$pat_table_rows_selected, .con = pool)
-      DBI::dbGetQuery(pool, query)
+                              ids = rowselected, .con = db_conn)
+      DBI::dbGetQuery(db_conn, query)
     })
 
     observeEvent(input$del_pat, priority = 20,{
