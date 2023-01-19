@@ -18,13 +18,13 @@ mod_summary_ui <- function(id){
       
       fluidRow(
         column(width = 1,
-        actionButton(ns("launch_modal"), "Upload new data", icon = icon('person-circle-plus'))
+        actionButton(ns("launch_modal"), "Upload new data", 
+                     icon = icon('person-circle-plus'))
         )
       ),
       tags$br(),
       tags$hr(),
       
-      #############################
       # add button for editing the table
       fluidRow(
         column(
@@ -37,16 +37,15 @@ mod_summary_ui <- function(id){
         ),
         column(
           width = 1,
-          actionButton(ns("save_to_db"), "Save to database",
+          actionButton(ns("save_to_db"), "Save edit",
                        class = "btn-success",
-                       # style = "color: #fff;",
                        icon = icon('save'),
           ),
         )
       ),
       
       tags$br(),
-      p("Double click a row to edit its value and press ctrl+enter to confirm"),
+      p("Double click a row to edit its value and press CTRL+ENTER to confirm"),
       # display the table
       fluidRow(
         column(width = 12,
@@ -91,7 +90,6 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
         dplyr::pull(n)
       
       tagList(
-        
         p(glue::glue("There are {n_responses} comments in the database from 
                  {n_individuals} individuals.")),
         
@@ -104,13 +102,13 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     # Read data from source e.g. database ####
     dt_out <- reactiveValues(data = db_data %>% dplyr::collect() %>% dplyr::filter(hidden==0) %>% 
                                     dplyr::select(-hidden) %>% dplyr::select(row_id, everything()), 
-                             noedit=0L, index=list())
+                             index=list())
     proxy <-  DT::dataTableProxy(ns("pat_table"))
     
     output$pat_table <- DT::renderDT(
       dt_out$data,
       selection = 'multiple',
-      rownames = F, # editable = 'row',
+      rownames = F,
       editable = list('target' = 'row', disable = list(columns = c(0))), # prevent editing of the first n second col
       extensions = 'Buttons',
       options = list(
@@ -123,41 +121,27 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     )
     
     # Edit a row and effect it in the UI view ####
+    
     observeEvent(input$pat_table_cell_edit, {
-
-      # for debugging and logging
-      # print(names(dt_out$data))
+      
       info = input$pat_table_cell_edit
-      print(info)
-      # i = info$row
-      # j = info$col
-      # k = info$value
-      
-      # 
-      # # track the numbers of rows that has been edited
-      # t = dt_out$data[unique(i),] %>%  unlist(use.name=F) %>% tidyr::replace_na('')
-      # t2 = unlist(k, use.name=F) %>% tidyr::replace_na('')
-      
-      # if (sum(t2 == t)!=length(colnames(dt_out$data))){
-      #   dt_out$noedit = dt_out$noedit + 1
-      # }
-      # dt_out$data <- DT::editData(dt_out$data, info, ns('pat_table'), rownames = F, resetPaging = F)
+      # print(info)  # for debugging and logging
       
       old_dt <- dt_out$data
       tryCatch({
         dt_out$data <- DT::editData(dt_out$data, info, rownames = F)
-      
-      
-        print(identical(old_dt, dt_out$data))
+        # print(identical(old_dt, dt_out$data))   # for debugging and logging
         
+        # Check if any changes was made
         if (!identical(old_dt, dt_out$data)){
+          # update the UI
           DT::replaceData(proxy, dt_out$data, rownames = F, resetPaging = F)
-          dt_out$noedit <- dt_out$noedit + 1
+          
+          # track edits
           dt_out$index <- unique(dt_out$index %>% append((info$value[1])))# track row ids that has been edited
-        }
-        cat('number of edits: ', dt_out$noedit)
-        cat('\n')
-        cat('edited rows: ', unlist(dt_out$index)) # for debugging
+          
+          cat('edited rows: ', unlist(dt_out$index)) # for debugging
+          }
         },
         error = function(e) {
           showModal(modalDialog(
@@ -169,18 +153,16 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       )
     })
 
-    # delete data ####
+    # Delete data ####
+    
     deleteData <- reactive({
       print(input$pat_table_rows_selected) # for debugging and logging 
       
       isolate({
-        # dt_out$data <<- dt_out$data %>% dplyr::filter(!rownames(.) %in% input$pat_table_rows_selected)
         rowselected <<- dt_out$data[input$pat_table_rows_selected, "row_id"] %>%  unlist(use.name=F)
         dt_out$data <<- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
       })
       DT::replaceData(proxy, dt_out$data, resetPaging = F)  # update the data on the UI
-      
-      # print(rowselected)
       
       # update datababse
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})", 
@@ -197,7 +179,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
           )
         } else{
           modalDialog(
-            paste('Are you sure you want to delete', length(input$pat_table_rows_selected), 'rows?'),
+            paste('Are you sure you want to delete these', length(input$pat_table_rows_selected), 'rows?'),
             easyClose = F,
             footer = tagList(
               modalButton("Cancel"),
@@ -206,30 +188,32 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
           )
         })
       observeEvent(input$delete_row, {
+        req(input$delete_row)
         deleteData()
         removeModal()
-        dt_out$noedit = dt_out$noedit + 1
       })
     })
 
-    # SAVE (write edited data to source) ####
+    # Save (write edited data to source) ####
+    
     observeEvent(input$save_to_db, {
 
       req(input$save_to_db)
+      record <- length(dt_out$index)
 
-      if((dt_out$noedit < 1)){
+      if(record < 1){
+        
         showModal(modalDialog(
           title = "Error!",
-          "There is not changes made to be save to the database",
+          "There is not changes made to be save",
           easyClose = TRUE
         ))
-
       } else {
 
         showModal(
           modalDialog(
             title = "Save data to database!",
-            HTML("Are you sure you want to overwrite existing data with this newly created data?"),
+            HTML(paste("Are you sure you want to update", record, "record(s) of data?")),
             easyClose = TRUE,
             footer = tagList(
               modalButton("Cancel"),
@@ -237,27 +221,35 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
             )
           )
         )
+        
         observeEvent(input$update_source, {
-          success <- TRUE #DBI::dbWriteTable(db_conn, get_golem_config("trust_name"), dt_out$data, overwrite = TRUE)
-          removeModal()
-
-          if(success){
-
+          
+          req(input$update_source)
+          
+          tryCatch({
+            #update the database  
+            trust_db <- dplyr::tbl(db_conn, get_golem_config('trust_name'))
+            dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(row_id %in% unlist(dt_out$index)), 
+                               by = 'row_id', copy = TRUE, unmatched = 'ignore', in_place = TRUE)
+            
             showModal(modalDialog(
-              title = "Success!",
-              paste0("Records successfully written to database. Please refresh
-               your browser to visualise the new data"),
-              easyClose = TRUE
-            ))
-          } else {
-
+                  title = "Success!",
+                  p(paste("Record of", record, "Patient(s) have been successfully updated.")),
+                  em("Please refresh your browser to visualise the update"),
+                  easyClose = TRUE
+                ))
+            
+            dt_out$index=list()
+          },
+          error = function(e) {
             showModal(modalDialog(
               title = "Error!",
-              "There was a problem accssing the database. Please try again",
+              paste("There was a problem accssing the database. Please try again"),
               easyClose = TRUE
-            ))
-          }
-          dt_out$noedit = 0
+              ))
+            print(e)
+            }
+          )
         })
       }
     })
@@ -265,6 +257,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     # data module
 
     observeEvent(input$launch_modal, {
+      
       datamods::import_modal(
         id = session$ns("myid"),
         from = "file",
@@ -275,7 +268,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     imported <- datamods::import_server("myid", return_class = "tbl_df")
 
     observe({
-
+      
       req(imported$data())
 
       raw_df <- imported$data() %>%
