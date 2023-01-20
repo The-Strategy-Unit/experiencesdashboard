@@ -23,7 +23,7 @@ tidy_all_trusts <- function(data) {
         is.na(comment_txt) ~ NA_character_,
         comment_txt %in% c("NULL", "NA", "N/A") ~ NA_character_,
         TRUE ~ category
-      ))
+      )) %>% dplyr::filter(hidden==0) 
   } else {
     
     data
