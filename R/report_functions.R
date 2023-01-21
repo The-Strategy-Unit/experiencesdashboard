@@ -21,34 +21,71 @@ previous_quarter <- function(date){
   
   return(c(first_date, end_date))
 }
+
+#' produce a list of comments concatenated with the location after the comment 
+#'
+#' @param return_data dataframe - clean version of the data feed into the module
+#' @param category_selection list of category to filter the data by 
+#'
+#' @return Vector list of strings 
+#' @export
+verbatim_summary <- function(return_data, category_selection){
+  
+  return_data %>% 
+    dplyr::filter(category %in% category_selection) %>% 
+    dplyr::arrange(location_3) %>% 
+    dplyr::mutate(comment_with_location = paste0(comment_txt, 
+                                                 " (", location_3, ")")) %>% 
+    dplyr::pull(comment_with_location)
+}
+
 #' produce a summary of the comments from comment 1 OR 2 and paste the 
 #' location after the comment 
-#' @param data dataframe- the main data fed in to the module
+#'
+#' @param data dataframe - the main data fed into the module
 #' @param comment_selection string. comment_1 or comment_2
-#' 
+#'
 #' @return string. A massive string with line returns suitable for inclusion
 #' in RMarkdown report
 #' @export
-verbatim_summary <- function(data, comment_selection){
+verbatim_comments <- function(data, comment_selection){
   
-  return_data <- data %>% 
+  comment_df <-  data %>% 
     dplyr::filter(comment_type == comment_selection) %>% 
     dplyr::filter(!is.na(comment_txt) & !is.na(category)) %>%
-    dplyr::filter(category != "Couldn't be improved")
+    dplyr::filter(category != "Couldn't be improved")  %>% 
+    dplyr::filter(category != "")
   
-  if(nrow(return_data) == 0){
+  if (nrow(comment_df) == 0){
     
-    return(data.frame())
-  } else {
+    cat("No comment available. Please expand your selection  \n")
     
-    return(
-      return_data %>% 
-        dplyr::arrange(location_3, category) %>% 
-        dplyr::mutate(comment_with_location = paste0(comment_txt, 
-                                                     " (", location_3, "- ",
-                                                     category, ")")) %>% 
-        dplyr::pull(comment_with_location)
-    )
+  } else{
     
+    categories <- comment_df$category %>% unique() %>% sort()
+    
+    all_cat_comment <- verbatim_summary(comment_df, categories)
+    
+    if(length(all_cat_comment) > 1000){
+      
+      cat("Error. Too many comments. Please reduce your selection  \n")
+      
+      cat("  \n")
+      
+    } else {
+      
+      for (cty in categories){
+        
+        cat("#### Category:", cty,  "  \n")
+        
+        cat_comment <- verbatim_summary(comment_df, cty)
+        
+        cat(
+          paste0("<p>", cat_comment, "</p>", collapse = "")
+        )
+        
+        cat("  \n")
+      }
+    }
   }
 }

@@ -104,8 +104,11 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
                                dplyr::filter(hidden==0) %>% 
                                dplyr::select(-hidden) %>% 
                                dplyr::select(row_id, everything()) %>% 
-                               dplyr::as_tibble(), 
-                             index=list())
+                               dplyr::as_tibble(),
+                             
+                             index=list()
+                             )
+    
     proxy <-  DT::dataTableProxy(ns("pat_table"))
     
     output$pat_table <- DT::renderDT(

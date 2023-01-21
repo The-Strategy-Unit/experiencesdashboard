@@ -53,7 +53,8 @@ Imports:
     readxl,
     pxtextmineR,
     textdata,
-    shinycssloaders
+    shinycssloaders,
+    here
 Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,

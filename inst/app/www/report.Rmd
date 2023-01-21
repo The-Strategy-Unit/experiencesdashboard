@@ -91,41 +91,13 @@ if("verbatim_comments" %in% params$options){
   
   cat("###", params$comment_1,  ": Comments  \n")
   
-  comment_1_summary <- verbatim_summary(params$data, "comment_1")
-  
-  if(length(comment_1_summary) > 1000){
-    
-    cat("Error. Too many comments. Please reduce your selection  \n")
-    
-    cat("  \n")
-  } else {
-    
-    cat(
-      paste0("<p>", comment_1_summary, "</p>", collapse = "")
-    )
-    
-    cat("  \n")
-  }
+  verbatim_comments(params$data, 'comment_1')
   
   cat("###", params$comment_2,  ": Comments  \n")
   
-  comment_2_summary <- verbatim_summary(params$data, "comment_1")
-  
-  if(length(comment_2_summary) > 1000){
-    
-    cat("Error. Too many comments. Please reduce your selection  \n")
-    
-    cat("  \n")
-  } else {
-    
-    cat(
-      paste0("<p>", comment_2_summary, "</p>", collapse = "")
-    )
-    
-    cat("  \n")
-  }
-}
+  verbatim_comments(params$data, "comment_2")
 
+}
 ```
 
 ```{r, results = "asis"}
