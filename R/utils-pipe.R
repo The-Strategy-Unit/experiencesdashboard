@@ -9,3 +9,16 @@
 #' @importFrom magrittr %>%
 #' @usage lhs \%>\% rhs
 NULL
+
+#'  html decoder fo single string object
+#'
+#' @param str a string to be decoded
+#'
+#' @return decoded string
+#' @export
+#'
+#' @examples html_decoder("&amp; &gt;")
+html_decoder <- function(str){
+  html <- paste0("<x>", str, "</x>")
+  parsed <- xml2::xml_text(xml2::read_html(html))
+}

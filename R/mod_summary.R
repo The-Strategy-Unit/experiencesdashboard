@@ -63,7 +63,6 @@ mod_summary_ui <- function(id){
 mod_summary_server <- function(id, db_conn, db_data, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-    # db_data <- dplyr::tbl(db_conn, dbplyr::in_schema("TEXT_MINING", get_golem_config("trust_name")))
     
     # summary
     
@@ -130,23 +129,24 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     
     observeEvent(input$pat_table_cell_edit, {
       
-      info = input$pat_table_cell_edit
-      # print(info)  # for debugging and logging
+      info <- input$pat_table_cell_edit
       
+      info$value <- sapply(info$value, html_decoder, USE.NAMES = F)
+            
       old_dt <- dt_out$data
       tryCatch({
         dt_out$data <- DT::editData(dt_out$data, info, rownames = F)
-        # print(identical(old_dt, dt_out$data))   # for debugging and logging
         
         # Check if any changes was made
         if (!identical(old_dt, dt_out$data)){
+          
           # update the UI
           DT::replaceData(proxy, dt_out$data, rownames = F, resetPaging = F)
           
           # track edits
           dt_out$index <- unique(dt_out$index %>% append((info$value[1])))# track row ids that has been edited
           
-          cat('edited rows: ', unlist(dt_out$index)) # for debugging
+          cat('Edited rows: ', unlist(dt_out$index), ' \n') # for debugging
           }
         },
         error = function(e) {
@@ -161,57 +161,73 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
 
     # Delete data ####
     
-    deleteData <- reactive({
-      print(input$pat_table_rows_selected) # for debugging and logging 
+    deleteData <- reactive({      
       
-      isolate({
-        rowselected <<- dt_out$data[input$pat_table_rows_selected, "row_id"] %>%  unlist(use.name=F)
-        dt_out$data <<- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
-      })
-      DT::replaceData(proxy, dt_out$data, resetPaging = F)  # update the data on the UI
+      # print(input$pat_table_rows_selected) # for debugging and logging
+        
+      rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>%  unlist(use.name=F)
       
       # update datababse
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})", 
                               ids = rowselected, .con = db_conn)
-      DBI::dbGetQuery(db_conn, query)
+      DBI::dbExecute(db_conn, query)
+      
+      # update UI
+      dt_out$data <- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
+      DT::replaceData(proxy, dt_out$data, resetPaging = F)  # update the data on the UI
+      
+      cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging 
+      
+      dt_out$index <- setdiff(dt_out$index,rowselected) # remove deleted rows from tracked edited rows
     })
 
-    observeEvent(input$del_pat, priority = 20,{
-      showModal(
-        if(length(input$pat_table_rows_selected) < 1 ){
-          modalDialog(
-            title = "Warning",
-            paste("Please select row(s)." ),easyClose = TRUE
-          )
-        } else{
-          modalDialog(
-            paste('Are you sure you want to delete these', length(input$pat_table_rows_selected), 'rows?'),
-            easyClose = F,
+    observeEvent(input$del_pat,{
+      
+      no_rows <- length(input$pat_table_rows_selected)
+      if(no_rows >= 1){
+          showModal(modalDialog(
+            paste('Are you sure you want to delete these', no_rows, 'rows?'),
+            easyClose = T,
             footer = tagList(
               modalButton("Cancel"),
               actionButton(ns("delete_row"), "Delete", icon = icon('trash')),
             )
-          )
-        })
-      observeEvent(input$delete_row, {
-        req(input$delete_row)
-        deleteData()
-        removeModal()
+          ))
+          # input$pat_table_rows_selected = NULL
+        } else{
+          showModal(
+          modalDialog(
+            title = "Warning",
+            paste("Please select row(s)." ),easyClose = TRUE
+          ))
+        }
       })
-    })
+      
+      observeEvent(input$delete_row, {
+        
+        tryCatch({
+          deleteData()
+          removeModal()
+        },
+        error = function(e) {
+          showModal(modalDialog(
+            title = "Error!",
+            paste('error in database, please try again and if it persist contact project administrator'),
+            easyClose = TRUE
+          ))
+          print(e)
+        })
+      })
 
     # Save (write edited data to source) ####
     
     observeEvent(input$save_to_db, {
 
-      req(input$save_to_db)
-      record <- length(dt_out$index)
-
-      if(record < 1){
+      if(length(dt_out$index) < 1){
         
         showModal(modalDialog(
           title = "Error!",
-          "There is not changes made to be save",
+          "There is not edited changes to be save",
           easyClose = TRUE
         ))
       } else {
@@ -219,7 +235,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
         showModal(
           modalDialog(
             title = "Save data to database!",
-            HTML(paste("Are you sure you want to update", record, "record(s) of data?")),
+            HTML(paste("Are you sure you want to update", length(dt_out$index), "record(s) of data?")),
             easyClose = TRUE,
             footer = tagList(
               modalButton("Cancel"),
@@ -227,37 +243,35 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
             )
           )
         )
-        
-        observeEvent(input$update_source, {
-          
-          req(input$update_source)
-          
-          tryCatch({
-            #update the database  
-            trust_db <- dplyr::tbl(db_conn, get_golem_config('trust_name'))
-            dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(row_id %in% unlist(dt_out$index)), 
-                               by = 'row_id', copy = TRUE, unmatched = 'ignore', in_place = TRUE)
-            
-            showModal(modalDialog(
-                  title = "Success!",
-                  p(paste("Record of", record, "Patient(s) have been successfully updated.")),
-                  em("Please refresh your browser to visualise the update"),
-                  easyClose = TRUE
-                ))
-            
-            dt_out$index=list()
-          },
-          error = function(e) {
-            showModal(modalDialog(
-              title = "Error!",
-              paste("There was a problem accssing the database. Please try again"),
-              easyClose = TRUE
-              ))
-            print(e)
-            }
-          )
-        })
       }
+    })
+        
+    observeEvent(input$update_source, {
+      
+      tryCatch({
+        #update the database  
+        trust_db <- dplyr::tbl(db_conn, get_golem_config('trust_name'))
+        dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(row_id %in% unlist(dt_out$index)), 
+                           by = 'row_id', copy = TRUE, unmatched = 'ignore', in_place = TRUE)
+        
+        showModal(modalDialog(
+              title = "Success!",
+              p(paste("Record of", length(dt_out$index), "Patient(s) have been successfully updated.")),
+              em("Please refresh your browser to visualise the update"),
+              easyClose = TRUE
+            ))
+        
+        dt_out$index=list()
+      },
+      error = function(e) {
+        showModal(modalDialog(
+          title = "Error!",
+          paste("There was a problem accessing the database. Please try again"),
+          easyClose = TRUE
+          ))
+        print(e)
+        }
+      )
     })
     
     # data module
