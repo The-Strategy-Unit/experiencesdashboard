@@ -29,6 +29,7 @@ return_search_text <- function(text_data, filter_text, comment_type_filter, sear
     dplyr::pull(comment_txt)
 
   matched_comments <- comments %>%
+    sub("[^[:graph:]]", " ", .) %>%
     tolower() %>%
     strsplit(" ") %>%
     vapply(\(x) search_fn(search_strings %in% x), logical(1))

@@ -21,10 +21,10 @@ return_search_text(
 \item{search_type}{type of search ('and', 'or')}
 }
 \value{
-string vector of search terms, separated by <p>, </p> for 
+string vector of search terms, separated by <p>, </p> for
 display as raw HTML by Shiny
 }
 \description{
-combine search terms with OR and return text from a specific
+combine search terms with OR and AND then return text from a specific
 question
 }
