@@ -12,4 +12,4 @@ renv/
 renv*
 .Rprofile
 data/
-R/editable Table.R
+trial_scripts/
