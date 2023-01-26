@@ -9,11 +9,10 @@
 #' @export
 #' @return string vector of search terms, separated by <p>, </p> for
 #' display as raw HTML by Shiny
-
 return_search_text <- function(text_data, filter_text, comment_type_filter, search_type = c("or", "and")) {
   # split on commas and remove trailing punctuation from both input strings
   search_strings <- strsplit(filter_text, ",")[[1]] %>%
-    sub("[^[:alpha:]+]$", "", .) %>%
+    trimws() %>%
     tolower()
 
   # check argument is valid and choose the correct logical predicate
@@ -33,6 +32,14 @@ return_search_text <- function(text_data, filter_text, comment_type_filter, sear
     tolower() %>%
     strsplit(" ") %>%
     vapply(\(x) search_fn(search_strings %in% x), logical(1))
-
-  paste0("<p>", comments[matched_comments], "</p>")
+  
+  if (any(matched_comments)){
+    
+    paste0("<p>", comments[matched_comments], "</p>")
+    
+  }else{
+    
+    paste0("<p>no match</p>")
+  }
 }
+
