@@ -4,18 +4,10 @@
 \alias{tidy_all_trusts}
 \title{Tidy patient experience data}
 \usage{
-tidy_all_trusts(data, conn)
+tidy_all_trusts(data)
 }
 \arguments{
 \item{data}{dataframe or SQL object, that you can make with get_px_exp()}
-
-\item{conn}{connection, that you can make with connect_mysql()- by default
-this will be done automatically}
-
-\item{trust_id}{string. Which trust are you tidying data for?}
-}
-\value{
-
 }
 \description{
 Tidy patient experience data

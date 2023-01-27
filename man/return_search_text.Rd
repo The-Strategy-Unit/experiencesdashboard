@@ -4,20 +4,27 @@
 \alias{return_search_text}
 \title{Return text from a freetext search}
 \usage{
-return_search_text(text_data, filter_text, comment_type_filter)
+return_search_text(
+  text_data,
+  filter_text,
+  comment_type_filter,
+  search_type = c("or", "and")
+)
 }
 \arguments{
 \item{text_data}{the dataframe, raw from the database}
 
+\item{filter_text}{comma separated string with search terms in}
+
 \item{comment_type_filter}{which comment to return- 1 or 2}
 
-\item{string}{comma separated string with search terms in}
+\item{search_type}{type of search ('and', 'or')}
 }
 \value{
-string vector of search terms, separated by <p>, </p> for 
+string vector of search terms, separated by <p>, </p> for
 display as raw HTML by Shiny
 }
 \description{
-combine search terms with OR and return text from a specific
+combine search terms with OR and AND then return text from a specific
 question
 }

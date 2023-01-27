@@ -11,9 +11,6 @@ plot_fft_spc(data)
 
 \item{return}{SPC plot}
 }
-\value{
-
-}
 \description{
 Plot data
 }
