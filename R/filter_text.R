@@ -12,8 +12,11 @@
 return_search_text <- function(text_data, filter_text, comment_type_filter, search_type = c("or", "and")) {
   # split on commas and remove trailing punctuation from both input strings
   search_strings <- strsplit(filter_text, ",")[[1]] %>%
-    trimws() %>%
-    tolower()
+    stringr::str_to_lower() %>%
+    stringr::str_remove_all("[^[:alnum:]]")
+  
+  print("search strings")
+  print(search_strings)   # for logging
 
   # check argument is valid and choose the correct logical predicate
   search_type <- match.arg(search_type)
@@ -39,7 +42,7 @@ return_search_text <- function(text_data, filter_text, comment_type_filter, sear
     
   }else{
     
-    paste0("<p>no match</p>")
+    paste0("<p>no matching result</p>")
   }
 }
 
