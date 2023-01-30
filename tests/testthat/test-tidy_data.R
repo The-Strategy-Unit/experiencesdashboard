@@ -1,10 +1,7 @@
 test_that("Data tidies in all trusts", {
   
-  db_data <- dplyr::tbl(pool, 
-                        dbplyr::in_schema("TEXT_MINING", 
-                                          test_trust)) %>% 
-    tidy_all_trusts() %>%
-    dplyr::collect()
+  db_data <- tidy_trust_data %>% 
+    tidy_all_trusts()
   
   testthat::expect_gt(nrow(db_data), 0)
 })

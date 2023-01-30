@@ -15,7 +15,7 @@ return_search_text <- function(text_data, filter_text, comment_type_filter, sear
     stringr::str_to_lower() %>%
     stringr::str_remove_all("[^[:alnum:]]")
   
-  print("search strings")
+  cat("search strings: ") # for logging
   print(search_strings)   # for logging
 
   # check argument is valid and choose the correct logical predicate

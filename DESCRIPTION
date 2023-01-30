@@ -54,7 +54,8 @@ Imports:
     pxtextmineR,
     textdata,
     shinycssloaders,
-    here
+    here,
+    xml2
 Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,
