@@ -12,8 +12,7 @@ mod_search_text_ui <- function(id){
   tagList(
     
     fluidPage(
-      p("Text searches are combined with OR- searching AND will be in a 
-      future release"),
+      p("Text searches are combined with AND"),
       p("Add multiple search terms with comma"),
       fluidRow(
         textInput(ns("text_search"), "Search term(s)",
@@ -68,7 +67,7 @@ mod_search_text_server <- function(id, filter_data){
       
       return_search_text(text_data = filter_data()$filter_data, 
                        filter_text = input$text_search, 
-                       comment_type_filter = "comment_1")
+                       comment_type_filter = "comment_1", search_type='and')
     })
     
     output$comment_2_output <- renderText({
@@ -79,7 +78,7 @@ mod_search_text_server <- function(id, filter_data){
       
       return_search_text(text_data = filter_data()$filter_data, 
                        filter_text = input$text_search, 
-                       comment_type_filter = "comment_2")
+                       comment_type_filter = "comment_2", search_type='and')
     })
   })
 }

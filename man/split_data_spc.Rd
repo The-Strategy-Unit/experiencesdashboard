@@ -17,9 +17,6 @@ same number of rows)}
 
 \item{return}{dataframe suitable for plotting with qicharts2}
 }
-\value{
-
-}
 \description{
 Get data ready for SPC plotting
 }

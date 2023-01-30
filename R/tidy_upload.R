@@ -15,9 +15,10 @@ clean_dataframe <- function(data){
           grepl("^[?]+$", .) ~ NA_character_, # remove multiple question marks
           . %in% c("NULL", "#NAME?", "") ~ NA_character_,
           TRUE ~ .
-        )))
-  
-}
+          )
+        )
+    )
+  }
 
 #' Tidy data upload from spreadsheet
 #'

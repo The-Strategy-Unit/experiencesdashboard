@@ -1,27 +1,48 @@
 #' Return text from a freetext search
-#' @description combine search terms with OR and return text from a specific
+#' @description combine search terms with OR and AND then return text from a specific
 #' question
 #' @param text_data the dataframe, raw from the database
-#' @param string comma separated string with search terms in
+#' @param filter_text comma separated string with search terms in
 #' @param comment_type_filter which comment to return- 1 or 2
-#' 
+#' @param search_type type of search ('and', 'or')
+#'
 #' @export
-#' @return string vector of search terms, separated by <p>, </p> for 
+#' @return string vector of search terms, separated by <p>, </p> for
 #' display as raw HTML by Shiny
+return_search_text <- function(text_data, filter_text, comment_type_filter, search_type = c("or", "and")) {
+  # split on commas and remove trailing punctuation from both input strings
+  search_strings <- strsplit(filter_text, ",")[[1]] %>%
+    stringr::str_to_lower() %>%
+    stringr::str_remove_all("[^[:alnum:]]")
+  
+  print("search strings")
+  print(search_strings)   # for logging
 
-return_search_text <- function(text_data, filter_text, comment_type_filter){
-  # remove trailing punctuation from both input strings
+  # check argument is valid and choose the correct logical predicate
+  search_type <- match.arg(search_type)
+  stopifnot("search type must be one of 'or', or 'and'" = length(search_type) == 1)
+  search_fn <- switch(search_type,
+    "or" = any,
+    "and" = all
+  )
+
+  comments <- text_data %>%
+    dplyr::filter(comment_type == comment_type_filter) %>%
+    dplyr::pull(comment_txt)
+
+  matched_comments <- comments %>%
+    sub("[^[:graph:]]", " ", .) %>%
+    tolower() %>%
+    strsplit(" ") %>%
+    vapply(\(x) search_fn(search_strings %in% x), logical(1))
   
-  search_string <- filter_text
-  
-  searchTextInclude <- sub("[[:punct:]]$", "", trimws(search_string))
-  
-  text_data %>%
-    dplyr::filter(comment_type == comment_type_filter) %>% 
-    dplyr::filter(grepl(paste(
-      trimws(unlist(strsplit(searchTextInclude, ","))), 
-      collapse = "|"), comment_txt)) %>% 
-    dplyr::pull(comment_txt) %>%
-    paste0("<p>", ., "</p>")
-  
+  if (any(matched_comments)){
+    
+    paste0("<p>", comments[matched_comments], "</p>")
+    
+  }else{
+    
+    paste0("<p>no matching result</p>")
+  }
 }
+

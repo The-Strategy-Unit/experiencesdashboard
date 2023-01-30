@@ -64,4 +64,15 @@ care_opinion:
 nhs_uk:
   trust_name: nhs_uk
   comment_1: Story
+trust_a_bk:
+  trust_name: trust_a_bk
+  comment_1: What could be improved?
+  comment_2: What did we do well?
+  question_1: fft
+  location_1: Division
+  location_2: Directorate
+  location_3: Team
+  gender: TRUE
+  age: TRUE
+  ethnicity: TRUE
 

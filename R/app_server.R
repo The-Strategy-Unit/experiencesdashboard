@@ -10,7 +10,7 @@ app_server <- function( input, output, session ) {
   # fetch data
   
   pool <- odbc::dbConnect(drv = odbc::odbc(),
-                          driver = "Maria DB",
+                          driver = Sys.getenv("odbc_driver"),
                           server = Sys.getenv("HOST_NAME"),
                           UID = Sys.getenv("DB_USER"),
                           PWD = Sys.getenv("MYSQL_PASSWORD"),
@@ -20,7 +20,7 @@ app_server <- function( input, output, session ) {
   db_data <- dplyr::tbl(pool,
                         dbplyr::in_schema("TEXT_MINING",
                                           get_golem_config("trust_name"))) %>%
-    tidy_all_trusts(conn = pool)
+    tidy_all_trusts()
   
   # vector of sentiment names
   

@@ -2,21 +2,18 @@
 % Please edit documentation in R/report_functions.R
 \name{verbatim_summary}
 \alias{verbatim_summary}
-\title{produce a summary of the comments from comment 1 OR 2 and paste the 
-location after the comment}
+\title{produce a list of comments concatenated with the location after the comment}
 \usage{
-verbatim_summary(data, comment_selection)
+verbatim_summary(return_data, category_selection)
 }
 \arguments{
-\item{data}{dataframe- the main data fed in to the module}
+\item{return_data}{dataframe - clean version of the data feed into the module}
 
-\item{comment_selection}{string. comment_1 or comment_2}
+\item{category_selection}{list of category to filter the data by}
 }
 \value{
-string. A massive string with line returns suitable for inclusion
-in RMarkdown report
+Vector list of strings
 }
 \description{
-produce a summary of the comments from comment 1 OR 2 and paste the 
-location after the comment
+produce a list of comments concatenated with the location after the comment
 }

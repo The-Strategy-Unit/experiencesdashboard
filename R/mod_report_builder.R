@@ -85,7 +85,7 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         
         # check there is enough data
         
-        if(nrow(filter_data()$filter_data) < 10){
+        else if(nrow(filter_data()$filter_data) < 10){
           
           showModal(
             modalDialog(
@@ -97,36 +97,37 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         }
         
         # calculate parameters
-        
-        dates <- switch(input$time_period,
-                        quarter = previous_quarter(Sys.Date()),
-                        year = c(Sys.Date(), Sys.Date() - 365),
-                        custom = c(all_inputs()$date_from[1],
-                                   all_inputs()$date_to[2])
-        )
-        
-        params <- list(dates = dates,
-                       inputs = all_inputs(),
-                       data = filter_data()$filter_data,
-                       options = input$report_components,
-                       comment_1 = get_golem_config("comment_1"),
-                       comment_2 = get_golem_config("comment_2")
-        )
-        
-        rmarkdown::render(
-          system.file("app", "www", "report.Rmd",
-                      package = "experiencesdashboard"), 
-          output_format = "word_document",
-          output_file = system.file("app", "www", "report.docx",
-                                    package = "experiencesdashboard"),
-          quiet = TRUE, params = params,
-          envir = new.env(parent = globalenv())
-        )
-        
-        # copy docx to 'file'
-        file.copy(system.file("app", "www", "report.docx",
-                              package = "experiencesdashboard"), 
-                  file, overwrite = TRUE)
+        else{
+          
+          dates <- switch(input$time_period,
+                          quarter = previous_quarter(Sys.Date()),
+                          year = c(Sys.Date(), Sys.Date() - 365),
+                          custom = c(all_inputs()$date_from[1],
+                                     all_inputs()$date_to[2])
+          )
+          
+          params <- list(dates = dates,
+                         inputs = all_inputs(),
+                         data = filter_data()$filter_data,
+                         options = input$report_components,
+                         comment_1 = get_golem_config("comment_1"),
+                         comment_2 = get_golem_config("comment_2")
+          )
+          
+          rmarkdown::render(
+            system.file("app", "www", "report.Rmd",
+                        package = "experiencesdashboard"), 
+            output_format = "word_document",
+            output_file = here::here(app_sys(), "app/www", "report.docx"),
+            # output_dir =
+            quiet = TRUE, params = params,
+            envir = new.env(parent = globalenv())
+          )
+          
+          # copy docx to 'file'
+          file.copy(here::here(app_sys(), "app/www", "report.docx"),
+                    file, overwrite = TRUE)
+        }
       }
     )
   })

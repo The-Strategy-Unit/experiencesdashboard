@@ -1,6 +1,6 @@
 # trust A
 
-Sys.setenv("R_CONFIG_ACTIVE" = "trust_a")
+Sys.setenv("R_CONFIG_ACTIVE" = "trust_a_bk")
 # Sys.setenv("R_CONFIG_ACTIVE" = "trust_c_dev")
 
 # Set options here

@@ -8,3 +8,9 @@ inst/doc
 doc
 Meta
 scratch.R
+renv/
+renv*
+.Rprofile
+data/
+trial_scripts/
+inst/app/www/*.docx
