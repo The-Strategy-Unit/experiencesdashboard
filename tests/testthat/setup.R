@@ -1,22 +1,7 @@
 
-test_trust <- "trust_b"
+test <- readr::read_csv(here::here('tests/test_data.csv'),
+                        show_col_types = FALSE)
 
-pool <- pool::dbPool(drv = odbc::odbc(),
-                     driver = Sys.getenv("odbc_driver"),
-                     server = Sys.getenv("HOST_NAME"),
-                     UID = Sys.getenv("DB_USER"),
-                     PWD = Sys.getenv("MYSQL_PASSWORD"),
-                     database = "TEXT_MINING",
-                     Port = 3306)
+tidy_trust_data <-  test %>% 
+    tidy_all_trusts()
 
-tidy_trust_data <- dplyr::tbl(pool,
-                              dbplyr::in_schema("TEXT_MINING",
-                                                test_trust)) %>% 
-  dplyr::arrange(desc(date)) %>% 
-  head(1000) %>% 
-  tidy_all_trusts() %>%
-  dplyr::collect()
-
-test <- dplyr::tbl(pool, dbplyr::in_schema("TEXT_MINING", test_trust)) %>% 
-  tidy_all_trusts() %>%
-  dplyr::collect()
