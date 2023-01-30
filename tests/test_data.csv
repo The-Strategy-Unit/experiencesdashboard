@@ -1,0 +1,60 @@
+location_1,location_2,location_3,date,fft,gender,age,ethnicity,sexuality,patient_carer,disability,faith,pt_id,comment_type,comment_txt,category,crit,row_id,hidden
+Community health services,Nottingham West,Intermediate Care (At Home),2019-10-07,5,NA,26-39,NA,S,0,N,N,14385,comment_2,NA,NA,NA,30090,0
+Community health services,Specialist services,Podiatric Surgery,2019-07-04,5,M,40-64,NA,S,0,Y,C,10358,comment_1,"I felt that after the bandages were removed from my foot (2 weeks), the exercises could be explained a little better.  I was a little scared to put a lot of pressure on my foot following the bunion op, but took it upon myself to do regular walks daily outside rather than just around the house.  I think the advice needs to be emphasised.",Care received,-3,20574,0
+Community health services,Children and young people,HFT- Newark,2019-09-03,5,NA,NA,White,G,1,N,9,13117,comment_1,NA,NA,NA,26150,0
+Community health services,Sure Start,"Sure Start Hucknall Children's Centres (Butler's Hill, High Leys & Market Place)",2019-03-12,5,F,40-64,White,NA,0,NA,NA,4314,comment_2,We are well looked at the volunteer training we are all made to feel welcome and valued.,Care received,0,8589,0
+Community health services,Sure Start,"Sure Start Ollerton & Boughton, Trent North and Trent South Children's Centres",2019-01-30,5,F,65-79,White,NA,NA,NA,NA,1534,comment_2,Welcoming staff :),Staff,2,2961,0
+Forensic,Offender health,HMP Ranby,2020-09-09,4,NA,NA,White,NA,NA,N,C,22755,comment_2,"I think that the staff and service provided to me is always fair, friendly and compassionate, according to law. ",Staff,0,45457,0
+Local partnerships- MH,IAPT,IAPT- City/ County,2019-11-26,NA,F,65-79,White,S,0,NA,NA,16308,comment_2,NA,NA,NA,32651,0
+Community health services,Sure Start,Sure Start Newstead & Rural Families Children's Centres,2019-02-14,5,NA,NA,White,NA,0,NA,C,2313,comment_1,After doing baby massage and 2 weeks into baby group I am really impressed and cant think of any improvement.,Care received,3,4532,0
+Community health services,Specialist services,"Podiatry, Southwell",2020-01-29,5,F,40-64,White,9,0,N,9,18244,comment_2,Everything.,Miscellaneous,-4,36404,0
+Community health services,Nottingham West,Intermediate Care (At Home),2019-07-31,5,F,26-39,White,NA,NA,NA,NA,11408,comment_2,everything,Miscellaneous,-1,22786,0
+Community health services,Children and young people,School Aged Immunisation Team,2020-02-12,5,F,26-39,White,S,0,N,9,19192,comment_2,Spoke about what it was.,Communication,-1,38278,0
+Local partnerships- MH,Adult mental health,Nottingham Recovery College,2019-04-29,4,M,40-64,White,S,1,8,M,6975,comment_2,The teachers were good. ,Care received,0,13937,0
+Forensic,Offender health,HMP Gartree,2021-07-06,4,M,65-79,White,S,9,Y,C,25750,comment_2,NHS has been great at looking after my heart condition.  It has been amazing at seeing me as a high-risk person & getting me vaccinated.,Staff,3,51457,0
+Local partnerships- MH,Mental health services for older people,Mansfield & Ashfield IHTT,2021-02-01,5,F,40-64,White,9,0,Y,8,23788,comment_2,"The atmosphere created by Tina was very good, as was the interest she showed in myself. It was also very conversational, rather than a lecture. I felt I was taking part in a conversation and being listened to, rather than just being told something.",Communication,3,47633,0
+Forensic,High secure MH,Burne Ward,2019-02-27,5,M,80+,White,9,0,Y,C,3305,comment_2,Communications to the patients. ,Care received,-3,6580,0
+Local partnerships- MH,IAPT,IAPT- City/ County,2019-06-17,5,F,65-79,White,9,0,Y,C,9272,comment_2,since <above>: everything has run smoothly so far.,Care received,4,18656,0
+Community health services,Nottingham West,Primary Care Rehab (Broxtowe: including Falls Service),2019-02-28,4,F,65-79,White,S,0,9,8,3479,comment_2,a good service ,Care received,2,6992,0
+Community health services,Nottingham West,Intermediate Care (At Home),2019-05-24,5,M,18-25,White,9,0,N,M,8270,comment_2,EVERYTHING,Miscellaneous,-1,16556,0
+Forensic,Low secure and CFS,Porchester Ward,2020-08-20,5,F,80+,White,S,1,Y,C,22294,comment_2,I enjoy my cooking group with fellow peers and Rachel. It cheers me up and I have made new friends.,Care received,0,44582,0
+Local partnerships- MH,Adult mental health,Ashfield LMHT,2020-03-30,5,M,40-64,White,S,9,N,C,21147,comment_1,Allocate a worker quicker.  Communicate more about waiting times/delays. ,Access,-2,42193,0
+Local partnerships- MH,Mental health services for older people,Kingsley Ward,2019-01-17,4,F,65-79,White,S,0,9,N,712,comment_2,Activities on the ward and getting you off the ward. ,Staff,1,1312,0
+Forensic,Arnold lodge,Tamar Ward,2019-11-15,9,F,80+,White,9,0,8,C,15935,comment_2,Kept calm when we're upset and not insulting us when we're upset or angry.,Communication,-4,31799,0
+Community health services,Children and young people,HFT- Sherwood,2019-04-04,5,F,40-64,White,9,1,Y,N,5924,comment_2,You are a good listener,Staff,3,11808,0
+Community health services,Bassetlaw,Rapid Response Team,2020-03-31,5,M,26-39,White,S,0,N,9,21263,comment_2,It was a delight to see Bethany again after first meeting her at James Hince court (in 2016). The new items have made a huge difference e.g perching stool and bathroom stool. What was so good was that it didn't occur to me to ask for these things but I am so grateful for the help I've had.,Care received,0,42476,0
+Forensic,High secure LD,Aintree Ward,2020-03-01,4,F,80+,White,9,0,9,C,20136,comment_2,Supporting me when I don?t feel right. Giving me the right meds to keep me well. Fresh air break,Care received,3,40342,0
+Forensic,High secure PD pathway,Hambleton Ward,2019-09-09,3,M,26-39,White,S,9,N,C,13259,comment_1,"Single standard.  Legitimate care.  Uncorrupt staff and reinforce positives & helpful staff. 
+What did we Well? - Not much. ",Staff,3,26553,0
+Community health services,Rushcliffe,Community Rehabilitation,2019-02-06,5,M,26-39,White,L,0,N,C,1827,comment_2,Everything. Nothing I could fault.,Couldn't be improved,3,3591,0
+Local partnerships- MH,Mental health services for older people,Cherry Ward,2020-11-24,4,F,80+,White,S,1,Y,8,23229,comment_2,Looked after me. ,Care received,2,46474,0
+Local partnerships- MH,CAMHS,What About Me Team,2020-02-26,5,M,26-39,White,9,0,N,C,19940,comment_2,Talking & listening. ,Communication,3,39830,0
+Forensic,Offender health,HMP Lincoln,2021-07-27,5,F,40-64,White,8,0,N,N,26175,comment_1,Nothing. ,Couldn't be improved,3,52241,0
+Local partnerships- MH,IAPT,IAPT- Leicestershire and Rutland,2020-11-19,4,F,26-39,White,9,1,N,N,23181,comment_2,"I am only on the 2nd chat, so maybe a bit too early to say.",Care received,-1,46249,0
+Forensic,Offender health,HMP Leicester,2020-09-09,5,F,40-64,White,S,1,N,C,22488,comment_2,Very helpful and well explained. ,Staff,0,44885,0
+Forensic,High secure women's service,Coral Ward,2019-08-24,4,F,40-64,Other,9,9,Y,N,12597,comment_2,"Kept me alive.  Praise for family visiting centre, kids will love it, doesn?t feel like a hospital, cater for children.  Contact with children is really good.  Staff listen to us, every member of staff has been supportive towards individual.  When there has been a genuine problem the staff are amazing.",Staff,3,25166,0
+Community health services,Sure Start,"Sure Start Eastwood, Brinsley & Awsworth Children's Centres",2019-07-30,5,M,26-39,White,S,9,9,8,11315,comment_1,"I found some of the content a few weeks ago quite stressful regarding ""the baby comes first"" way of doing things but can't tell if I was projecting my anxieties or if it was a genuine concern.",Care received,-3,22570,0
+Community health services,Children and young people,HFT- Ashfield Central,2020-02-26,5,F,40-64,White,S,0,Y,9,20049,comment_2,Clear information.,Care received,0,40181,0
+Local partnerships- MH,Mental health services for older people,City MHIR,2019-05-20,5,F,40-64,White,9,9,N,C,7913,comment_2,Everything was spot on.  All care fantastic.  Everyone in the team lovely people. ,Staff,4,15684,0
+Community health services,Children and young people,HFT- Sherwood,2020-01-23,5,F,65-79,White,S,0,9,C,18015,comment_2,The lady was lovely. She interacted well with my little girl.,Staff,0,36123,0
+Community health services,Specialist services,Podiatric Surgery,2019-06-26,5,F,65-79,White,9,0,N,C,9889,comment_2,"I was looked after very well from the time I came in to the time I left, cannot fault anything",Care received,3,19713,0
+Community health services,Rushcliffe,Community Rehabilitation,2019-10-23,5,F,26-39,White,S,0,N,N,14967,comment_2,Helped to build confidence. Listened to me.,Communication,3,30003,0
+Community health services,Specialist services,Podiatric Surgery,2019-06-13,5,M,26-39,White,S,0,Y,C,9092,comment_1,Nothing high standard of care,Couldn't be improved,3,18193,0
+Local partnerships- MH,Adult mental health,Nottingham Recovery College,2019-03-27,5,F,40-64,White,G,1,Y,N,5337,comment_1,Longer courses,Miscellaneous,-1,10690,0
+Community health services,Nottingham West,Intermediate Care (At Home),2019-10-01,5,F,26-39,White,9,1,N,N,13982,comment_1,nothing,Couldn't be improved,3,27868,0
+Community health services,Children and young people,HFT- Ashfield North,2019-03-29,5,M,26-39,White,9,0,N,C,5726,comment_2,"friendly
+big room, plenty of toys
+definite feeling of knowing the baby and mum and dad are priority",Staff,0,11420,0
+Forensic,Offender health,HMP Leicester - Mental Health,2019-03-22,4,M,26-39,White,S,0,N,9,5002,comment_1,More promotion. ,Miscellaneous,-1,9939,0
+Local partnerships- MH,Adult mental health,Nottingham Recovery College,2019-10-21,5,F,26-39,White,S,0,N,C,14808,comment_1,Personally the 6th lesson could do better being more the beginning of the course than the end as its quite a big subject to deal with.,Care received,-3,29468,0
+Community health services,Children and young people,HFT- Ashfield Central,2019-12-09,5,F,40-64,White,9,0,Y,C,16741,comment_1,Nothing,Couldn't be improved,3,33358,0
+Local partnerships- MH,Adult mental health,Broxtowe and Hucknall LMHT,2021-03-07,1,M,40-64,White,S,9,N,C,24069,comment_1,"Ask how individuals are at start of sessions. 
+Have name cards for everyone. 
+Involving each individuals in sessions more (ask round everyone).
+Do course online (e.g via zoom) due to COVID, social distancing. 
+Ensure vulnerable individuals and everyone is kept safe, constant wearing of face coverings. 
+Alternated/late session times. ",Care received,-3,48091,0
+Community health services,Children and young people,HFT- Sherwood,2020-02-06,5,F,0 - 11,White,S,0,Y,O,19026,comment_2,"Listened well, offered advice, tried to make child feel comfortable",Care received,0,37994,0
+Community health services,Bassetlaw,Residential Intermediate Care (Westwood),2020-01-20,5,M,40-64,White,S,0,Y,9,17897,comment_2,"I was treated with respect by all the people on the team, nothing was too much trouble for them, what a lovely group of ladies, well done.
+I was more than happy with the care and support I received from the care team.",Care received,3,35777,0
+Community health services,Children and young people,HFT- Ashfield North West,2019-07-04,5,F,65-79,White,9,0,N,C,10337,comment_1,Can't think of anything to improve.,Couldn't be improved,3,20532,0
