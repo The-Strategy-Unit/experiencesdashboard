@@ -27,11 +27,6 @@ library(experiencesdashboard)
 run_app()
 ```
 
-There is a known bug where the report button does not work when the
-application is downloaded as a package (as opposed to being cloned and
-run). It relates to the file location of report.Rmd and if you know how
-to fix this bug please make a PR 😁.
-
 A hosted version can be found
 [here](https://feedbackmatters.uk/rsconnect/experience_a/).
 Please note the some of the data has been modified for the purposes of
