@@ -16,7 +16,9 @@ split_data_spc <- function(data, variable = "fft", chunks){
     return(
       data %>% 
         dplyr::mutate(date = as.Date(cut(date, "month"))) %>% 
-        dplyr::mutate(fft = .data[[variable]] * 20)
+        dplyr::mutate(fft = .data[[variable]] * 20) %>% 
+        dplyr::group_by(date) %>% 
+        dplyr::filter(dplyr::n() > 20)
     )
   } else {
     
@@ -26,7 +28,8 @@ split_data_spc <- function(data, variable = "fft", chunks){
         dplyr::mutate(group = ceiling(dplyr::cur_group_rows() / nrow(.) * chunks)) %>% 
         dplyr::group_by(group) %>% 
         dplyr::mutate(date = min(date)) %>% 
-        dplyr::mutate(fft = .data[[variable]] * 20)
+        dplyr::mutate(fft = .data[[variable]] * 20) %>% 
+        dplyr::filter(dplyr::n() > 20)
     )
   }
 }
@@ -40,11 +43,23 @@ split_data_spc <- function(data, variable = "fft", chunks){
 #' @export
 plot_fft_spc <- function(data){
   
-  data %>% 
-    qicharts2::qic(data = .,
-                   x = date,
-                   y = fft,
-                   chart = "xbar",
-                   xlab = "Date",
+  # confirm we have more than 3 groups to plot
+  no_group <-  data %>% 
+    dplyr::pull() %>% 
+    unique() %>% 
+    length()
+  
+  if (no_group < 3){
+    
+    ggplot2::ggplot()
+    
+  } else{
+    data %>% 
+      qicharts2::qic(data = .,
+                     x = date,
+                     y = fft,
+                     chart = "xbar",
+                     xlab = "Date",
                    ylab = "% FFT score")
+  }
 }
