@@ -1,0 +1,327 @@
+---
+title: "Patient Feedback Analysis"
+author: "Oluwasegun Apejoye"
+date: "2023-02-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning=FALSE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(tidytext)
+library(widyr)
+library(ggraph)
+library(igraph)
+
+pool <- odbc::dbConnect(drv = odbc::odbc(),
+                        driver = Sys.getenv("odbc_driver"),
+                        server = Sys.getenv("HOST_NAME"),
+                        UID = Sys.getenv("DB_USER"),
+                        PWD = Sys.getenv("MYSQL_PASSWORD"),
+                        database = "TEXT_MINING",
+                        Port = 3306)
+
+df = dplyr::tbl(pool,
+             dbplyr::in_schema("TEXT_MINING","trust_a_bk")) %>% dplyr::collect()
+```
+
+## 1. No. of unique comments in each category
+
+```{r out.height='70%', out.width='100%'}
+
+filter_data <- df %>%
+  filter(!is.na(category),
+         !is.na(location_1),
+         !is.na(location_2),
+         !is.na(location_3),
+         !location_1 == "Unknown") 
+
+# New facet label names
+filter_data$comment_type <- filter_data$comment_type %>% 
+  factor(levels = c("comment_1", "comment_2"), 
+         labels = c('DoBetter', 'DoneWell'))
+
+filter_data %>% 
+  group_by(comment_type, category) %>%
+  summarize(cat = n_distinct(comment_txt)) %>%
+  # arrange(desc(cat)) %>%
+  # arrange(cat) %>%
+  ggplot(aes(cat, reorder(category, cat), fill=comment_type)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ comment_type, scales = "free") +
+  # scale_fill_discrete(labels=c('DoBetter', 'DoneWell')) +
+  labs(x = 'No. of comments', y = NULL)
+    
+```
+
+# 2. number of comments per month per category
+
+```{r}
+filter_data %>% 
+  mutate(yr = factor(lubridate::year(date)),
+         month = factor(months(date, abbreviate=T), 
+                        levels=c('Jan', 'Feb','Mar', 'Apr', 'May', 'Jun', 
+                                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'))
+         )%>% 
+  group_by(category,yr, month) %>%
+  summarize(cat = n_distinct(comment_txt))  %>%
+  ggplot(aes(cat, month, fill=yr)) +
+  geom_col(show.legend = T, position='dodge') +
+  facet_wrap(~ category, scales = "free") +
+  labs(x = 'No. of comments', y = NULL) 
+```
+
+## 3. trend in category
+
+shows the monthly percentage contribution of each category
+
+```{r fig.width=12, fig.height=5}
+# Group by chosen no of data points 
+
+# chunks = 32
+# trend_data = filter_data %>% 
+#   dplyr::mutate(group = ceiling(dplyr::cur_group_rows() / nrow(.) * chunks)) %>% 
+#   group_by(group, category) %>%
+#   summarize(cat = n(),
+#             date = min(date)) %>%
+#   group_by(group) %>% 
+#   mutate(prop = round(cat/sum(cat), 2)) %>% 
+#   filter(!is.na(category))
+
+# Group by month
+
+trend_data = filter_data%>%
+  dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
+  group_by(date, category) %>%
+  summarize(cat = n()) %>%
+  group_by(date) %>%
+  mutate(prop = round(cat/sum(cat), 2)) %>%
+  filter(!is.na(category))
+
+# plot
+trend_data %>% 
+  ggplot(aes(x=date, y=prop, color=category, group=category)) +
+    geom_line() +
+    geom_point() +
+    scale_x_date(date_breaks = "4 months", date_labels = "%b %y")+
+    scale_y_continuous(label = scales::label_percent(accuracy = 1)) +
+    # theme(axis.text.x = element_text(angle=90)) +
+    labs(x= NULL, y = '% contribution')
+```
+
+## 4. overlapping words
+
+shows which categories occur together more/less often based on count or correlation of comments frequencies with each category
+
+Network graph and heatmap is used here to show categories that tend to be similar to each other in how they are assigned to comments. the heatmap shows the content based on the pairwise correlation and the Network graph shows the actual counts of comment frequencies assigned to each category.
+
+```{r}
+# function to plot the network graph of the overlapping matrix
+overlap_network <- function(data){
+   
+   set.seed(2017)
+   
+   # filter for stronger correlations among categories and visualize them in a network
+   data %>%
+      # filter(correlation > .4) %>%
+      graph_from_data_frame() %>%
+      ggraph(layout = "fr") +
+      geom_edge_link(aes(alpha = value,
+                         width = value
+                         )) +
+      geom_node_point(size = 12, color = "lightblue") +
+      geom_node_text(aes(label = name), repel = TRUE, color = "red") +
+      theme_void()
+    
+  }
+
+# function to plot the heatmap of the overlapping matrix
+overlap_heatmap <- function(data, legend='Legend'){
+  
+  data %>%
+    # filter(value > .7) %>%
+    filter(!is.na(value)) %>%
+    ggplot(aes(x=item1, y=item2, fill=value)) + 
+    geom_tile() +
+    geom_text(aes(label = value), color = "blue", size = 3)+
+    # theme_minimal() +
+    scale_fill_gradient2(low = "#FFFFFF", high = "#012344",
+     name=legend) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                     hjust = 1),
+          plot.title = element_text(hjust = 0.5)) +
+    labs(x = NULL, y = NULL) +
+    ggtitle(label = "Overlapping themes")
+  
+}
+
+# function to reorder the correlation matrix or similar matrix by using the values between variables as distance 
+reorder_cormat <- function(cormat){
+  
+    dd <- as.dist((1-cormat)/2)
+    hc <- hclust(dd)
+    
+    return(cormat[hc$order, hc$order])
+}
+
+# function to remove redundant information from correlation matrix (or similar matrix)
+# by setting upper half of the matrix to NA
+# and reshape it to a dataframe 
+reshape_cormat <- function(wide_overlapping_theme){
+  
+  cormat = as.matrix(wide_overlapping_theme[, -1])
+  rownames(cormat) <- wide_overlapping_theme %>% pull(item2)
+  
+  cormat <- reorder_cormat(cormat)
+  
+  cormat[upper.tri(cormat)] <- NA
+  
+  return(reshape2::melt(cormat) %>% 
+    rename('item1'=Var1, 'item2'=Var2))
+} 
+
+make_overlap_theme <- function(multilabelled_data, group_type=c('count', 'correlation')){
+  
+  # check argument is valid and choose the correct logical predicate
+  group_type <- match.arg(group_type)
+  stopifnot("group type must be one of 'count', or 'correlation'" = length(group_type) == 1)
+    
+  n_comments_similarity <- multilabelled_data %>%
+    mutate(rn = row_number()) %>% # create a row id
+    pivot_longer(starts_with("category"))%>%  
+    select(rn, name, value, comment_txt) %>%
+    drop_na() 
+  
+  if (group_type == 'count'){
+    
+    w_overlapping_theme <- n_comments_similarity %>% 
+      inner_join(n_comments_similarity, by = "rn") %>% 
+      count(value.x, value.y) %>% 
+      filter(value.x != value.y) %>% 
+      rename('item1' = value.x, 'item2' = value.y) %>% 
+      arrange(item1) %>%
+      pivot_wider(names_from = item1, values_from = n) %>%
+      arrange(item2)
+    
+  } else{ 
+    
+    w_overlapping_theme <- n_comments_similarity %>%
+      count(value, comment_txt, sort = TRUE) %>%
+      widyr::pairwise_cor(value, comment_txt, n, sort = TRUE) %>%
+      mutate(correlation = round(correlation, 2)) %>%
+      arrange(item1) %>%
+      pivot_wider(names_from = item1, values_from = correlation) %>%
+      arrange(item2)
+    
+  }
+  
+  return (reshape_cormat(w_overlapping_theme))
+  
+}
+
+```
+
+
+```{r}
+
+# make a sample multilabled data
+# in real data this is similar to 
+# 1. split the single multilabel columns to many columns by comma (,) 
+    # df %>% dplyr::separate(Name, c('category_1', 'category_2', ...))
+
+multilabel_data <- filter_data %>% 
+  mutate(category1 = sample(c(rep(NA,10000), .data$category, NA), nrow(.), replace = T),
+         category2 = sample(c(rep(NA,10000), .data$category, NA, NA), nrow(.), replace = F),
+         category3 = sample(c(rep(NA,10000), .data$category, NA, NA), nrow(.), replace = F))
+
+
+overlapping_theme_count <- make_overlap_theme(multilabel_data, group_type='count')
+overlapping_theme_correlation <- make_overlap_theme(multilabel_data, group_type='correlation')
+
+overlap_heatmap(overlapping_theme_correlation, 'Correlation')
+  
+overlap_network(overlapping_theme_count)
+```
+
+## 5. Word counts 
+
+```{r}
+# split the dataset into tokens and remove stop words
+
+users_comments <- filter_data %>% 
+  # group_by(comment_type, category) %>%
+  tidytext::unnest_tokens(word, comment_txt, token = "words") %>%
+  filter(str_detect(word, "[a-z']$"),
+         !word %in% tidytext::stop_words$word)
+
+
+# common words in the whole data
+users_comments  %>%
+  ungroup() %>% 
+  count(word, sort = TRUE)
+
+# common words based on sub-topic
+word_count <- users_comments %>% 
+  count(category, word, sort = TRUE) 
+  # count(comment_type, category, word, sort = TRUE) 
+
+word_count
+```
+
+## 6. TF-IDF
+
+We’d expect the categories to differ in terms of topic and content, and therefore the frequency of words will differ between them. we quantify this using the tf-idf metric and visualized the top 15 prominent words in each category
+
+```{r ,fig.width=10, fig.height=10}
+
+tf_idf <- word_count %>%
+  tidytext::bind_tf_idf(word, category, n) %>%
+    arrange(desc(tf_idf))
+
+options(repr.P.width=10,repr.P.height=30)
+
+tf_idf %>%
+  group_by(category) %>%
+  top_n(15, tf_idf) %>%
+  # ungroup() %>%
+  mutate(word = reorder(word, tf_idf)) %>%
+  ggplot(aes(tf_idf, word, fill = category)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ category , scales = "free") +
+  labs(y = NULL)
+```
+
+## 7. network graph of words
+
+Networks of words that co-occur across the categories.
+
+```{r}
+# top 5 words in each category 
+users_comments %>% 
+  count(category, word, sort = TRUE) %>% 
+  group_by(category) %>%
+  top_n(5, n) %>%
+  graph_from_data_frame() %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name, color = "red"), repel = TRUE)
+```
+We can see that the words *friendly* and *staff* has high present in comments labeled 'Staff'. the word 'friendly' can also be seeing as a one of top 5 words in comments labeled 'Miscellaneous', giving rise to the linkage between Miscellaneous and Staff categories
+
+```{r}
+# top 20 words across all the categories
+users_comments %>% 
+  count(category, word, sort = TRUE) %>% 
+  top_n(20, n) %>% 
+  graph_from_data_frame() %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name, color = "red"), repel = TRUE)
+```
+We can see that among the top 20 frequent words across the dataset, most occur within comments tagged care receive. We can also see the words *staff, helpful and feel* linking 'Staff' and 'Care received' categories 
