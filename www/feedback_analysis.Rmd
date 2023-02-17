@@ -48,11 +48,13 @@ filter_data$comment_type <- filter_data$comment_type %>%
 filter_data %>% 
   group_by(comment_type, category) %>%
   summarize(cat = n_distinct(comment_txt)) %>%
+  mutate(category = reorder_within(category, by=cat, within = comment_type)) %>% 
   # arrange(desc(cat)) %>%
   # arrange(cat) %>%
   ggplot(aes(cat, reorder(category, cat), fill=comment_type)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ comment_type, scales = "free") +
+  scale_y_reordered() +
   # scale_fill_discrete(labels=c('DoBetter', 'DoneWell')) +
   labs(x = 'No. of comments', y = NULL)
     
@@ -287,12 +289,13 @@ options(repr.P.width=10,repr.P.height=30)
 tf_idf %>%
   group_by(category) %>%
   top_n(15, tf_idf) %>%
-  # ungroup() %>%
-  mutate(word = reorder(word, tf_idf)) %>%
+  mutate(word = reorder_within(word, by=tf_idf, within = category)) %>%   
   ggplot(aes(tf_idf, word, fill = category)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ category , scales = "free") +
+  scale_y_reordered() +
   labs(y = NULL)
+
 ```
 
 ## 7. network graph of words
