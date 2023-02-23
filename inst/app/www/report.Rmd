@@ -141,7 +141,23 @@ if("fft_graph" %in% params$options){
     unique_data, variable = "fft", chunks = 15
   )
   
-  print(plot_fft_spc(graph_data))
+  # confirm we have more than 3 groups to plot
+  no_group <- graph_data %>% 
+    dplyr::pull() %>% 
+    unique() %>% 
+    length()
+  
+   
+  if (no_group < 3){
+    
+     print(p('There are not enough stable SPC points to plot.
+                    Please expand your selection'))
+    
+  } else{
+
+    print(plot_fft_spc(graph_data))
+    
+  }
   
   cat("  \n")
   
