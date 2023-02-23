@@ -246,17 +246,17 @@ app_server <- function( input, output, session ) {
   
   mod_patient_experience_server("patient_experience_ui_1")
   
-  # sentiment module is run twice, once for each comment, where they exist
-  
-  mod_sentiment_server("mod_sentiment_ui_1", 
-                       filter_data = filter_data,
-                       nrc_sentiments = nrc_sentiments,
-                       comment_label = "comment_1")
-  
-  mod_sentiment_server("mod_sentiment_ui_2", 
-                       filter_data = filter_data,
-                       nrc_sentiments = nrc_sentiments,
-                       comment_label = "comment_2")
+  # # sentiment module is run twice, once for each comment, where they exist
+  # 
+  # mod_sentiment_server("mod_sentiment_ui_1", 
+  #                      filter_data = filter_data,
+  #                      nrc_sentiments = nrc_sentiments,
+  #                      comment_label = "comment_1")
+  # 
+  # mod_sentiment_server("mod_sentiment_ui_2", 
+  #                      filter_data = filter_data,
+  #                      nrc_sentiments = nrc_sentiments,
+  #                      comment_label = "comment_2")
   
   filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                                      filter_data = filter_data)

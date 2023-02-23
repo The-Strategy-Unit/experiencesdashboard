@@ -23,6 +23,8 @@ mod_patient_experience_server <- function(id){
     
     output$dynamicUI <- renderUI({
       
+      # Summary and Report tab (key tabs to show)
+      
       ui_list <- list(
         
         tabPanel(
@@ -35,7 +37,7 @@ mod_patient_experience_server <- function(id){
         )
       )
       
-      # do we have FFT data?
+      # FFT tab (do we have FFT data?)
       
       if(isTruthy(get_golem_config("question_1"))){
         
@@ -57,32 +59,34 @@ mod_patient_experience_server <- function(id){
                    )
       )
       
-      # do we have two or one comment?
+      # Sentiment tab (do we have two or one comment?)
       
-      if(isTruthy(get_golem_config("comment_2"))){
-        
-        ui_list <- c(ui_list, 
-                     list(
-                       tabPanel(
-                         "Sentiment",
-                         tabsetPanel(
-                           tabPanel(get_golem_config("comment_1"),
-                                    mod_sentiment_ui("mod_sentiment_ui_1")),
-                           tabPanel(get_golem_config("comment_2"),
-                                    mod_sentiment_ui("mod_sentiment_ui_2"))
-                         )
-                       )
-                     ))
-      } else {
-        
-        ui_list <- c(ui_list,
-                     list(
-                       tabPanel(
-                         "Sentiment",
-                         mod_sentiment_ui("mod_sentiment_ui_1")
-                       )
-                     ))
-      }
+      # if(isTruthy(get_golem_config("comment_2"))){
+      #   
+      #   ui_list <- c(ui_list, 
+      #                list(
+      #                  tabPanel(
+      #                    "Sentiment",
+      #                    tabsetPanel(
+      #                      tabPanel(get_golem_config("comment_1"),
+      #                               mod_sentiment_ui("mod_sentiment_ui_1")),
+      #                      tabPanel(get_golem_config("comment_2"),
+      #                               mod_sentiment_ui("mod_sentiment_ui_2"))
+      #                    )
+      #                  )
+      #                ))
+      # } else {
+      #   
+      #   ui_list <- c(ui_list,
+      #                list(
+      #                  tabPanel(
+      #                    "Sentiment",
+      #                    mod_sentiment_ui("mod_sentiment_ui_1")
+      #                  )
+      #                ))
+      # }
+      
+      # Comment search tab (key tab to show)
       
       ui_list <- c(ui_list, 
                    list(
@@ -91,6 +95,8 @@ mod_patient_experience_server <- function(id){
                        mod_search_text_ui("search_text_ui_1")
                      )
                    ))
+      
+      # Demographics tab
       
       if(isTruthy(get_golem_config("gender")) | 
          isTruthy(get_golem_config("age")) | 
