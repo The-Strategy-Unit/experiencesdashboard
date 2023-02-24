@@ -24,6 +24,9 @@ mod_category_criticality_ui <- function(id){
       tabsetPanel(
         id = ns("tabset"),
         type = "tabs",
+        
+        # A Sub-tab
+        
         tabPanel("Summary", value = "summary",
                  fluidRow(
                    column(6, h2(get_golem_config("comment_1")),
@@ -38,6 +41,26 @@ mod_category_criticality_ui <- function(id){
                    }
                  )
         ),
+        
+        # A Sub-tab
+        
+        tabPanel("Summary V2", value = "summary2",
+                 fluidRow(
+                   column(6, h2(get_golem_config("comment_1")),
+                          p("Click a bar to see comments related to that category"),
+                          mod_click_plot_ui("click_plot_ui_1")),
+                   
+                   if(isTruthy(get_golem_config("comment_2"))){
+                     
+                     column(6, h2(get_golem_config("comment_2")),
+                            p("Click a bar to see comments related to that category"),
+                            mod_click_plot_ui("click_plot_ui_2"))
+                   }
+                 )
+        ),
+        
+        # A Sub-tab
+        
         tabPanel("Comments", value = "comments",
                  fluidRow(
                    column(6, h2(get_golem_config("comment_1")),
@@ -50,6 +73,9 @@ mod_category_criticality_ui <- function(id){
                    }
                  )
         ),
+        
+        # A Sub-tab
+        
         tabPanel("Timeline", value = "timeline",
                  br(),
                  fluidRow(
