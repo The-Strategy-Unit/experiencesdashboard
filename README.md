@@ -15,7 +15,7 @@ The development version is available from GitHub with:
 
 ``` r
 # install.packages("devtools")
-# devtools::install_github("CDU-data-science-team/experiencesdashboard")
+devtools::install_github("CDU-data-science-team/experiencesdashboard")
 ```
 
 ## Running
