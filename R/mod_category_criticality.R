@@ -59,48 +59,48 @@ mod_category_criticality_ui <- function(id){
                  )
         ),
         
-        # A Sub-tab
-        
-        tabPanel("Comments", value = "comments",
-                 fluidRow(
-                   column(6, h2(get_golem_config("comment_1")),
-                          mod_text_reactable_ui("text_reactable_ui_1")),
-                   
-                   if(isTruthy(get_golem_config("comment_2"))){
-                     
-                     column(6, h2(get_golem_config("comment_2")),
-                            mod_text_reactable_ui("text_reactable_ui_2"))
-                   }
-                 )
-        ),
-        
-        # A Sub-tab
-        
-        tabPanel("Timeline", value = "timeline",
-                 br(),
-                 fluidRow(
-                   column(12,
-                          box(
-                            width = NULL,
-                            background = "light-blue",
-                            textOutput(ns("category_crit_time_plot_txt"))
-                          )
-                   )
-                 ),
-                 fluidRow(
-                   column(3,
-                          uiOutput(ns("dividePlotUI")),
-                   ),
-                   column(3,
-                          selectInput(ns("category_crit_time_geom_histogram"), 
-                                      label = h5(strong("Show proportion or total:")), 
-                                      choices = list("Proportion" = "fill",
-                                                     "Total" = "stack"), 
-                                      selected = "stack")
-                   )
-                 ),
-                 plotOutput(ns("category_crit_time_plot"))
-        )
+        # # A Sub-tab
+        # 
+        # tabPanel("Comments", value = "comments",
+        #          fluidRow(
+        #            column(6, h2(get_golem_config("comment_1")),
+        #                   mod_text_reactable_ui("text_reactable_ui_1")),
+        #            
+        #            if(isTruthy(get_golem_config("comment_2"))){
+        #              
+        #              column(6, h2(get_golem_config("comment_2")),
+        #                     mod_text_reactable_ui("text_reactable_ui_2"))
+        #            }
+        #          )
+        # ),
+        # 
+        # # A Sub-tab
+        # 
+        # tabPanel("Timeline", value = "timeline",
+        #          br(),
+        #          fluidRow(
+        #            column(12,
+        #                   box(
+        #                     width = NULL,
+        #                     background = "light-blue",
+        #                     textOutput(ns("category_crit_time_plot_txt"))
+        #                   )
+        #            )
+        #          ),
+        #          fluidRow(
+        #            column(3,
+        #                   uiOutput(ns("dividePlotUI")),
+        #            ),
+        #            column(3,
+        #                   selectInput(ns("category_crit_time_geom_histogram"), 
+        #                               label = h5(strong("Show proportion or total:")), 
+        #                               choices = list("Proportion" = "fill",
+        #                                              "Total" = "stack"), 
+        #                               selected = "stack")
+        #            )
+        #          ),
+        #          plotOutput(ns("category_crit_time_plot"))
+        # )
       )
     )
   )
@@ -143,7 +143,7 @@ mod_category_criticality_server <- function(id, filter_data){
         ns("category_crit_time_facet"), 
         label = h5(strong("Divide plot by:")), 
         choices = choices, 
-        selected = 1)
+        selected = 2)
     })
     
     # Create reactive data ----
