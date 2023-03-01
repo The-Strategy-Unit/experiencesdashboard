@@ -53,7 +53,7 @@ mod_patient_experience_server <- function(id){
       ui_list <- c(ui_list,
                    list(
                      tabPanel(
-                       "Themes/ weighting",
+                       "Themes/weighting",
                        mod_category_criticality_ui("category_criticality_ui_1")
                      )
                    )
@@ -85,6 +85,16 @@ mod_patient_experience_server <- function(id){
       #                  )
       #                ))
       # }
+      
+      # Theme Trend and overlap tab      
+      
+      ui_list <- c(ui_list, 
+                   list(
+                     tabPanel(
+                       "Trend/Overlap",
+                       mod_trend_overlap_ui("trend_overlap_ui")
+                     )
+                   ))
       
       # Comment search tab (key tab to show)
       
