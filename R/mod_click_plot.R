@@ -41,6 +41,7 @@ mod_click_plot_server <- function(id, filter_data, comment_type){
       tagList(
         
         plotOutput(ns("comment_plot"), click = ns("comment_plot_click")),
+        tags$br(),
         tags$hr(),
         htmlOutput(ns("comments_verbatim"))
         
