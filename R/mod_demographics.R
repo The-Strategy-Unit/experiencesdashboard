@@ -59,6 +59,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
         ),
         hr(),
         h3("Categories with fewer than 10 individuals are excluded"),
+        p('The below chart shows the average percentage of maximum FFT score for each category.'),
         fluidRow(
           if(has_age){column(width, plotOutput(ns("compare_age")))},
           if(has_gender){column(width, plotOutput(ns("compare_gender")))},
