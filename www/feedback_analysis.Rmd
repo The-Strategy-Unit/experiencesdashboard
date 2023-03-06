@@ -40,9 +40,7 @@ filter_data <- df %>%
 
 This shows relationships between the themes (the categories). It shows the categories that tend to be similar to each other in how they are assigned to comments i.e. how comments shared about one theme relates to another theme. These relationships are shown using the actual number of comments shared between the themes (comment frequencies) or the pearson correlation of the comment frequencies. Of particular interest is the correlation among theme, which indicates how often they appear together relative to how often they appear separately.
 
-. We used Network graph and heatmap for this purpose. 
-
-In this sample report, the heatmap is used to show the relationship based on the pairwise correlation and the Network graph shows the actual comment frequencies. We can see how the *staff* theme shows stronger relationship to the *care recieved* theme, this means comments relating to *staff* often relates to *care recieved*
+We used Network graph and heatmap for this purpose. In this sample report, the heatmap is used to show the relationship based on the pairwise correlation and the Network graph shows the actual comment frequencies. We can see how the *staff* theme shows stronger relationship to the *care received* theme, this means comments relating to *staff* often relates to *care received*
 
 NOTE: The heatmap will be available in the dashboard and users will be able to add the network graph to their report (which they will be able to download from the dashboard) if they find it more intuitive. 
 
