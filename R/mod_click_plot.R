@@ -58,7 +58,7 @@ mod_click_plot_server <- function(id, filter_data, comment_type){
                    fill = rev(ifelse(global$to_highlight, yes = "yes", no = "no"))
                    )) +
         ggplot2::geom_bar(stat="identity", show.legend = FALSE) +
-        ggplot2::scale_fill_manual(values = c("yes" = "darkblue", "no" = "grey" ), guide = FALSE ) + 
+        ggplot2::scale_fill_manual(values = c("yes" = "darkblue", "no" = "grey" )) + 
         ggplot2::theme(axis.text.x = ggplot2::element_text(face="bold", size=12),
               axis.text.y = ggplot2::element_text(face="bold", size=12)) +
         ggplot2::labs(x = 'No. of comments', y = NULL) 

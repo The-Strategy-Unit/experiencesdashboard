@@ -59,33 +59,6 @@ mod_patient_experience_server <- function(id){
                    )
       )
       
-      # Sentiment tab (do we have two or one comment?)
-      
-      # if(isTruthy(get_golem_config("comment_2"))){
-      #   
-      #   ui_list <- c(ui_list, 
-      #                list(
-      #                  tabPanel(
-      #                    "Sentiment",
-      #                    tabsetPanel(
-      #                      tabPanel(get_golem_config("comment_1"),
-      #                               mod_sentiment_ui("mod_sentiment_ui_1")),
-      #                      tabPanel(get_golem_config("comment_2"),
-      #                               mod_sentiment_ui("mod_sentiment_ui_2"))
-      #                    )
-      #                  )
-      #                ))
-      # } else {
-      #   
-      #   ui_list <- c(ui_list,
-      #                list(
-      #                  tabPanel(
-      #                    "Sentiment",
-      #                    mod_sentiment_ui("mod_sentiment_ui_1")
-      #                  )
-      #                ))
-      # }
-      
       # Theme Trend and overlap tab      
       
       ui_list <- c(ui_list, 

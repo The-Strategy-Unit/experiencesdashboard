@@ -36,7 +36,8 @@ mod_fft_server <- function(id, filter_data){
         
       } else{
         
-        plotOutput(ns("spc_plot")) %>% shinycssloaders::withSpinner()
+        plotOutput(ns("spc_plot")) %>% 
+          shinycssloaders::withSpinner()
       }
     })
       

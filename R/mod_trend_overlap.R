@@ -117,9 +117,10 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
       set.seed(2017)
       
       filter_data()$filter_data %>% 
-        make_multilabled_data() %>% 
+        make_sample_multilabeled_data() %>% 
         multi_to_single_label(column_name = 'labels') %>% 
         make_overlap_theme(group_type = overlap_plot_type) %>% 
+        reshape_overlapping_theme() %>%
         overlap_heatmap_plot(legend = overlap_plot_type)
       
     })

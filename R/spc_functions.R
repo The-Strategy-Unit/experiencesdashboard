@@ -14,7 +14,7 @@ split_data_spc <- function(data, variable = "fft", chunks){
   if(chunks == "monthly"){
     
     return(
-    data <- data %>% 
+      data %>% 
         dplyr::mutate(date = as.Date(cut(date, "month"))) %>% 
         dplyr::mutate(fft = .data[[variable]] * 20) %>% 
         dplyr::group_by(date) %>% 
@@ -24,7 +24,7 @@ split_data_spc <- function(data, variable = "fft", chunks){
   } else {
     
     return(
-      data <- data %>% 
+      data %>% 
         dplyr::filter(.data[[variable]] %in% 1 : 5) %>% 
         dplyr::mutate(group = ceiling(dplyr::cur_group_rows() / nrow(.) * chunks)) %>% 
         dplyr::group_by(group) %>% 

@@ -44,7 +44,7 @@ mod_category_criticality_ui <- function(id){
         
         # A Sub-tab
         
-        tabPanel("Summary V2", value = "summary2",
+        tabPanel("Summary Plot", value = "summary2",
                  fluidRow(
                    column(6, h2(get_golem_config("comment_1")),
                           p("Click a bar to see comments related to that category"),
@@ -57,50 +57,7 @@ mod_category_criticality_ui <- function(id){
                             mod_click_plot_ui("click_plot_ui_2"))
                    }
                  )
-        ),
-        
-        # # A Sub-tab
-        # 
-        # tabPanel("Comments", value = "comments",
-        #          fluidRow(
-        #            column(6, h2(get_golem_config("comment_1")),
-        #                   mod_text_reactable_ui("text_reactable_ui_1")),
-        #            
-        #            if(isTruthy(get_golem_config("comment_2"))){
-        #              
-        #              column(6, h2(get_golem_config("comment_2")),
-        #                     mod_text_reactable_ui("text_reactable_ui_2"))
-        #            }
-        #          )
-        # ),
-        # 
-        # # A Sub-tab
-        # 
-        # tabPanel("Timeline", value = "timeline",
-        #          br(),
-        #          fluidRow(
-        #            column(12,
-        #                   box(
-        #                     width = NULL,
-        #                     background = "light-blue",
-        #                     textOutput(ns("category_crit_time_plot_txt"))
-        #                   )
-        #            )
-        #          ),
-        #          fluidRow(
-        #            column(3,
-        #                   uiOutput(ns("dividePlotUI")),
-        #            ),
-        #            column(3,
-        #                   selectInput(ns("category_crit_time_geom_histogram"), 
-        #                               label = h5(strong("Show proportion or total:")), 
-        #                               choices = list("Proportion" = "fill",
-        #                                              "Total" = "stack"), 
-        #                               selected = "stack")
-        #            )
-        #          ),
-        #          plotOutput(ns("category_crit_time_plot"))
-        # )
+        )
       )
     )
   )
@@ -130,82 +87,6 @@ mod_category_criticality_server <- function(id, filter_data){
         multiple = TRUE
       )
     })
-    
-    output$dividePlotUI <- renderUI({
-      
-      choices <- list(1, 2) # wait for it...
-      
-      names(choices) <- c("Comment and category",  
-                          paste0("Comment and ", 
-                                 get_golem_config("location_1")))
-      
-      selectInput(
-        ns("category_crit_time_facet"), 
-        label = h5(strong("Divide plot by:")), 
-        choices = choices, 
-        selected = 2)
-    })
-    
-    # Create reactive data ----
-    tidy_trust_data_r <- reactive({
-      
-      return_data <- filter_data()$filter_data
-      
-      if(isTruthy(input$select_super)){
-        
-        return_data <- return_data %>%
-          dplyr::filter(category %in% input$select_super)
-      }
-      
-      return_data
-      
-    })
-    
-    # Create sentiment plot over time ----
-    output$category_crit_time_plot <- renderPlot({
-      
-      category_crit_time_plot <- tidy_trust_data_r() %>% 
-        tidyr::drop_na(crit) %>% 
-        tidyr::drop_na(category) %>% 
-        dplyr::mutate(
-          comment_type = factor(comment_type, levels = unique(comment_type),
-                                labels = c(get_golem_config("comment_1"),
-                                           get_golem_config("comment_2"))))
-      
-      category_crit_time_plot <- category_crit_time_plot %>% 
-        ggplot2::ggplot(ggplot2::aes(x = date, 
-                                     fill = factor(crit, exclude = NA))) +
-        ggplot2::geom_histogram(position = input$category_crit_time_geom_histogram,
-                                binwidth = 20) +
-        ggplot2::scale_fill_viridis_d() +
-        ggplot2::theme(text = ggplot2::element_text(size = 16))
-      
-      ## Add labels ----
-      if (input$category_crit_time_geom_histogram == "stack") {
-        category_crit_time_plot <- category_crit_time_plot + 
-          ggplot2::labs(x = "Date", 
-                        y = "Total number of responses", 
-                        fill = "Criticality")
-      } else if (input$category_crit_time_geom_histogram == "fill") {
-        category_crit_time_plot <- category_crit_time_plot + 
-          ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-          ggplot2::labs(x = "Date", 
-                        y = "Proportion of responses", 
-                        fill = "Criticality")
-      }
-      
-      # Add facet ----
-      if (input$category_crit_time_facet == 1) {
-        category_crit_time_plot +
-          ggplot2::facet_grid(category ~ comment_type)
-        
-      } else if (input$category_crit_time_facet == 2) {
-        category_crit_time_plot +
-          ggplot2::facet_grid(location_1 ~ comment_type)
-      }}
-      , height = function() {
-        session$clientData$`output_category_criticality_ui_1-category_crit_time_plot_width` / 2.3
-      })
     
     reactive(
       input$select_super
