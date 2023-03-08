@@ -63,11 +63,13 @@ golem::add_module( name = "search_text" ) # Name of the module
 golem::add_module( name = "text_reactable" ) # Name of the module
 golem::add_module( name = "demographics" ) # Name of the module
 golem::add_module( name = "summary" ) # Name of the module
+golem::add_module( name = "trend_overlap" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
 golem::add_fct( "helpers" ) 
 golem::add_utils( "helpers" )
+golem::add_utils( "overlap_plot_helpers" )
 
 ## External resources
 ## Creates .js and .css files at inst/app/www

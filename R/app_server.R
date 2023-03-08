@@ -246,18 +246,6 @@ app_server <- function( input, output, session ) {
   
   mod_patient_experience_server("patient_experience_ui_1")
   
-  # sentiment module is run twice, once for each comment, where they exist
-  
-  mod_sentiment_server("mod_sentiment_ui_1", 
-                       filter_data = filter_data,
-                       nrc_sentiments = nrc_sentiments,
-                       comment_label = "comment_1")
-  
-  mod_sentiment_server("mod_sentiment_ui_2", 
-                       filter_data = filter_data,
-                       nrc_sentiments = nrc_sentiments,
-                       comment_label = "comment_2")
-  
   filter_category <- mod_category_criticality_server("category_criticality_ui_1", 
                                                      filter_data = filter_data)
   
@@ -276,6 +264,14 @@ app_server <- function( input, output, session ) {
                           filter_data = filter_data,
                           comment_type = "comment_2")
   
+  mod_click_plot_server("click_plot_ui_1",
+                          filter_data = filter_data,
+                          comment_type = "comment_1")
+  
+  mod_click_plot_server("click_plot_ui_2",
+                          filter_data = filter_data,
+                          comment_type = "comment_2")
+  
   mod_text_reactable_server("text_reactable_ui_1", 
                             filter_data = filter_data,
                             filter_category = filter_category,
@@ -288,6 +284,9 @@ app_server <- function( input, output, session ) {
   
   mod_search_text_server("search_text_ui_1",
                          filter_data = filter_data)
+  
+  mod_trend_overlap_server("trend_overlap_ui",
+                         filter_data = filter_data, overlap_plot_type = 'count')
   
   demographic_filters <- mod_demographics_server("demographics_ui_1",
                                                  filter_data = filter_data,

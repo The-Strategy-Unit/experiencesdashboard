@@ -9,29 +9,8 @@
 #' @importFrom shiny NS tagList 
 mod_demographics_ui <- function(id){
   ns <- NS(id)
-  tagList(
-    fluidRow(
-      column(12, h3(textOutput(ns("total_responses"))))
-    ),
-    hr(),
-    fluidRow(
-      column(4, uiOutput(ns("age_UI"))),
-      column(4, uiOutput(ns("gender_UI"))),
-      column(4, uiOutput(ns("ethnicity_UI")))
-    ),
-    fluidRow(
-      column(4, plotOutput(ns("age_graph"))),
-      column(4, plotOutput(ns("gender_graph"))),
-      column(4, plotOutput(ns("ethnicity_graph")))
-    ),
-    hr(),
-    h3("Categories with fewer than 10 individuals are excluded"),
-    fluidRow(
-      column(4, plotOutput(ns("compare_age"))),
-      column(4, plotOutput(ns("compare_gender"))),
-      column(4, plotOutput(ns("compare_ethnicity")))
-    )
-  )
+
+  uiOutput(ns("dynamic_demo_UI"))
 }
 
 #' demographics Server Functions
@@ -40,6 +19,54 @@ mod_demographics_ui <- function(id){
 mod_demographics_server <- function(id, filter_data, store_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    # the UI render
+    
+    output$dynamic_demo_UI <- renderUI({
+      
+      # check which demographic variables are present
+      
+      isolate({
+        has_age <- 'age' %in% colnames(filter_data()$unique_data)
+        has_gender <- 'gender' %in% colnames(filter_data()$unique_data)
+        has_ethnicity <- 'ethnicity' %in% colnames(filter_data()$unique_data)
+      })
+      
+      # determine the column width base on the number of demographic variables present
+      
+      demography_cond <- sum(has_age,has_gender,has_ethnicity)
+      
+      width <- dplyr::case_when(
+        demography_cond == 3 ~ 4,
+        demography_cond == 2 ~ 6,
+        TRUE ~ 12
+      )
+      
+      tagList(
+        fluidRow(
+          column(12, h3(textOutput(ns("total_responses"))))
+        ),
+        hr(),
+        fluidRow(
+          if(has_age){column(width, uiOutput(ns("age_UI")))},
+          if(has_gender){column(width, uiOutput(ns("gender_UI")))},
+          if(has_ethnicity){column(width, uiOutput(ns("ethnicity_UI")))}
+        ),
+        fluidRow(
+          if(has_age){column(width, plotOutput(ns("age_graph")))},
+          if(has_gender){column(width, plotOutput(ns("gender_graph")))},
+          if(has_ethnicity){column(width, plotOutput(ns("ethnicity_graph")))}
+        ),
+        hr(),
+        h3("Categories with fewer than 10 individuals are excluded"),
+        p('The below chart shows the average percentage of maximum FFT score for each category.'),
+        fluidRow(
+          if(has_age){column(width, plotOutput(ns("compare_age")))},
+          if(has_gender){column(width, plotOutput(ns("compare_gender")))},
+          if(has_ethnicity){column(width, plotOutput(ns("compare_ethnicity")))}
+        )
+      )
+    })
     
     # top row
     
@@ -61,7 +88,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
       }
     })
     
-    # UI----
+    # demography selection----
     
     output$age_UI <- renderUI({
       

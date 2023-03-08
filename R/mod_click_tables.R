@@ -11,7 +11,8 @@ mod_click_tables_ui <- function(id){
   ns <- NS(id)
   tagList(
     
-    DT::DTOutput(ns("table")),
+    DT::DTOutput(ns("table")) %>% 
+      shinycssloaders::withSpinner(),
     htmlOutput(ns("comments"))
   )
 }
