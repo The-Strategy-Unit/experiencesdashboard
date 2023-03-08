@@ -16,50 +16,39 @@ library(tidytext)
 library(ggraph)
 library(igraph)
 
-pool <- odbc::dbConnect(drv = odbc::odbc(),
-                        driver = Sys.getenv("odbc_driver"),
-                        server = Sys.getenv("HOST_NAME"),
-                        UID = Sys.getenv("DB_USER"),
-                        PWD = Sys.getenv("MYSQL_PASSWORD"),
-                        database = "TEXT_MINING",
-                        Port = 3306)
+source("../R/utils_overlap_plot_helpers.R")
 
-df = dplyr::tbl(pool,
-             dbplyr::in_schema("TEXT_MINING","trust_a_bk")) %>% dplyr::collect()
+df <- readr::read_csv("../data-raw/multilabeled_data.csv", show_col_types = FALSE) %>%
+  select(-`...1`)
 
 filter_data <- df %>%
-  filter(!is.na(category),
+  filter(!is.na(comment_txt),
          !is.na(location_1),
          !is.na(location_2),
          !is.na(location_3),
          !location_1 == "Unknown") 
 
+tidy_filter_data <- filter_data %>%
+  multi_to_single_label('labels') %>% 
+  mutate(category = value) %>% 
+  select(-value, -name)
+
 ```
 
 ## 1. Overlapping words
 
-This shows relationships between the themes (the categories). It shows the categories that tend to be similar to each other in how they are assigned to comments i.e. how comments shared about one theme relates to another theme. These relationships are shown using the actual number of comments shared between the themes (comment frequencies) or the pearson correlation of the comment frequencies. Of particular interest is the correlation among theme, which indicates how often they appear together relative to how often they appear separately.
+This shows relationships between the themes (the categories). It shows the categories that tend to be similar to each other in how they are assigned to comments i.e. how comments shared about one theme relates to another theme. These relationships are shown using the actual number of comments shared between the themes (comment frequencies) or the pearson correlation of the comment frequencies. Of particular interest is the correlation among theme, which indicates how often they appear together relative to how often they appear separately. 
 
-We used Network graph and heatmap for this purpose. In this sample report, the heatmap is used to show the relationship based on the pairwise correlation and the Network graph shows the actual comment frequencies. We can see how the *staff* theme shows stronger relationship to the *care received* theme, this means comments relating to *staff* often relates to *care received*
-
-NOTE: The heatmap will be available in the dashboard and users will be able to add the network graph to their report (which they will be able to download from the dashboard) if they find it more intuitive. 
-
-```{r}
-source("../R/utils_overlap_plot_helpers.R")
-
-plot_type = 'count'
-multilabel_data <- filter_data %>% 
-  make_sample_multilabeled_data() 
-
+```{r fig.width=10, fig.height=8}
 plot_type = 'correlation'
-multilabel_data %>% 
+filter_data %>% 
   multi_to_single_label(column_name = 'labels') %>% 
   make_overlap_theme(group_type = plot_type) %>% 
   reshape_overlapping_theme() %>% 
   visualize_network('value')
 
 plot_type = 'count'
-multilabel_data %>% 
+filter_data %>% 
   multi_to_single_label(column_name = 'labels') %>% 
   make_overlap_theme(group_type = plot_type) %>% 
   reshape_overlapping_theme() %>%  
@@ -67,21 +56,22 @@ multilabel_data %>%
   
 ```
 
+We used Network graph and heatmap for this purpose. In this sample report, the heatmap is used to show the relationship based on the pairwise correlation and the Network graph shows the actual comment frequencies. We can see how the *Staff* theme shows strong relationship to the *Communication & involvement* theme, this indicates comments relating to *Staff* often relates to *Communication & involvement*
+
+NOTE: The heatmap will be available in the dashboard and users will be able to add the network graph to their report (available to download from the dashboard) if they find it more intuitive.
+
 ## 2. TF-IDF/Word counts
 
-We’d expect the categories to differ in terms of topic and content, and therefore for the frequency of words to differ between them. Here we quantify this using the tf-idf metric and visualized the top 15 prominent words in each category. These words represent the most prominent words peculiar to the each of the category.
+We’d expect the categories to differ in terms of topic and content, and therefore the frequency of words should differ between them also. The TF-IDF (term frequency-inverse document frequency) is used to quantify the relevance of words or phrases in a document amongst a collection of documents. Here we regard each theme/category as a document and we used the TF-IDF to find the prominent words peculiar to each of the category and we visualized the top 15 prominent words in each category. 
 
-```{r fig.width=10, fig.height=10}
-# split the dataset into tokens and remove stop words
-
-users_comments <- filter_data %>% 
-  # group_by(comment_type, category) %>%
+```{r fig.width=12, fig.height=15}
+tidy_comment_token <- tidy_filter_data %>% 
   tidytext::unnest_tokens(word, comment_txt, token = "words") %>%
   filter(str_detect(word, "[a-z']$"),
          !word %in% tidytext::stop_words$word)
 
 # common words based on sub-topic
-word_count <- users_comments %>% 
+word_count <- tidy_comment_token %>% 
   count(category, word, sort = TRUE) 
   # count(comment_type, category, word, sort = TRUE) 
 
@@ -89,24 +79,22 @@ tf_idf <- word_count %>%
   tidytext::bind_tf_idf(word, category, n) %>%
     arrange(desc(tf_idf))
 
-options(repr.P.width=10,repr.P.height=30)
+options(repr.P.width=15,repr.P.height=50)
 
 tf_idf %>%
   group_by(category) %>%
-  top_n(15, tf_idf) %>%
+  slice_max(tf_idf, n = 15, with_ties = F) %>%
   mutate(word = reorder_within(word, by=tf_idf, within = category)) %>%   
   ggplot(aes(tf_idf, word, fill = category)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ category , scales = "free") +
   scale_y_reordered() +
   labs(y = NULL)
-
 ```
-
 
 ## 3. Word co-occurence across categories
 
-```{r}
+```{r fig.width=12, fig.height=10}
 #' count bigrams from text data
 #'
 #' @param dataset Dataframe containing the text data
@@ -131,7 +119,7 @@ count_bigrams <- function(dataset, text_column) {
 #' @return A network graph
 #' @export
 visualize_bigrams <- function(bigrams, attr_column) {
-  set.seed(2023)
+  # set.seed(2021)
   
   bigrams %>%
     graph_from_data_frame() %>% 
@@ -140,27 +128,28 @@ visualize_bigrams <- function(bigrams, attr_column) {
                    show.legend = FALSE,
                    arrow = grid::arrow(type = "closed", length = unit(.07, "inches")),
                    end_cap = circle(.07, 'inches')) +
-    geom_node_point(color = "#999989", size = 3) +
-    geom_node_text(aes(label = name), size=3.5, color = '#1f78b4', vjust = 1.5, hjust = .5) +
+    geom_node_point(color = "#999789", size = 3) +
+    geom_node_text(aes(label = name), size=3.5, color = '#1f78c9', vjust = 1) +
     theme_void()
 }
 
 # top 5 words in each category 
-set.seed(2023)
-users_comments %>% 
+# set.seed(2020)
+tidy_comment_token %>% 
   mutate(category = toupper(category)) %>% 
   count(category, word, sort = TRUE) %>% 
   group_by(category) %>%
-  top_n(5, n) %>%
+  slice_max(n, n = 5, with_ties = F) %>%
+  # visualize_network()
   visualize_bigrams()
 ```
 
-The Network graph above shows the top 5 words used in each category within the data. The words *friendly* and *staff* has high present in comments labeled 'Staff'. The word *friendly* is also one of the top 5 words in comments labeled 'Miscellaneous', and account for most of the linkage between the "Miscellaneous" category and "Staff" category
+The Network graph above shows the top 5 words used in each category. The words *friendly* and *staff* has high present in comments labeled 'Staff'. We also see how the "Mental Health Specifics" and "Medication" categories stand out compared to the linkage we see among other groups.
 
 ```{r}
 # top 20 words across all the categories
 set.seed(2023)
-users_comments %>% 
+tidy_comment_token %>% 
   mutate(category = toupper(category)) %>% 
   count(category, word, sort = TRUE) %>% 
   top_n(40, n) %>% #View()
@@ -168,7 +157,7 @@ users_comments %>%
 
 ```
 
-this above graph shows how the top occurring words (that are nor stop words) within all the comments within the data are distributed across the categories. We can see that among the top 20 frequent words in all the comments combined together, most occurred within comments tagged "Care received". The words *staff, helpful and feel* account for most pf the linkage between 'Staff' and 'Care received' categories 
+The above graph shows how the top occurring words (that are not stop words) within all the comments combined are distributed across the categories. We can see that among the top 20 frequent words in all the comments combined together, most occurred within comments tagged "Care received". The words *staff, helpful and feel* account for most of the linkage between "Staff" and "Communication and Involvement" and "General" categories 
 
 ## 4. Word-to-word connections
 
@@ -178,17 +167,16 @@ pat_bigrams <- filter_data %>%
 
 # filter out rare combinations, as well as digits
 pat_bigrams %>%
-  filter(n > 30,
+  filter(n > 5,
          !stringr::str_detect(word1, "\\d"),
-         !stringr::str_detect(word2, "\\d")) %>%
+         !stringr::str_detect(word2, "\\d")) %>% #View()
   visualize_bigrams()
 
 ```
 
-Above network graph shows the directional linkage between the most common bigrams (pair of consecutive words) in the whole data. It showing bigrams that occurred more than 30 times and where neither word was a stop word. The transparent of the arrows between the words are based on how common or rare the bigram is in the data.
+Above network graph shows the directional linkage between the most common bigrams (pair of consecutive words) in the whole data. It showing bigrams that occurred more than 5 times and where neither word was a stop word. The transparent of the arrows between the words are based on how common or rare the bigram is in the data.
 
-We can see that "friendly", "staff", "service" and  "health" formed major nodes. We also see common short phrases such as "Mental Health", "friendly staff", "excellent service" and "feel comfortable"
-
+*friendly* formed a major nodes and we see common short phrases such as *Mental Health*, *friendly staff*, and *feel comfortable*
 
 ## 5. Highlight complex comments  
 
@@ -202,9 +190,9 @@ Sample Criteria to highlight complex comments(if any is met):
 
 long_words <- 50
 many_labels <- 3
-multilabel_column <- 'label'
+multilabel_column <- 'labels'
 
-complex_comments <- multilabel_data %>% 
+complex_comments <- filter_data %>% 
   dplyr::mutate(n_word = lengths(stringr::str_split(comment_txt, ' ')),
          n_label = lengths(stringr::str_split(multilabel_column, ','))) %>% 
   dplyr::filter(n_word > long_words | n_label > many_labels) 
@@ -217,4 +205,4 @@ n_complex_comments <- complex_comments %>%
 
 There is a total of **_`r n_complex_comments`_** comments that might need additional attention. 
 
-These complex comments will be available for download from the dashboard.
+These complex comments will be available to download from the dashboard for users to further interrogate the comments and the assigned categories.
