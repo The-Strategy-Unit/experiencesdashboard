@@ -10,15 +10,20 @@ knitr::opts_chunk$set(echo = FALSE,
                       warning=FALSE)
 ```
 
-```{r, include=FALSE}
+## Introduction
+
+This page shows an additional analysis and graphs that will be available to download for users of the experience dashboard. This additional analysis might be much more useful for key staff working with the patient experience data and it aims to provide a more in-depth analysis of the comments so users can gain additional insights.
+
+```{r include=FALSE}
 library(tidyverse)
 library(tidytext)
 library(ggraph)
 library(igraph)
+library(widyr)
 
-source("../R/utils_overlap_plot_helpers.R")
+source("https://raw.githubusercontent.com/CDU-data-science-team/experiencesdashboard/development/R/utils_overlap_plot_helpers.R")
 
-df <- readr::read_csv("../data-raw/multilabeled_data.csv", show_col_types = FALSE) %>%
+df <- readr::read_csv("https://raw.githubusercontent.com/CDU-data-science-team/experiencesdashboard/development/data-raw/multilabeled_data.csv", show_col_types = FALSE) %>%
   select(-`...1`)
 
 filter_data <- df %>%
@@ -37,7 +42,7 @@ tidy_filter_data <- filter_data %>%
 
 ## 1. Overlapping words
 
-This shows relationships between the themes (the categories). It shows the categories that tend to be similar to each other in how they are assigned to comments i.e. how comments shared about one theme relates to another theme. These relationships are shown using the actual number of comments shared between the themes (comment frequencies) or the pearson correlation of the comment frequencies. Of particular interest is the correlation among theme, which indicates how often they appear together relative to how often they appear separately. 
+This shows relationships between the themes (the categories). It shows the categories that tend to be similar to each other in how they are assigned to comments i.e. how comments shared about one theme relates to another theme. These relationships are shown using the number of comments shared between the themes (comment frequencies) or the Pearson correlation of the comment frequencies. Of particular interest is the correlation among themes, which indicates how often they are assigned together to comments relative to how often they are assigned separately.
 
 ```{r fig.width=10, fig.height=8}
 plot_type = 'correlation'
@@ -56,13 +61,13 @@ filter_data %>%
   
 ```
 
-We used Network graph and heatmap for this purpose. In this sample report, the heatmap is used to show the relationship based on the pairwise correlation and the Network graph shows the actual comment frequencies. We can see how the *Staff* theme shows strong relationship to the *Communication & involvement* theme, this indicates comments relating to *Staff* often relates to *Communication & involvement*
+We used a Network graph and heatmap for this purpose. In this sample report, the Network graph is used to show the relationship based on the pairwise correlation and the heatmap shows the actual comment frequencies. We can see how the *Staff* theme shows a strong relationship to the *Communication & involvement* theme, this indicates comments relating to *Staff* often relate more to the *Communication & involvement* category compared to other categories.
 
-NOTE: The heatmap will be available in the dashboard and users will be able to add the network graph to their report (available to download from the dashboard) if they find it more intuitive.
+NOTE: The heatmap is available on the dashboard and users will be able to add the network graph to their report (available to download from the dashboard) if they find it more intuitive.
 
 ## 2. TF-IDF/Word counts
 
-We’d expect the categories to differ in terms of topic and content, and therefore the frequency of words should differ between them also. The TF-IDF (term frequency-inverse document frequency) is used to quantify the relevance of words or phrases in a document amongst a collection of documents. Here we regard each theme/category as a document and we used the TF-IDF to find the prominent words peculiar to each of the category and we visualized the top 15 prominent words in each category. 
+We’d expect the categories to differ in terms of topic and content, and therefore the frequency of words should differ between them also. The TF-IDF (term frequency-inverse document frequency) is used to quantify the relevance of words or phrases in a document amongst a collection of documents. Here we regard each theme/category as a document and we used the TF-IDF to find the prominent words peculiar to each of the categories. Below, we visualized the top 15 prominent words from each category.
 
 ```{r fig.width=12, fig.height=15}
 tidy_comment_token <- tidy_filter_data %>% 
@@ -144,7 +149,7 @@ tidy_comment_token %>%
   visualize_bigrams()
 ```
 
-The Network graph above shows the top 5 words used in each category. The words *friendly* and *staff* has high present in comments labeled 'Staff'. We also see how the "Mental Health Specifics" and "Medication" categories stand out compared to the linkage we see among other groups.
+The Network graph above shows the top 5 words used in each category. The words *friendly* and *staff* have high present in comments labelled 'Staff'. We also see how the "Mental Health Specifics" and "Medication" categories stand out compared to the linkage we see among other groups.
 
 ```{r}
 # top 20 words across all the categories
@@ -157,7 +162,7 @@ tidy_comment_token %>%
 
 ```
 
-The above graph shows how the top occurring words (that are not stop words) within all the comments combined are distributed across the categories. We can see that among the top 20 frequent words in all the comments combined together, most occurred within comments tagged "Care received". The words *staff, helpful and feel* account for most of the linkage between "Staff" and "Communication and Involvement" and "General" categories 
+The above graph shows how the top-occurring words within all the comments combined are distributed across the categories. We can see that among the top 20 frequent words in all the comments combined, most occurred within comments tagged "Care received". The words *staff, helpful and feel* account for most of the linkage between "Staff", "Communication and Involvement" and "General" categories
 
 ## 4. Word-to-word connections
 
@@ -174,13 +179,13 @@ pat_bigrams %>%
 
 ```
 
-Above network graph shows the directional linkage between the most common bigrams (pair of consecutive words) in the whole data. It showing bigrams that occurred more than 5 times and where neither word was a stop word. The transparent of the arrows between the words are based on how common or rare the bigram is in the data.
+The above network graph shows the directional linkage between the most common bigrams (pairs of consecutive words) in the whole data. It shows bigrams that occurred more than 5 times and where neither word was a stop word. The transparency of the arrows between the words is based on how common or rare the bigram is in the data.
 
-*friendly* formed a major nodes and we see common short phrases such as *Mental Health*, *friendly staff*, and *feel comfortable*
+*Friendly* formed a major node and we see common short phrases such as *Mental Health*, *friendly staff*, and *feel comfortable*
 
 ## 5. Highlight complex comments  
 
-Sample Criteria to highlight complex comments(if any is met):
+We identify there may be situations where the machine learning model might be wrong in the categories assigned to comments, and this may be especially true for very long comments. We set some criteria to catch those complex comments for further interrogation. Below is a sample criterion to highlight complex comments (if any are met):
 
 1. comments with over 50 words
 
@@ -203,6 +208,6 @@ n_complex_comments <- complex_comments %>%
 ```
 
 
-There is a total of **_`r n_complex_comments`_** comments that might need additional attention. 
+In this sample data, there is a total of **_`r n_complex_comments`_** comments that might need additional attention. 
 
 These complex comments will be available to download from the dashboard for users to further interrogate the comments and the assigned categories.
