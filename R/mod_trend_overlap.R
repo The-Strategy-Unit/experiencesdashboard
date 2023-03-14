@@ -25,19 +25,21 @@ mod_trend_overlap_ui <- function(id){
         
         tabPanel("Trend", value = "trend",
                  br(),
-                 plotOutput(ns("category_trend_plot")) %>% shinycssloaders::withSpinner()
+                 plotly::plotlyOutput(ns("category_trend_plot")) %>% 
+                   shinycssloaders::withSpinner()
         ),
         
         # A Sub-tab
         
         tabPanel("Theme Overlap", value = "overlap",
                  br(),
-                 br(),
                  fluidRow(
-                   column(2),
-                   column(8, 
-                          plotOutput(ns("category_overlap_plot")) %>% shinycssloaders::withSpinner()),
-                   column(2)
+                   column(12,
+                          plotly::plotlyOutput(ns("category_overlap_plot")) %>% 
+                            shinycssloaders::withSpinner(),
+                          hr(),
+                          uiOutput(ns("dynamic_overlap_text"))
+                          )
                    )
                  )
         )
@@ -52,6 +54,8 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
+    global <- reactiveValues(selected_cat1 = NULL, selected_cat2 = NULL)
+    
     output$trendUI <- renderUI({
       
       # show only on the trend tab
@@ -65,6 +69,22 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
         label = h5(strong("Select categories (defaults to all):")),
         choices = choices,
         multiple = TRUE
+      )
+      
+    })
+    
+    # Verbatim output
+    
+    output$dynamic_overlap_text <- renderUI({
+      
+      validate(
+        need(plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event'), "Please Select the categorises to view")
+      )
+      
+      tagList(
+        paste(toupper(global$selected_cat2),'<==>',toupper(global$selected_cat1)),
+        hr(),
+        htmlOutput(ns("overlap_text"))
       )
       
     })
@@ -95,9 +115,11 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
       
     })
     
-    output$category_trend_plot <- renderPlot({
+    # trend plot
+    
+    output$category_trend_plot <- plotly::renderPlotly({
       
-      trend_data() %>% 
+      p <- trend_data() %>% 
         ggplot2::ggplot(ggplot2::aes(x=date, y=prop, color=category, group=category)) +
         ggplot2::geom_line() +
         ggplot2::geom_point() +
@@ -105,29 +127,54 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
         ggplot2::scale_y_continuous(label = scales::label_percent(accuracy = 1)) +
         ggplot2::scale_colour_viridis_d() +
         ggplot2::facet_grid(. ~ comment_type) +
-        ggplot2::labs(x= NULL, y = '% contribution', color = "Category") +
-        ggplot2::theme(text = ggplot2::element_text(size = 16)) 
+        ggplot2::labs(x= NULL, y = '% contribution', color = "Category") #+
+        # ggplot2::theme(text = ggplot2::element_text(size = 16)) 
+        
+      return(
+        p %>%
+          plotly::ggplotly(tooltip = c('colour', 'text')) %>%
+          plotly::config(displayModeBar = FALSE)
+      )
       
     })
     
-    # Add overlapping plot
-    output$category_overlap_plot <- renderPlot({
+    # Create tidy data for the overlapping plot
+    
+    tidy_data <- reactive({
       
-      
-      set.seed(2017)
-      
-      filter_data()$filter_data %>% 
+       filter_data()$filter_data %>%
         make_sample_multilabeled_data() %>% 
-        multi_to_single_label(column_name = 'labels') %>% 
-        make_overlap_theme(group_type = overlap_plot_type) %>% 
-        reshape_overlapping_theme() %>%
-        overlap_heatmap_plot(legend = overlap_plot_type)
-      
+        multi_to_single_label(column_name = 'labels')
     })
     
-    reactive(
-      input$select_super_category
-    )
- 
+    output$category_overlap_plot <- plotly::renderPlotly({
+      
+      clicked_data <- tidy_data()  %>% 
+        make_overlap_theme(group_type = overlap_plot_type) %>% 
+        reshape_overlapping_theme()
+      
+      clicked_data %>%
+        interactive_heatmap(overlap_plot_type, source = 'overlap_plot')
+    })
+    
+    
+    output$overlap_text <- renderText({
+      
+      req(plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event'))
+          
+      clickData <- plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event')
+      
+      global$selected_cat1 <- clickData$x
+      global$selected_cat2 <- clickData$y 
+                                           
+      final_text <- show_multilabeled_text(tidy_data(), 'value', 
+                                           c(global$selected_cat1, global$selected_cat2))
+      
+      cat(paste(global$selected_cat1),'<==>', toupper(global$selected_cat2), ' :: ', 
+          length(final_text), ' \n')
+      
+      return(final_text)
+      
+    })
   })
 }
