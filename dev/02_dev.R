@@ -50,6 +50,7 @@ usethis::use_package( "textdata" )
 usethis::use_package( "here" )
 usethis::use_package( "shinycssloaders" )
 usethis::use_package( "xml2" )
+usethis::use_package( "plotly" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
