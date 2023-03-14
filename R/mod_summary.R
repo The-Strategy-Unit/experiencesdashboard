@@ -102,7 +102,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
     dt_out <- reactiveValues(data = db_data  %>% 
                                dplyr::filter(hidden==0) %>% 
                                dplyr::select(-hidden) %>% 
-                               dplyr::select(comment_id, everything()) %>% 
+                               dplyr::select(row_id, everything()) %>% 
                                dplyr::as_tibble(),
                              
                              index=list()
@@ -165,15 +165,15 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       
       # print(input$pat_table_rows_selected) # for debugging and logging
         
-      rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] %>%  unlist(use.name=F)
+      rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>%  unlist(use.name=F)
       
       # update datababse
-      query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE comment_id IN ({ids*})", 
+      query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})", 
                               ids = rowselected, .con = db_conn)
       DBI::dbExecute(db_conn, query)
       
       # update UI
-      dt_out$data <- dt_out$data %>% dplyr::filter(!comment_id %in% rowselected)
+      dt_out$data <- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
       DT::replaceData(proxy, dt_out$data, resetPaging = F)  # update the data on the UI
       
       cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging 
@@ -251,8 +251,8 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       tryCatch({
         #update the database  
         trust_db <- dplyr::tbl(db_conn, get_golem_config('trust_name'))
-        dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)), 
-                           by = 'comment_id', copy = TRUE, unmatched = 'ignore', in_place = TRUE)
+        dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(row_id %in% unlist(dt_out$index)), 
+                           by = 'row_id', copy = TRUE, unmatched = 'ignore', in_place = TRUE)
         
         showModal(modalDialog(
               title = "Success!",
