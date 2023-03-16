@@ -56,7 +56,7 @@ multi_to_single_label <- function(mt_data, column_name, n_labels = 10) {
 }
 
 
-#' make overlap theme
+#' make overlap topics
 #'
 #' @description Convert a multi-labeled data that has been tidied using
 #'              `multi_to_single_label()` into a wide format
@@ -85,7 +85,7 @@ make_overlap_theme <- function(tidy_multilabeled_data, group_type = c("count", "
     )
   } else {
     return(
-      tidy_data %>%
+      tidy_multilabeled_data %>%
         dplyr::count(value, comment_txt, sort = TRUE) %>%
         widyr::pairwise_cor(value, comment_txt, n, sort = TRUE) %>%
         dplyr::mutate(correlation = round(correlation, 2)) %>%
@@ -98,7 +98,7 @@ make_overlap_theme <- function(tidy_multilabeled_data, group_type = c("count", "
 }
 
 
-#' reshape_overlapping_theme
+#' reshape overlapping topic
 #'
 #' @description A function to remove redundant information from data in wide format,
 #'              reorder its values and convert it to a long data format
@@ -155,7 +155,7 @@ overlap_heatmap_plot <- function(data, legend = "Legend", threshold_value = -10)
         plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 14)
       ) +
       ggplot2::labs(x = NULL, y = NULL) +
-      ggplot2::ggtitle(label = "Overlapping themes")
+      ggplot2::ggtitle(label = stringr::str_to_sentence(paste(legend, "between overlapping topics")))
   )
 }
 
