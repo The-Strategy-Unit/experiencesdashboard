@@ -55,7 +55,8 @@ Imports:
     textdata,
     shinycssloaders,
     here,
-    xml2
+    xml2,
+    plotly
 Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,

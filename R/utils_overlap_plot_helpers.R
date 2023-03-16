@@ -45,6 +45,7 @@ tidy_label_column <- function(data, column_name) {
 #' @export
 multi_to_single_label <- function(mt_data, column_name, n_labels = 10) {
   mt_data %>%
+    dplyr::mutate(original_label = .data[[column_name]]) %>%
     tidyr::separate(column_name,
       into = paste("label_", 1:n_labels),
       sep = ","
@@ -55,7 +56,7 @@ multi_to_single_label <- function(mt_data, column_name, n_labels = 10) {
 }
 
 
-#' make overlap theme
+#' make overlap topics
 #'
 #' @description Convert a multi-labeled data that has been tidied using
 #'              `multi_to_single_label()` into a wide format
@@ -74,7 +75,7 @@ make_overlap_theme <- function(tidy_multilabeled_data, group_type = c("count", "
   if (group_type == "count") {
     return(
       tidy_multilabeled_data %>%
-        dplyr::inner_join(tidy_multilabeled_data, by = "comment_id") %>%
+        dplyr::inner_join(tidy_multilabeled_data, by = "row_id") %>%
         dplyr::count(value.x, value.y) %>%
         dplyr::filter(value.x != value.y) %>%
         dplyr::rename("item1" = value.x, "item2" = value.y) %>%
@@ -88,15 +89,16 @@ make_overlap_theme <- function(tidy_multilabeled_data, group_type = c("count", "
         dplyr::count(value, comment_txt, sort = TRUE) %>%
         widyr::pairwise_cor(value, comment_txt, n, sort = TRUE) %>%
         dplyr::mutate(correlation = round(correlation, 2)) %>%
-        dplyr::arrange(item1) %>%
-        tidyr::pivot_wider(names_from = item1, values_from = correlation) %>%
+        dplyr::filter(!(item1==''), !(item2=='')) %>% 
+        dplyr::arrange(item1) %>% 
+        tidyr::pivot_wider(names_from = item1, values_from = correlation) %>% 
         dplyr::arrange(item2)
     )
   }
 }
 
 
-#' reshape_overlapping_theme
+#' reshape overlapping topic
 #'
 #' @description A function to remove redundant information from data in wide format,
 #'              reorder its values and convert it to a long data format
@@ -153,7 +155,7 @@ overlap_heatmap_plot <- function(data, legend = "Legend", threshold_value = -10)
         plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 14)
       ) +
       ggplot2::labs(x = NULL, y = NULL) +
-      ggplot2::ggtitle(label = "Overlapping themes")
+      ggplot2::ggtitle(label = stringr::str_to_sentence(paste(legend, "between overlapping topics")))
   )
 }
 
@@ -190,6 +192,85 @@ visualize_network <- function(data, attr_column = "value", threshold_value = 0) 
       color = "#1f78b4"
     ) +
     ggplot2::theme_void()
+}
+
+
+#' Plot interactive heatmap with plotly
+#'
+#' @param data the dataframe to plot
+#' @param group_type string value to group by  either 'count' for number of comment
+#'        or 'correlation' for Pearson correlation
+#'
+#' @return a plotly figure
+#' @noRd
+interactive_heatmap <- function(data, group_type = c("count", "correlation"), source='A') {
+    # check argument is valid and choose the correct logical predicate
+  group_type <- match.arg(group_type)
+  stopifnot("group type must be one of 'count', or 'correlation'" = length(group_type) == 1)
+  
+    p <- data %>% 
+      plotly::plot_ly(x = ~item1, y=~item2, z=~value, 
+              type = "heatmap",
+              hoverinfo = "none",
+              colors =colorRamp(c("#ffffff", "#0072B2")),
+              # height = '500',
+              source = source
+      ) %>%
+      plotly::layout(
+        xaxis = list(title="",
+                     tickangle=-45), 
+        yaxis = list(title=list(text= ""))
+      ) %>% 
+      # edit hover information
+      plotly::add_markers(
+        inherit = F,
+        x = ~item1, y = ~item2,
+        data = data,
+        showlegend = F,
+        text = ~value,
+        color = I("transparent"), 
+        hovertemplate = paste0(group_type, ": %{text}<br>", 
+                               "%{y}<br>",
+                               "%{x}")
+      ) %>%
+      plotly::config(displayModeBar = FALSE)
+    
+    # add the text value to count plot but not the correlation plot
+    if (group_type == 'count'){
+      p <- p %>%  
+        plotly::add_text(
+            inherit = F,
+            x = ~item1, y = ~item2,
+            data = data,
+            showlegend = F,
+            text = ~value
+        )
+    }
+    
+    return(p)
+}
+
+
+#' find the common comments between two categories 
+#'
+#' @param data a dataframe with a unique row identifier 
+#' @param theme_column the column where the look values to compare is
+#' @param filter_by_themes list of the two values to compare
+#' 
+#' @return strings
+#' @noRd
+show_multilabeled_text <- function(data, theme_column, filter_by_themes) {
+  
+  data %>%
+    dplyr::filter(.data[[theme_column]] == filter_by_themes[1]) %>%
+    dplyr::semi_join(
+      data %>%
+        dplyr::filter(.data[[theme_column]] == filter_by_themes[2]),
+      by = "row_id"
+    ) %>%
+    dplyr::pull(comment_txt) %>%
+    paste0(., hr())
+  
 }
 
 
