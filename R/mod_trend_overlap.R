@@ -164,17 +164,21 @@ mod_trend_overlap_server <- function(id, filter_data,
     
     output$overlap_text <- renderText({
       
-      req(plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event'))
+      req(plotly::event_data("plotly_click", source = 'overlap_plot', 
+                             priority = 'event'))
           
-      clickData <- plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event')
+      clickData <- plotly::event_data("plotly_click", source = 'overlap_plot', 
+                                      priority = 'event')
       
       global$selected_cat1 <- clickData$x
       global$selected_cat2 <- clickData$y 
                                            
       final_text <- show_multilabeled_text(tidy_data(), 'value', 
-                                           c(global$selected_cat1, global$selected_cat2))
+                                           c(global$selected_cat1, 
+                                             global$selected_cat2))
       
-      cat(paste(global$selected_cat1),'<==>', toupper(global$selected_cat2), ' :: ', 
+      cat(paste(global$selected_cat1),'<==>', 
+          toupper(global$selected_cat2), ' :: ', 
           length(final_text), ' \n')
       
       return(final_text)
