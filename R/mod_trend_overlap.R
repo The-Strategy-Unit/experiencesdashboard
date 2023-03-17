@@ -78,7 +78,7 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
     output$dynamic_overlap_text <- renderUI({
       
       validate(
-        need(plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event'), "Please Select the categorises to view")
+        need(plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event'), "Please select the categories to view")
       )
       
       tagList(
