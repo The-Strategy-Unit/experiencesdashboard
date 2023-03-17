@@ -50,7 +50,8 @@ mod_trend_overlap_ui <- function(id){
 #' trend_overlap Server Functions
 #'
 #' @noRd 
-mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('count', 'correlation')){
+mod_trend_overlap_server <- function(id, filter_data, 
+                                     overlap_plot_type =c('count', 'correlation')){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
@@ -78,7 +79,9 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
     output$dynamic_overlap_text <- renderUI({
       
       validate(
-        need(plotly::event_data("plotly_click", source = 'overlap_plot', priority = 'event'), "Please select the categories to view")
+        need(plotly::event_data("plotly_click", source = 'overlap_plot', 
+                                priority = 'event'), 
+             "Please select the categories to view")
       )
       
       tagList(
@@ -120,7 +123,8 @@ mod_trend_overlap_server <- function(id, filter_data, overlap_plot_type =c('coun
     output$category_trend_plot <- plotly::renderPlotly({
       
       p <- trend_data() %>% 
-        ggplot2::ggplot(ggplot2::aes(x=date, y=prop, color=category, group=category)) +
+        ggplot2::ggplot(ggplot2::aes(x = date, y = prop, 
+                                     color = category, group = category)) +
         ggplot2::geom_line() +
         ggplot2::geom_point() +
         ggplot2::scale_x_date(date_breaks = "4 months", date_labels = "%b %y") +
