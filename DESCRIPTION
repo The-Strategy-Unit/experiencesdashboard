@@ -56,7 +56,8 @@ Imports:
     shinycssloaders,
     here,
     xml2,
-    plotly
+    plotly,
+    reshape2
 Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,
