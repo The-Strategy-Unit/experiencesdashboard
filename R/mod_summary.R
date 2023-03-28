@@ -41,6 +41,12 @@ mod_summary_ui <- function(id){
                        class = "btn-success",
                        icon = icon('save'),
           ),
+        ),
+        column(
+          width = 1,
+          downloadButton(ns("download1"),"Download data",
+                         icon = icon('download')
+          )
         )
       ),
       
@@ -115,13 +121,14 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
       selection = 'multiple',
       rownames = F,
       editable = list('target' = 'row', disable = list(columns = c(0))), # prevent editing of the first n second col
-      extensions = 'Buttons',
+      filter = 'top', 
       options = list(
-        pageLength = 10, lengthMenu = c(10, 15, 20, 50),
+        pageLength = 10, 
+        lengthMenu = c(10, 30, 50),
         dom = 'Blfrtip',
         search = list(caseInsensitive = F),
-        buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-        scrollX = TRUE
+        scrollX = TRUE,
+        autoWidth = TRUE
       )
     )
     
@@ -273,6 +280,15 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data){
         }
       )
     })
+    
+    # Download the data
+    
+    output$download1 <- downloadHandler(
+      filename = paste0("pat_data-", Sys.Date(), ".csv"),
+      content = function(file) {
+        write.csv(dt_out$data, file, row.names = FALSE)
+      }
+    )
     
     # data module
 
