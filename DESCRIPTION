@@ -57,6 +57,7 @@ Imports:
     xml2,
     plotly,
     NHSRplotthedots
+    reshape2
 Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,

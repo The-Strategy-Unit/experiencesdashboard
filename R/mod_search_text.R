@@ -12,13 +12,11 @@ mod_search_text_ui <- function(id){
   tagList(
     
     fluidPage(
-      p("Text searches are combined with AND"),
       p("Add multiple search terms with comma"),
       fluidRow(
         textInput(ns("text_search"), "Search term(s)",
                   placeholder = "e.g. staff, doctor, nurse")
       ),
-      
       
       fluidRow(
         uiOutput(ns("comment_1_UI")),
