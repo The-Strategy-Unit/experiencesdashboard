@@ -31,7 +31,6 @@ usethis::use_package( "tidytext" )
 usethis::use_package( "janitor" )
 usethis::use_package( "UpSetR" )
 usethis::use_package( "tibbletime" )
-usethis::use_package( "qicharts2" )
 usethis::use_package( "shinydashboard" )
 usethis::use_package( "dashboardthemes" )
 usethis::use_package( "shinyWidgets" )
@@ -51,6 +50,7 @@ usethis::use_package( "here" )
 usethis::use_package( "shinycssloaders" )
 usethis::use_package( "xml2" )
 usethis::use_package( "plotly" )
+usethis::use_package( "NHSRplotthedots" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/

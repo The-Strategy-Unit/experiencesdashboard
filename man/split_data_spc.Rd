@@ -11,11 +11,11 @@ split_data_spc(data, variable = "fft", chunks)
 
 \item{variable}{string, indicating the name of the FFT column}
 
-\item{chunks}{either "monthly", which divides the data in months 
-or the number of chunks to divide the data into (each chunk will have the 
+\item{chunks}{either "monthly", which divides the data in months
+or the number of chunks to divide the data into (each chunk will have the
 same number of rows)}
 
-\item{return}{dataframe suitable for plotting with qicharts2}
+\item{return}{dataframe suitable for plotting with NHSRplotthedots::ptd_spc}
 }
 \description{
 Get data ready for SPC plotting
