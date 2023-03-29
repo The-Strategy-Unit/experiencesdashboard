@@ -91,7 +91,7 @@ usethis::use_test( "search_text" )
 usethis::use_test( "calculate_table" )
 usethis::use_test( "tidy_data" )
 usethis::use_test( "report_functions" )
-usethis::use_test( "pxtextmineR" )
+# usethis::use_test( "pxtextmineR" )
 usethis::use_test( "tidy_upload" )
 
 # Documentation
