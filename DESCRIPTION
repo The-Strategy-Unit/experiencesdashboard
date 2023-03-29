@@ -50,7 +50,6 @@ Imports:
     reticulate,
     Rdpack,
     readxl,
-    pxtextmineR,
     textdata,
     shinycssloaders,
     here,
@@ -60,8 +59,7 @@ Imports:
     reshape2
 Remotes: 
     CDU-data-science-team/nottshcMethods,
-    CDU-data-science-team/experienceAnalysis,
-    nhs-r-community/pxtextmineR@connect-fix
+    CDU-data-science-team/experienceAnalysis
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
