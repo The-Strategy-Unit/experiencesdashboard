@@ -12,13 +12,3 @@ tidy_all_trusts(data)
 \description{
 Tidy patient experience data
 }
-\section{Last updated by}{
-
-Chris Beeley
-}
-
-\section{Last updated date}{
-
-2021-04-25
-}
-
