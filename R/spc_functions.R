@@ -50,7 +50,7 @@ plot_fft_spc <- function(data) {
     ) %>%
     plot(
       y_axis_label = "% FFT score",
-      main_title = "SPC of Mothly FFT score",
+      main_title = "SPC of Monthly FFT score",
       x_axis_breaks = "4 months",
       x_axis_date_format = "%b %y",
       icons_position = "none"
