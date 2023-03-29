@@ -32,6 +32,10 @@ mod_patient_experience_server <- function(id){
           mod_summary_ui("summary_ui_1")
         ),
         tabPanel(
+          "Data Management",
+          mod_data_management_ui("data_management_1")
+        ),
+        tabPanel(
           "Report builder",
           mod_report_builder_ui("report_builder_ui_1")
         )

@@ -65,6 +65,8 @@ golem::add_module( name = "text_reactable" ) # Name of the module
 golem::add_module( name = "demographics" ) # Name of the module
 golem::add_module( name = "summary" ) # Name of the module
 golem::add_module( name = "trend_overlap" ) # Name of the module
+golem::add_module( name = "data_management" ) # Name of the module
+golem::add_module( name = "summary_record" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
@@ -91,7 +93,6 @@ usethis::use_test( "search_text" )
 usethis::use_test( "calculate_table" )
 usethis::use_test( "tidy_data" )
 usethis::use_test( "report_functions" )
-# usethis::use_test( "pxtextmineR" )
 usethis::use_test( "tidy_upload" )
 
 # Documentation
