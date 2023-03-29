@@ -13,7 +13,7 @@ mod_summary_ui <- function(id) {
     fluidPage(
       h1("Overview"),
       uiOutput(ns("summary_text")),
-      uiOutput(ns("dyn_table"))
+      uiOutput(ns("data_management_UI"))
     )
   )
 }
@@ -57,13 +57,15 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data) {
       )
     })
 
-    # Read data from source e.g. database ####
+    # Create global variable 
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list()
     )
 
-    output$dyn_table <- renderUI({
+    output$data_management_UI <- renderUI({
+      
+      # server data
       dt_out$data <- filter_data()$filter_data %>%
         dplyr::filter(hidden == 0) %>%
         dplyr::select(-hidden) %>%
@@ -71,12 +73,14 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data) {
           row_id, date, location_1, location_2, location_3,
           comment_txt, comment_type, category, everything()
         )
+      
+      #UI
 
       tagList(
         fluidRow(
           column(
             width = 1,
-            actionButton(ns("launch_modal"), "Upload new data",
+            actionButton(ns("upload_new_data"), "Upload new data",
               icon = icon("person-circle-plus")
             )
           )
@@ -149,16 +153,31 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data) {
       info <- input$pat_table_cell_edit
 
       info$value <- sapply(info$value, html_decoder, USE.NAMES = F)
-
+      
+      # Track the initial state of the data before recording user changes
+      
       old_dt <- dt_out$data
 
       tryCatch(
         {
+          
           dt_out$data <- DT::editData(dt_out$data, info, rownames = F)
+          
+          # Data Validation 
+          # Ignore changes if more than one character is entered to the gender column
+          check_gender = nchar(info$value[10]) < 2 
+          if (!check_gender) {
+            dt_out$data <- old_dt
+            
+            showModal(modalDialog(
+              title = "Error!",
+              paste('Gender value can only be one character'),
+              easyClose = TRUE
+              ))
+            }
 
-          # Check if any changes was made
+          # if any allowed changes was made to the data then update the UI data
           if (!identical(old_dt, dt_out$data)) {
-            # update the UI
             DT::replaceData(proxy, dt_out$data, rownames = F, resetPaging = F)
 
             # track edits
@@ -166,11 +185,13 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data) {
 
             cat("Edited rows: ", unlist(dt_out$index), " \n") # for debugging
           }
+          
         },
         error = function(e) {
+          
           showModal(modalDialog(
             title = "Error!",
-            paste(e),
+            paste(e, "\n\nPlease correct your changes"),
             easyClose = TRUE
           ))
         }
@@ -302,7 +323,7 @@ mod_summary_server <- function(id, db_conn, db_data, filter_data) {
 
     # data module
 
-    observeEvent(input$launch_modal, {
+    observeEvent(input$upload_new_data, {
       datamods::import_modal(
         id = session$ns("myid"),
         from = "file",
