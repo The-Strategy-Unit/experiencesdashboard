@@ -55,5 +55,9 @@ plot_fft_spc <- function(data) {
       x_axis_date_format = "%b %y",
       icons_position = "none"
     ) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 0))
+    add_theme_nhs() +
+    ggplot2::theme(
+      axis.title = ggplot2::element_text(size = 12),
+      axis.text = ggplot2::element_text(size = 11),
+    )
 }

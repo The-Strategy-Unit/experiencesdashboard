@@ -61,9 +61,9 @@ mod_demographics_server <- function(id, filter_data, store_data){
         h3("Categories with fewer than 10 individuals are excluded"),
         p('The below chart shows the average percentage of maximum FFT score for each category.'),
         fluidRow(
-          if(has_age){column(width, plotOutput(ns("compare_age")))},
-          if(has_gender){column(width, plotOutput(ns("compare_gender")))},
-          if(has_ethnicity){column(width, plotOutput(ns("compare_ethnicity")))}
+          if(has_age){column(width, plotly::plotlyOutput(ns("compare_age")))},
+          if(has_gender){column(width, plotly::plotlyOutput(ns("compare_gender")))},
+          if(has_ethnicity){column(width, plotly::plotlyOutput(ns("compare_ethnicity")))}
         )
       )
     })
@@ -142,9 +142,8 @@ mod_demographics_server <- function(id, filter_data, store_data){
       
       filter_data()$unique_data %>% 
         dplyr::arrange(age) %>% 
-        dplyr::mutate(age = factor(age, 
-                                   exclude = NULL)) %>% 
-        demographic_distribution(variable = "age")
+        dplyr::mutate(age = factor(age)) %>% 
+        demographic_distribution(variable = "age") 
     })
     
     output$gender_graph <- renderPlot({
@@ -161,17 +160,17 @@ mod_demographics_server <- function(id, filter_data, store_data){
     
     # compare scores----
     
-    output$compare_age <- renderPlot({
+    output$compare_age <- plotly::renderPlotly({
       
       compare_demographics(filter_data()$unique_data, "age")
     })
     
-    output$compare_gender <- renderPlot({
+    output$compare_gender <- plotly::renderPlotly({
       
       compare_demographics(filter_data()$unique_data, "gender")
     })
     
-    output$compare_ethnicity <- renderPlot({
+    output$compare_ethnicity <- plotly::renderPlotly({
       
       compare_demographics(filter_data()$unique_data, "ethnicity")
     })

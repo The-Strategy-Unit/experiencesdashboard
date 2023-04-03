@@ -56,10 +56,12 @@ Imports:
     xml2,
     plotly,
     NHSRplotthedots,
-    reshape2
-Remotes: 
+    reshape2,
+    NHSRtheme (>= 0.1.0)
+Remotes:  
     CDU-data-science-team/nottshcMethods,
-    CDU-data-science-team/experienceAnalysis
+    CDU-data-science-team/experienceAnalysis,
+    nhs-r-community/NHSRtheme
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
