@@ -60,7 +60,7 @@ mod_click_plot_server <- function(id, filter_data, comment_type, event_id){
       
       clicked_data() %>% 
         plotly::plot_ly(x = ~n, y=~reorder(Category,n), type = "bar", 
-                        color = I('darkgrey'),
+                        color = I('#005EB8'),
                         source = event_id) %>% 
         plotly::layout(
           xaxis = list(title="Number of comments"), 

@@ -51,6 +51,7 @@ usethis::use_package( "shinycssloaders" )
 usethis::use_package( "xml2" )
 usethis::use_package( "plotly" )
 usethis::use_package( "NHSRplotthedots" )
+usethis::use_dev_package( "NHSRtheme" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/

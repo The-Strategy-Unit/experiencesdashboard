@@ -89,9 +89,9 @@ make_overlap_theme <- function(tidy_multilabeled_data, group_type = c("count", "
         dplyr::count(value, comment_txt, sort = TRUE) %>%
         widyr::pairwise_cor(value, comment_txt, n, sort = TRUE) %>%
         dplyr::mutate(correlation = round(correlation, 2)) %>%
-        dplyr::filter(!(item1==''), !(item2=='')) %>% 
-        dplyr::arrange(item1) %>% 
-        tidyr::pivot_wider(names_from = item1, values_from = correlation) %>% 
+        dplyr::filter(!(item1 == ""), !(item2 == "")) %>%
+        dplyr::arrange(item1) %>%
+        tidyr::pivot_wider(names_from = item1, values_from = correlation) %>%
         dplyr::arrange(item2)
     )
   }
@@ -203,64 +203,73 @@ visualize_network <- function(data, attr_column = "value", threshold_value = 0) 
 #'
 #' @return a plotly figure
 #' @noRd
-interactive_heatmap <- function(data, group_type = c("count", "correlation"), source='A') {
-    # check argument is valid and choose the correct logical predicate
+interactive_heatmap <- function(data, group_type = c("count", "correlation"), source = "A") {
+  # check argument is valid and choose the correct logical predicate
   group_type <- match.arg(group_type)
   stopifnot("group type must be one of 'count', or 'correlation'" = length(group_type) == 1)
-  
-    p <- data %>% 
-      plotly::plot_ly(x = ~item1, y=~item2, z=~value, 
-              type = "heatmap",
-              hoverinfo = "none",
-              colors =colorRamp(c("#ffffff", "#0072B2")),
-              # height = '500',
-              source = source
-      ) %>%
-      plotly::layout(
-        xaxis = list(title="",
-                     tickangle=-45), 
-        yaxis = list(title=list(text= ""))
-      ) %>% 
-      # edit hover information
-      plotly::add_markers(
+
+  p <- data %>%
+    plotly::plot_ly(
+      x = ~item1, y = ~item2, z = ~value,
+      type = "heatmap",
+      hoverinfo = "none",
+      colors = colorRamp(c("#ffffff", "#0072B2")),
+      # height = '500',
+      source = source
+    ) %>%
+    plotly::layout(
+      xaxis = list(
+        title = "",
+        tickangle = -45,
+        showgrid = F,
+        ticks = ""
+      ),
+      yaxis = list(
+        title = list(text = ""),
+        ticks = ""
+      )
+    ) %>%
+    # edit hover information
+    plotly::add_markers(
+      inherit = F,
+      x = ~item1, y = ~item2,
+      data = data,
+      showlegend = F,
+      text = ~value,
+      color = I("transparent"),
+      hovertemplate = paste0(
+        group_type, ": %{text}<br>",
+        "%{y}<br>",
+        "%{x}"
+      )
+    ) %>%
+    plotly::config(displayModeBar = FALSE)
+
+  # add the text value to count plot but not the correlation plot
+  if (group_type == "count") {
+    p <- p %>%
+      plotly::add_text(
         inherit = F,
         x = ~item1, y = ~item2,
         data = data,
         showlegend = F,
-        text = ~value,
-        color = I("transparent"), 
-        hovertemplate = paste0(group_type, ": %{text}<br>", 
-                               "%{y}<br>",
-                               "%{x}")
-      ) %>%
-      plotly::config(displayModeBar = FALSE)
-    
-    # add the text value to count plot but not the correlation plot
-    if (group_type == 'count'){
-      p <- p %>%  
-        plotly::add_text(
-            inherit = F,
-            x = ~item1, y = ~item2,
-            data = data,
-            showlegend = F,
-            text = ~value
-        )
-    }
-    
-    return(p)
+        text = ~value
+      )
+  }
+
+  return(p)
 }
 
 
-#' find the common comments between two categories 
+#' find the common comments between two categories
 #'
-#' @param data a dataframe with a unique row identifier 
+#' @param data a dataframe with a unique row identifier
 #' @param theme_column the column where the look values to compare is
 #' @param filter_by_themes list of the two values to compare
-#' 
+#'
 #' @return strings
 #' @noRd
 show_multilabeled_text <- function(data, theme_column, filter_by_themes) {
-  
   data %>%
     dplyr::filter(.data[[theme_column]] == filter_by_themes[1]) %>%
     dplyr::semi_join(
@@ -270,7 +279,6 @@ show_multilabeled_text <- function(data, theme_column, filter_by_themes) {
     ) %>%
     dplyr::pull(comment_txt) %>%
     paste0(., hr())
-  
 }
 
 
@@ -300,4 +308,54 @@ make_sample_multilabeled_data <- function(filter_data) {
     dplyr::select(-dplyr::starts_with("category"))
 
   return(multilabel_data)
+}
+
+#' Add NHS theme to ggplot chart
+#'
+#' This adds a theme to your chart by tweaking
+#' [NHSRtheme](https://github.com/nhs-r-community/NHSRtheme/blob/main/R/theme_nhs.R)
+#'
+#' @export
+add_theme_nhs <- function() {
+  
+  ggplot2::theme(
+    # Set the title and subtitle to be much larger and bolder than other text
+    plot.title = ggplot2::element_text(size = 18),
+    plot.subtitle = ggplot2::element_text(
+      size = 14,
+      margin = ggplot2::margin(9, 0, 9, 0)
+    ),
+
+    # For facets, set the title to be larger than other text and left-justified
+    # and the panel background to white
+    strip.text = ggplot2::element_text(size = 16),
+    strip.background = ggplot2::element_rect(fill = "white"),
+
+    # Set the legend to be aligned at the bottom with no title and background
+    # Note: the legend may need manual tweaking based on plot coordinates
+    legend.title = ggplot2::element_blank(),
+    legend.text.align = 0,
+    legend.background = ggplot2::element_blank(),
+    legend.key = ggplot2::element_blank(),
+    legend.position = "bottom",
+
+
+    # Remove all minor gridlines and add major y gridlines
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(color = "#E8EDEE"),
+    panel.grid.major.x = ggplot2::element_blank(),
+
+    # Set the panel background to be blank
+    panel.background = ggplot2::element_blank(),
+
+
+    # Set the axis to have to have no lines or ticks with a small
+    # margin on the x axis
+    axis.ticks = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(
+      angle = 0,
+      margin = ggplot2::margin(5, 0, 10, 0)
+    )
+  )
 }

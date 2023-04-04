@@ -129,16 +129,23 @@ mod_trend_overlap_server <- function(id, filter_data,
         ggplot2::geom_point() +
         ggplot2::scale_x_date(date_breaks = "4 months", date_labels = "%b %y") +
         ggplot2::scale_y_continuous(label = scales::label_percent(accuracy = 1)) +
-        ggplot2::scale_colour_viridis_d() +
+        NHSRtheme::scale_colour_nhs() +
         ggplot2::facet_grid(. ~ comment_type) +
-        ggplot2::labs(x= NULL, y = '% contribution', color = "Category") #+
-        # ggplot2::theme(text = ggplot2::element_text(size = 16)) 
+        ggplot2::labs(x= NULL, y = '% contribution', color = "Category") +
+        add_theme_nhs()
         
       return(
         p %>%
-          plotly::ggplotly(tooltip = c('colour', 'text')) %>%
-          plotly::config(displayModeBar = FALSE)
-      )
+          plotly::ggplotly() %>%
+          plotly::config(displayModeBar = FALSE) %>%
+          plotly::layout(legend = list(
+            title="",
+            orientation = "h",
+            y = -0.2,
+            xanchor = "center",
+            x=0.5)
+          )
+        )
       
     })
     
