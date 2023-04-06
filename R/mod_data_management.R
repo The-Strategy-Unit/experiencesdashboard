@@ -4,10 +4,10 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd 
+#' @noRd
 #'
-#' @importFrom shiny NS tagList 
-mod_data_management_ui <- function(id){
+#' @importFrom shiny NS tagList
+mod_data_management_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidPage(
@@ -15,40 +15,46 @@ mod_data_management_ui <- function(id){
     )
   )
 }
-    
+
 #' data_management Server Functions
 #'
-#' @noRd 
-mod_data_management_server <- function(id, db_conn, filter_data){
-  moduleServer( id, function(input, output, session){
+#' @noRd
+mod_data_management_server <- function(id, db_conn, filter_data) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    # Create global variable ####
     
-    # Create global variable 
     dt_out <- reactiveValues(
       data = data.frame(),
-      index = list()
+      index = list(),
+      column_names = c(
+        "row_id", "date", "location_1", "location_2", "location_3",
+        "comment_txt", "comment_type", "category", "fft", "gender",
+        "age", "ethnicity", "sexuality", "patient_carer", "disability",
+        "faith", "pt_id", "crit"
+      )
     )
+
+    # dynamic UI ####
     
     output$data_management_UI <- renderUI({
-      
       # server data
+      
       dt_out$data <- filter_data()$filter_data %>%
         dplyr::filter(hidden == 0) %>%
         dplyr::select(-hidden) %>%
-        dplyr::select(
-          row_id, date, location_1, location_2, location_3,
-          comment_txt, comment_type, category, everything()
-        )
-      
-      #UI
-      
+        dplyr::select(dt_out$column_names)
+
+      # UI
+
       tagList(
-        tags$br(), 
+        tags$br(),
         fluidRow(
           column(
             width = 1,
             actionButton(ns("upload_new_data"), "Upload new data",
-                         icon = icon("person-circle-plus")
+              icon = icon("person-circle-plus")
             )
           )
         ),
@@ -58,22 +64,22 @@ mod_data_management_server <- function(id, db_conn, filter_data){
           column(
             width = 1,
             actionButton(ns("del_pat"), "Delete",
-                         class = "btn-success",
-                         # style = "color: #fff;",
-                         icon = icon("trash-can")
+              class = "btn-success",
+              # style = "color: #fff;",
+              icon = icon("trash-can")
             ),
           ),
           column(
             width = 1,
             actionButton(ns("save_to_db"), "Save edit",
-                         class = "btn-success",
-                         icon = icon("save"),
+              class = "btn-success",
+              icon = icon("save"),
             ),
           ),
           column(
             width = 1,
             downloadButton(ns("download1"), "Download data",
-                           icon = icon("download")
+              icon = icon("download")
             )
           )
         ),
@@ -89,14 +95,11 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         )
       )
     })
-    
-    # create a proxy data to track the UI version of the table when edited
-    proxy <- DT::dataTableProxy(ns("pat_table"))
-    
-    # render the data table
-    
+
+    # render the data table ####
+
     output$pat_table <- DT::renderDT(
-      
+
       dt_out$data,
       selection = "multiple",
       rownames = F,
@@ -112,48 +115,66 @@ mod_data_management_server <- function(id, db_conn, filter_data){
       )
     )
     
-    # Edit a row and effect it in the UI view ####
+    # create a proxy data to track the UI version of the table when edited
+    proxy <- DT::dataTableProxy(ns("pat_table"))
     
+
+    # Edit a row and effect it in the UI view ####
+
     observeEvent(input$pat_table_cell_edit, {
-      info <- input$pat_table_cell_edit
       
-      info$value <- sapply(info$value, html_decoder, USE.NAMES = F)
-      
-      # Track the initial state of the data before recording user changes
-      
-      old_dt <- dt_out$data
-      
+      info <- input$pat_table_cell_edit         # get the edited row information
+
+      info$value <- sapply(info$value, html_decoder, USE.NAMES = F) # decode any html character introduced to the values 
+
+      old_dt <- dt_out$data # Track the initial state of the data before recording user changes
+
       tryCatch(
         {
-          
           dt_out$data <- DT::editData(dt_out$data, info, rownames = F)
-          
-          # Data Validation 
-          # Ignore changes if more than one character is entered to the gender column
-          check_gender = nchar(info$value[10]) < 2 
-          if (!check_gender) {
+
+          # Data Validation
+
+          check_list <- list()
+          column_to_check <- c(3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18) # column index of columns to check
+
+          # check if the value entered for each column is part of the existing unique values
+          # of that column  or empty string
+          for (i in column_to_check) {
+            check <- info$value[i] %in% c(unique(old_dt[[dt_out$column_names[i]]]), "")
+            check_list <- check_list %>% append(check)
+          }
+
+          check_list <- unlist(check_list)
+          error_columns <- dt_out$column_names[column_to_check[!check_list]]
+          # cat('columns to check: ', dt_out$column_names[column_to_check], ' \n') # for debugging
+
+          # Ignore changes if enter value in some columns are not part of the  existing unique values in its column
+
+          if (!all(check_list)) {
+            cat("columns with error in edited row: ", error_columns, " \n") # for debugging
+
             dt_out$data <- old_dt
-            
+
             showModal(modalDialog(
               title = "Error!",
-              paste('Gender value can only be one character'),
+              paste("Value(s) entered in", paste(error_columns, collapse = " and "), "column(s) is not part of existing values in that column(s)"),
               easyClose = TRUE
             ))
           }
-          
+
           # if any allowed changes was made to the data then update the UI data
+
           if (!identical(old_dt, dt_out$data)) {
             DT::replaceData(proxy, dt_out$data, rownames = F, resetPaging = F)
-            
+
             # track edits
             dt_out$index <- unique(dt_out$index %>% append((info$value[1]))) # track row ids that has been edited
-            
+
             cat("Edited rows: ", unlist(dt_out$index), " \n") # for debugging
           }
-          
         },
         error = function(e) {
-          
           showModal(modalDialog(
             title = "Error!",
             paste(e, "\n\nPlease correct your changes"),
@@ -162,29 +183,29 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         }
       )
     })
-    
+
     # Delete data ####
-    
+
     deleteData <- reactive({
       # print(input$pat_table_rows_selected) # for debugging and logging
-      
+
       rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>% unlist(use.name = F)
-      
-      # update datababse
+
+      # update database
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})",
-                              ids = rowselected, .con = db_conn
+        ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
-      
+
       # update UI
       dt_out$data <- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
       DT::replaceData(proxy, dt_out$data, resetPaging = F) # update the data on the UI
-      
+
       cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging
-      
+
       dt_out$index <- setdiff(dt_out$index, rowselected) # remove deleted rows from tracked edited rows
     })
-    
+
     observeEvent(input$del_pat, {
       no_rows <- length(input$pat_table_rows_selected)
       if (no_rows >= 1) {
@@ -206,7 +227,7 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         )
       }
     })
-    
+
     observeEvent(input$delete_row, {
       tryCatch(
         {
@@ -223,9 +244,9 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         }
       )
     })
-    
+
     # Save (write edited data to source) ####
-    
+
     observeEvent(input$save_to_db, {
       if (length(dt_out$index) < 1) {
         showModal(modalDialog(
@@ -247,23 +268,23 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         )
       }
     })
-    
+
     observeEvent(input$update_source, {
       tryCatch(
         {
           # update the database
           trust_db <- dplyr::tbl(db_conn, get_golem_config("trust_name"))
           dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(row_id %in% unlist(dt_out$index)),
-                             by = "row_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
+            by = "row_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
           )
-          
+
           showModal(modalDialog(
             title = "Success!",
             p(paste("Record of", length(dt_out$index), "Patient(s) have been successfully updated.")),
             em("Please refresh your browser to visualise the update"),
             easyClose = TRUE
           ))
-          
+
           dt_out$index <- list()
         },
         error = function(e) {
@@ -276,18 +297,18 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         }
       )
     })
-    
-    # Download the data
-    
+
+    # Download the data ####
+
     output$download1 <- downloadHandler(
       filename = paste0("pat_data-", Sys.Date(), ".csv"),
       content = function(file) {
         write.csv(dt_out$data, file, row.names = FALSE)
       }
     )
-    
+
     # data module
-    
+
     observeEvent(input$upload_new_data, {
       datamods::import_modal(
         id = session$ns("myid"),
@@ -295,22 +316,22 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         title = "Import data to be used in application"
       )
     })
-    
+
     imported <- datamods::import_server("myid", return_class = "tbl_df")
-    
+
     observe({
       req(imported$data())
-      
+
       raw_df <- imported$data() %>%
         dplyr::mutate(pt_id = dplyr::row_number())
-      
+
       withProgress(message = "Processing data. This may take a while.
                    Please wait...", value = 0, {
-                     success <- T # upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
-                     
-                     incProgress(1)
-                   })
-      
+        success <- T # upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
+
+        incProgress(1)
+      })
+
       if (success) {
         showModal(modalDialog(
           title = "Success!",
@@ -327,6 +348,5 @@ mod_data_management_server <- function(id, db_conn, filter_data){
         ))
       }
     })
- 
   })
 }
