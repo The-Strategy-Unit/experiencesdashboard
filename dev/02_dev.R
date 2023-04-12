@@ -74,6 +74,7 @@ golem::add_module( name = "summary_record" ) # Name of the module
 golem::add_fct( "helpers" ) 
 golem::add_utils( "helpers" )
 golem::add_utils( "overlap_plot_helpers" )
+golem::add_fct( "api_pred" )
 
 ## External resources
 ## Creates .js and .css files at inst/app/www

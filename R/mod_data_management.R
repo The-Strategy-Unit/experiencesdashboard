@@ -24,7 +24,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     ns <- session$ns
 
     # Create global variable ####
-    
+
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
@@ -37,10 +37,10 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     )
 
     # dynamic UI ####
-    
+
     output$data_management_UI <- renderUI({
       # server data
-      
+
       dt_out$data <- filter_data()$filter_data %>%
         dplyr::filter(hidden == 0) %>%
         dplyr::select(-hidden) %>%
@@ -114,18 +114,17 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         scrollX = TRUE
       )
     )
-    
+
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy(ns("pat_table"))
-    
+
 
     # Edit a row and effect it in the UI view ####
 
     observeEvent(input$pat_table_cell_edit, {
-      
-      info <- input$pat_table_cell_edit         # get the edited row information
+      info <- input$pat_table_cell_edit # get the edited row information
 
-      info$value <- sapply(info$value, html_decoder, USE.NAMES = F) # decode any html character introduced to the values 
+      info$value <- sapply(info$value, html_decoder, USE.NAMES = F) # decode any html character introduced to the values
 
       old_dt <- dt_out$data # Track the initial state of the data before recording user changes
 
@@ -307,39 +306,25 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
       }
     )
 
-    # data module
+    # data upload module ----
 
     observeEvent(input$upload_new_data, {
+      # create an upload interface
+
       datamods::import_modal(
         id = session$ns("myid"),
         from = "file",
-        title = "Import data to be used in application"
+        title = "Import data to be used in Dashboard"
       )
     })
 
-    imported <- datamods::import_server("myid", return_class = "tbl_df")
+    # Get the imported data as tibble
 
-    observe({
-      req(imported$data())
+    tryCatch(
+      import_dt <- datamods::import_server("myid", return_class = "tbl_df"),
+      error = function(e) {
+        print(e)
 
-      raw_df <- imported$data() %>%
-        dplyr::mutate(pt_id = dplyr::row_number())
-
-      withProgress(message = "Processing data. This may take a while.
-                   Please wait...", value = 0, {
-        success <- T # upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
-
-        incProgress(1)
-      })
-
-      if (success) {
-        showModal(modalDialog(
-          title = "Success!",
-          paste0(nrow(raw_df), " records successfully imported. Please refresh
-               your browser to access the new data"),
-          easyClose = TRUE
-        ))
-      } else {
         showModal(modalDialog(
           title = "Error!",
           "There was a problem importing your data. Try reuploading and check
@@ -347,6 +332,73 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           easyClose = TRUE
         ))
       }
+    )
+
+    observe({
+      req(import_dt$data())
+
+      raw_df <- import_dt$data()
+      # print(str(raw_df))
+
+      compulsory_cols <- c("date", "location_1", "question_1", "fft_score")
+
+      tryCatch(
+        {
+          if (!all(compulsory_cols %in% names(raw_df))) {
+            stop("the following columns are required [date, location_1, question_1, fft_score]", call. = FALSE)
+          }
+
+          withProgress(message = "Processing data. This may take a while.
+                     Please wait...", value = 0, {
+            upload_data(data = raw_df, conn = "db_conn", trust_id = "trust_a_bk")
+            incProgress(1)
+          })
+
+
+          showModal(modalDialog(
+            title = "Success!",
+            paste0(nrow(raw_df), " records successfully imported. Please refresh
+             your browser to access the new data"),
+            easyClose = TRUE
+          ))
+        },
+        error = function(e) {
+          print(e$message) # for logging error
+
+          # try to guess the error type to improve user experience
+
+          col_error <- stringr::str_detect(e$message, "the following columns are required")
+          api_error <- stringr::str_detect(e$message, "Connection refused")
+          db_error <- stringr::str_detect(e$message, "dbWriteTable")
+
+          if (db_error) {
+            showModal(modalDialog(
+              title = "Database Error!",
+              "Please try again or contact project admin if error persist",
+              easyClose = TRUE
+            ))
+          } else if (col_error) {
+            showModal(modalDialog(
+              title = "Data Column Error!",
+              paste(e),
+              easyClose = TRUE
+            ))
+          } else if (api_error) {
+            showModal(modalDialog(
+              title = "API Error!",
+              "Please try again or contact project admin if error persist",
+              easyClose = TRUE
+            ))
+          } else {
+            showModal(modalDialog(
+              title = "Data Error!",
+              "There was a problem importing your data. Try reuploading and check
+            in the 'View' section to ensure that the data is well formatted",
+              easyClose = TRUE
+            ))
+          }
+        }
+      )
     })
   })
 }
