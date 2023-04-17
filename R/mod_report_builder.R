@@ -99,7 +99,7 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         # calculate parameters
         else{
           
-          withProgress(message = "Downloading...", value = 0, {
+          withProgress(message = "Preparing report, Please wait...", value = 0, {
             
             
             dates <- switch(input$time_period,

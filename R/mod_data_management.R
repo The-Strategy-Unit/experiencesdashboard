@@ -33,20 +33,26 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         "comment_txt", "comment_type", "category", "fft", "gender",
         "age", "ethnicity", "sexuality", "patient_carer", "disability",
         "faith", "pt_id", "crit"
-      )
+      ),
+      complex_comments = data.frame()
     )
 
-    # dynamic UI ####
+    # dynamic UI ----
 
     output$data_management_UI <- renderUI({
-      # server data
+      ## server data ----
 
       dt_out$data <- filter_data()$filter_data %>%
         dplyr::filter(hidden == 0) %>%
         dplyr::select(-hidden) %>%
         dplyr::select(dt_out$column_names)
 
-      # UI
+
+      # complex comments ----
+
+      dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
+
+      # UI ----
 
       tagList(
         tags$br(),
@@ -84,8 +90,16 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           )
         ),
         tags$br(),
-        p("Double click a row to edit its value and press CTRL+ENTER to confirm"),
+
+        # UI complex comment
+
+        fluidRow(
+          column(12, uiOutput(ns("dynamic_complex_ui")))
+        ),
+        p("To edit any row: Double click the row, edit its value and press CTRL+ENTER to confirm"),
+
         # display the table
+
         fluidRow(
           column(
             width = 12,
@@ -302,7 +316,39 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     output$download1 <- downloadHandler(
       filename = paste0("pat_data-", Sys.Date(), ".csv"),
       content = function(file) {
-        write.csv(dt_out$data, file, row.names = FALSE)
+        withProgress(message = "Downloading...", value = 0, {
+          write.csv(dt_out$data, file, row.names = FALSE)
+          incProgress(1)
+        })
+      }
+    )
+
+    # complex comments ----
+
+    output$dynamic_complex_ui <- renderUI({
+      if ((nrow(dt_out$complex_comments) > 1)) {
+        n_complex_comments <- dt_out$complex_comments |>
+          dplyr::pull(comment_txt) |>
+          length()
+
+        downloadLink(ns("complex_com"), strong(paste(n_complex_comments, "complex comments identified. click here to download them")))
+
+        # downloadButton(
+        #   # ns("complex_com"),
+        #   'complex_com',
+        #   'Complex comments',
+        #   icon = icon('comment')
+        # )
+      }
+    })
+
+    output$complex_com <- downloadHandler(
+      filename = paste0("complex_comments-", Sys.Date(), ".csv"),
+      content = function(file) {
+        withProgress(message = "Downloading...", value = 0, {
+          write.csv(dt_out$complex_comments, file, row.names = FALSE)
+          incProgress(1)
+        })
       }
     )
 
