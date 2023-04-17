@@ -4,16 +4,18 @@
 \alias{clean_dataframe}
 \title{Clean an uploaded dataset from a user of the dashboard}
 \usage{
-clean_dataframe(data)
+clean_dataframe(data, comment_column)
 }
 \arguments{
 \item{data}{a dataframe of uploaded patient experience data}
+
+\item{comment_column}{a string for the name of the column for the comment text}
 }
 \value{
 dataframe with cleaned text
 }
 \description{
 uploaded data will often have garbage in the comments 
-box such as "NULL", "NA", "N/A", etc. Clean these comments before they go 
-to the pipeline
+box such as "NULL", "NA", "N/A", etc. Clean these comments and drop all 
+rows without comment before they go to the pipeline
 }

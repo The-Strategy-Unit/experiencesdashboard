@@ -350,7 +350,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
           withProgress(message = "Processing data. This may take a while.
                      Please wait...", value = 0, {
-            upload_data(data = raw_df, conn = "db_conn", trust_id = "trust_a_bk")
+            upload_data(data = raw_df, conn = db_conn, trust_id = "trust_a_bk")
             incProgress(1)
           })
 
@@ -369,7 +369,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
           col_error <- stringr::str_detect(e$message, "the following columns are required")
           api_error <- stringr::str_detect(e$message, "Connection refused")
-          db_error <- stringr::str_detect(e$message, "dbWriteTable")
+          db_error <- stringr::str_detect(e$message, "dbWriteTable|nanodbc/nanodbc")
 
           if (db_error) {
             showModal(modalDialog(

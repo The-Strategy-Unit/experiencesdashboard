@@ -86,12 +86,17 @@ upload_data <- function(data, conn, trust_id){
                      "gender", "age", "ethnicity", "sexuality", "disability",
                      "faith", "pt_id")
   
-  db_tidy <- data %>% 
-    dplyr::mutate(pt_id = uuid::UUIDgenerate(use.time = TRUE, n = nrow(.))) %>% # generate time based unique id
+  # get the current maximum pt_id value in the database table
+  
+  max_ptid <- DBI::dbGetQuery(conn, paste0("SELECT MAX(pt_id) FROM ", trust_id))$`MAX(pt_id)`
+  
+  db_tidy <- data %>%  
+    dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>% 
+    # dplyr::mutate(pt_id = uuid::UUIDgenerate(use.time = TRUE, n = nrow(.))) %>% # generate time based unique id
     tidyr::pivot_longer(cols = dplyr::starts_with("question"),
                         names_to = "comment_type",
                         values_to = "comment_text") %>% 
-    dplyr::select(any_of(required_cols)) %>% 
+    dplyr::select(dplyr::any_of(required_cols)) %>% 
     dplyr::mutate(comment_id = 1:nrow(.)) %>%   # to track individual comment
     clean_dataframe('comment_text') 
   
@@ -108,19 +113,57 @@ upload_data <- function(data, conn, trust_id){
     dplyr::select(comment_id, comment_text) |>
     jsonlite::toJSON()
   
-  preds <-  api_pred("http://127.0.0.1:8000/predict_multilabel", json=json_data)
+  preds <-  api_pred("http://127.0.0.1:8000/predict_multilabel", json=json_data) %>% 
+    dplyr::mutate(comment_id = as.integer(comment_id))
+  
+  print('Done with API call ...')
   
   # rename the columns to make the data compatible with old data format currently in use
   
-  final_df <- db_tidy %>% left_join(preds, by = c('comment_id', 'comment_text')) %>% 
-    dplyr::rename(
-      labels = `predicted labels`, fft = fft_score, 
-      comment_txt = comment_text, row_id = comment_id
+  final_df <- db_tidy %>% dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
+    dplyr::rename(fft = fft_score, category = labels,
+                  comment_txt = comment_text, 
     ) %>% 
-    dplyr::relocate(row_id)
+    dplyr::select(-comment_id)  %>% 
+    dplyr::mutate(hidden = 0,
+                  date = as.Date(.data$date)
+    ) %>%
+    tidy_label_column('category') 
   
-  # write data to database
+  # get the current maximum  row_id value in the database table
   
-  DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE)
+  max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(row_id) FROM ", trust_id))$`MAX(row_id)`
   
+  # set the starting value for the auto-incremented row_id
+  # This will ensure that when we append the new data, 
+  # the row_id values will be sequential and there will be no gaps.
+  final_df <- final_df %>% 
+    dplyr::mutate(
+      row_id = seq.int(max_id + 1, max_id + nrow(.)),
+      comment_type = stringr::str_replace_all(.data$comment_type, 'question', 'comment')
+    )
+  
+  # write the processed data to database
+  print('Just started appending to database ...')
+  
+  # DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
+  
+  # this throw error when data can't be appended e.g when data column can't be coerce into the db table datatype
+  dplyr::rows_append(
+    dplyr::tbl(conn, trust_id),
+    final_df,
+    copy = TRUE,
+    in_place = TRUE
+  )
+  
+  print('Done appending to database ...')
+  
+  # reset the db data ------------------- remove later ------------------------
+  old_row_count <- 52745
+  nw_row_count <- DBI::dbReadTable(conn, 'trust_a_bk') %>% dplyr::arrange(desc(row_id)) %>% nrow()
+  row_difference <- nw_row_count - old_row_count
+  
+  cat(nrow(final_df), 'rows in data to append \n')
+  cat(row_difference, 'rows added \n') # confirm data addition
+  DBI::dbExecute(conn, paste0('DELETE FROM `trust_a_bk` WHERE `row_id`> ',old_row_count))
 }

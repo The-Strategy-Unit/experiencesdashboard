@@ -25,7 +25,7 @@ reorder_cormat <- function(cormat) {
 #' @return a dataframe
 #' @noRd
 tidy_label_column <- function(data, column_name) {
-  data[[column_name]] <- str_remove_all(
+  data[[column_name]] <- stringr::str_remove_all(
     data[[column_name]],
     "(c[(])|[)]|[\"\"]"
   )
@@ -180,7 +180,7 @@ visualize_network <- function(data, attr_column = "value", threshold_value = 0) 
     igraph::graph_from_data_frame() %>%
     ggraph::ggraph(layout = "fr") +
     ggraph::geom_edge_link(
-      aes(
+      ggplot2::aes(
         alpha = .data[[attr_column]],
         width = .data[[attr_column]]
       ),
