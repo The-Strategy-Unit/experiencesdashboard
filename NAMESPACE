@@ -2,6 +2,7 @@
 
 export("%>%")
 export(add_theme_nhs)
+export(api_pred)
 export(calc_sentiment)
 export(calculate_table)
 export(clean_dataframe)

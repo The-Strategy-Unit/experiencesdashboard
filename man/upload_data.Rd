@@ -2,7 +2,7 @@
 % Please edit documentation in R/tidy_upload.R
 \name{upload_data}
 \alias{upload_data}
-\title{Tidy data upload from spreadsheet}
+\title{Tidy data upload from users}
 \usage{
 upload_data(data, conn, trust_id)
 }
@@ -17,15 +17,5 @@ upload_data(data, conn, trust_id)
 boolean, indicating success or failure in upload
 }
 \description{
-Tidy data upload from spreadsheet
+Tidy data upload from users
 }
-\section{Last updated by}{
-
-Chris Beeley
-}
-
-\section{Last updated date}{
-
-2021-04-25
-}
-
