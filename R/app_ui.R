@@ -28,6 +28,9 @@ app_ui <- function(request) {
           uiOutput("filter_location_1"),
           uiOutput("filter_location_2"),
           uiOutput("filter_location_3"),
+          
+          mod_demographics_selection_ui("demographics_selection_1"),
+          
           dateRangeInput(
             "date_range",
             label = h5(strong("Select date range:")),
