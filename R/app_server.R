@@ -138,8 +138,12 @@ app_server <- function(input, output, session) {
       "location_3" = input$select_location_3
     )
   })
+  
+  demographic_filters <- mod_demographics_selection_server("demographics_selection_1",
+                                                           filter_data = filter_data
+  )
 
-  # Create reactive data ----
+  # filter 1: by selected dates ----
 
   date_filter <- reactive({
     db_data %>%
@@ -159,7 +163,7 @@ app_server <- function(input, output, session) {
 
     return_data <- date_filter()
 
-    # filter location
+    # filter 2: locations
 
     if (isTruthy(input$select_location_1)) {
       return_data <- return_data %>%
@@ -176,7 +180,7 @@ app_server <- function(input, output, session) {
         dplyr::filter(location_3 %in% !!input$select_location_3)
     }
 
-    # filter demographics
+    # filter 3: demographics
 
     demography_data <- return_data
 
@@ -195,19 +199,27 @@ app_server <- function(input, output, session) {
         dplyr::filter(ethnicity %in% !!demographic_filters()$select_ethnicity)
     }
 
-    no_responses <- demography_data %>%
+    # get the number of patients in data filtered by demographics
+    
+    no_patients <- demography_data %>%
       dplyr::distinct(pt_id) %>%
       dplyr::tally() %>%
       dplyr::pull(n)
 
-    if (no_responses < 20) {
+    # only return demography filtered data if the number of unique patients is more than 20 
+    
+    if (no_patients < 20) {
+      
       return_data <- return_data %>%
         dplyr::collect() %>%
         dplyr::arrange(date)
+      
     } else {
+      
       return_data <- demography_data %>%
         dplyr::collect() %>%
         dplyr::arrange(date)
+      
     }
 
     demography_number <- demography_data %>%
@@ -229,7 +241,7 @@ app_server <- function(input, output, session) {
   # combine UI server ----
 
   mod_patient_experience_server("patient_experience_ui_1")
-
+  
   # modules----
 
   mod_summary_server("summary_ui_1")
@@ -291,9 +303,8 @@ app_server <- function(input, output, session) {
   mod_trend_overlap_server("trend_overlap_ui",
     filter_data = filter_data, overlap_plot_type = "count"
   )
-
-  demographic_filters <- mod_demographics_server("demographics_ui_1",
-    filter_data = filter_data,
-    store_data = store_data
+  
+  mod_demographics_server("demographics_ui_1",
+    filter_data = filter_data
   )
 }

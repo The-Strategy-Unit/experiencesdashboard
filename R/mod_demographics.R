@@ -16,7 +16,7 @@ mod_demographics_ui <- function(id){
 #' demographics Server Functions
 #'
 #' @noRd 
-mod_demographics_server <- function(id, filter_data, store_data){
+mod_demographics_server <- function(id, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
@@ -47,11 +47,11 @@ mod_demographics_server <- function(id, filter_data, store_data){
           column(12, h3(textOutput(ns("total_responses"))))
         ),
         hr(),
-        fluidRow(
-          if(has_age){column(width, uiOutput(ns("age_UI")))},
-          if(has_gender){column(width, uiOutput(ns("gender_UI")))},
-          if(has_ethnicity){column(width, uiOutput(ns("ethnicity_UI")))}
-        ),
+        # fluidRow(
+        #   if(has_age){column(width, uiOutput(ns("age_UI")))},
+        #   if(has_gender){column(width, uiOutput(ns("gender_UI")))},
+        #   if(has_ethnicity){column(width, uiOutput(ns("ethnicity_UI")))}
+        # ),
         fluidRow(
           if(has_age){column(width, plotOutput(ns("age_graph")))},
           if(has_gender){column(width, plotOutput(ns("gender_graph")))},
@@ -68,7 +68,7 @@ mod_demographics_server <- function(id, filter_data, store_data){
       )
     })
     
-    # top row
+    # top row (explore adding this as a pop-up warning)
     
     output$total_responses <- renderText({
       
@@ -88,53 +88,53 @@ mod_demographics_server <- function(id, filter_data, store_data){
       }
     })
     
-    # demography selection----
-    
-    output$age_UI <- renderUI({
-      
-      isolate(
-        choices <- filter_data()$unique_data %>% 
-          dplyr::arrange(age) %>% 
-          dplyr::distinct(age, .keep_all = TRUE) %>%
-          dplyr::filter(!is.na(age))
-      )
-      
-      choices <- factor(choices$age, 
-                        exclude = NULL)
-      
-      selectInput(session$ns("select_age"), 
-                  label = "Select age (defaults to all)",
-                  choices = na.omit(choices),
-                  selected = NULL, multiple = TRUE)
-    })
-    
-    output$gender_UI <- renderUI({
-      
-      isolate(
-        choices <- filter_data()$unique_data %>% 
-          dplyr::arrange(gender) %>% 
-          dplyr::distinct(gender)
-      )
-      
-      selectInput(session$ns("select_gender"), 
-                  label = "Select gender (defaults to all)",
-                  choices = na.omit(choices),
-                  selected = NULL, multiple = TRUE)
-    })
-    
-    output$ethnicity_UI <- renderUI({
-      
-      isolate(
-        choices <- filter_data()$unique_data %>% 
-          dplyr::arrange(ethnicity) %>% 
-          dplyr::distinct(ethnicity)
-      )
-      
-      selectInput(session$ns("select_ethnicity"), 
-                  label = "Select ethnicity (defaults to all)",
-                  choices = na.omit(choices),
-                  selected = NULL, multiple = TRUE)
-    })
+    # # demography selection----
+    # 
+    # output$age_UI <- renderUI({
+    #   
+    #   isolate(
+    #     choices <- filter_data()$unique_data %>% 
+    #       dplyr::arrange(age) %>% 
+    #       dplyr::distinct(age, .keep_all = TRUE) %>%
+    #       dplyr::filter(!is.na(age))
+    #   )
+    #   
+    #   choices <- factor(choices$age, 
+    #                     exclude = NULL)
+    #   
+    #   selectInput(session$ns("select_age"), 
+    #               label = "Select age (defaults to all)",
+    #               choices = na.omit(choices),
+    #               selected = NULL, multiple = TRUE)
+    # })
+    # 
+    # output$gender_UI <- renderUI({
+    #   
+    #   isolate(
+    #     choices <- filter_data()$unique_data %>% 
+    #       dplyr::arrange(gender) %>% 
+    #       dplyr::distinct(gender)
+    #   )
+    #   
+    #   selectInput(session$ns("select_gender"), 
+    #               label = "Select gender (defaults to all)",
+    #               choices = na.omit(choices),
+    #               selected = NULL, multiple = TRUE)
+    # })
+    # 
+    # output$ethnicity_UI <- renderUI({
+    #   
+    #   isolate(
+    #     choices <- filter_data()$unique_data %>% 
+    #       dplyr::arrange(ethnicity) %>% 
+    #       dplyr::distinct(ethnicity)
+    #   )
+    #   
+    #   selectInput(session$ns("select_ethnicity"), 
+    #               label = "Select ethnicity (defaults to all)",
+    #               choices = na.omit(choices),
+    #               selected = NULL, multiple = TRUE)
+    # })
     
     # distribution----
     
@@ -175,10 +175,10 @@ mod_demographics_server <- function(id, filter_data, store_data){
       compare_demographics(filter_data()$unique_data, "ethnicity")
     })
     
-    reactive(
-      list("select_age" = input$select_age,
-           "select_gender" = input$select_gender,
-           "select_ethnicity" = input$select_ethnicity)
-    )
+    # reactive(
+    #   list("select_age" = input$select_age,
+    #        "select_gender" = input$select_gender,
+    #        "select_ethnicity" = input$select_ethnicity)
+    # )
   })
 }
