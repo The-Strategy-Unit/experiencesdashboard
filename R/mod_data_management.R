@@ -124,7 +124,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         pageLength = 10,
         lengthMenu = c(10, 30, 50),
         dom = "Blfrtip",
-        search = list(caseInsensitive = F),
+        search = list(caseInsensitive = FALSE),
         scrollX = TRUE
       )
     )
@@ -138,13 +138,13 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     observeEvent(input$pat_table_cell_edit, {
       info <- input$pat_table_cell_edit # get the edited row information
 
-      info$value <- sapply(info$value, html_decoder, USE.NAMES = F) # decode any html character introduced to the values
+      info$value <- sapply(info$value, html_decoder, USE.NAMES = FALSE) # decode any html character introduced to the values
 
       old_dt <- dt_out$data # Track the initial state of the data before recording user changes
 
       tryCatch(
         {
-          dt_out$data <- DT::editData(dt_out$data, info, rownames = F)
+          dt_out$data <- DT::editData(dt_out$data, info, rownames = FALSE)
 
           # Data Validation
 
@@ -179,7 +179,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           # if any allowed changes was made to the data then update the UI data
 
           if (!identical(old_dt, dt_out$data)) {
-            DT::replaceData(proxy, dt_out$data, rownames = F, resetPaging = F)
+            DT::replaceData(proxy, dt_out$data, rownames = FALSE, resetPaging = FALSE)
 
             # track edits
             dt_out$index <- unique(dt_out$index %>% append((info$value[1]))) # track row ids that has been edited
@@ -202,7 +202,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     deleteData <- reactive({
       # print(input$pat_table_rows_selected) # for debugging and logging
 
-      rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>% unlist(use.name = F)
+      rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>% unlist(use.name = FALSE)
 
       # update database
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})",
@@ -212,7 +212,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
       # update UI
       dt_out$data <- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
-      DT::replaceData(proxy, dt_out$data, resetPaging = F) # update the data on the UI
+      DT::replaceData(proxy, dt_out$data, resetPaging = FALSE) # update the data on the UI
 
       cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging
 
