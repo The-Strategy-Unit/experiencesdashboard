@@ -5,9 +5,7 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  # List the first level callModules here
-
-  # fetch data
+  # Initialize the database connection
 
   pool <- odbc::dbConnect(
     drv = odbc::odbc(),
@@ -18,6 +16,8 @@ app_server <- function(input, output, session) {
     database = "TEXT_MINING",
     Port = 3306
   )
+
+  # fetch  the data
 
   db_data <- dplyr::tbl(
     pool,
@@ -138,9 +138,9 @@ app_server <- function(input, output, session) {
       "location_3" = input$select_location_3
     )
   })
-  
+
   demographic_filters <- mod_demographics_selection_server("demographics_selection_1",
-                                                           filter_data = filter_data
+    filter_data = filter_data
   )
 
   # filter 1: by selected dates ----
@@ -200,31 +200,39 @@ app_server <- function(input, output, session) {
     }
 
     # get the number of patients in data filtered by demographics
-    
-    no_patients <- demography_data %>%
+
+    no_responders <- demography_data %>%
       dplyr::distinct(pt_id) %>%
       dplyr::tally() %>%
       dplyr::pull(n)
 
-    # only return demography filtered data if the number of unique patients is more than 20 
-    
-    if (no_patients < 20) {
-      
+    # only return demography filtered data if the number of responders is more than 20
+
+    if (no_responders < 20) {
       return_data <- return_data %>%
         dplyr::collect() %>%
         dplyr::arrange(date)
-      
+
+      # add a pop up warning whenever any of the demographic filter is selected and
+      # there are less than 20 responders in the data
+
+      if ((isTruthy(demographic_filters()$select_age)) |
+        (isTruthy(demographic_filters()$select_gender)) |
+        (isTruthy(demographic_filters()$select_ethnicity))
+      ) {
+        showModal(modalDialog(
+          title = "Warning!",
+          paste0("There are only ", no_responders, " responders in your selection.
+                 Filtering below 20 responders with demographic selections is disabled for
+                 reasons of confidentiality. Please widen your selection by clinical area or demography"),
+          easyClose = TRUE
+        ))
+      }
     } else {
-      
       return_data <- demography_data %>%
         dplyr::collect() %>%
         dplyr::arrange(date)
-      
     }
-
-    demography_number <- demography_data %>%
-      dplyr::tally() %>%
-      dplyr::pull(n)
 
     # also return a dataset with unique individuals
 
@@ -234,14 +242,14 @@ app_server <- function(input, output, session) {
     return(list(
       "filter_data" = return_data,
       "unique_data" = unique_data,
-      "demography_number" = demography_number
+      "demography_number" = no_responders
     ))
   })
 
   # combine UI server ----
 
   mod_patient_experience_server("patient_experience_ui_1")
-  
+
   # modules----
 
   mod_summary_server("summary_ui_1")
@@ -303,7 +311,7 @@ app_server <- function(input, output, session) {
   mod_trend_overlap_server("trend_overlap_ui",
     filter_data = filter_data, overlap_plot_type = "count"
   )
-  
+
   mod_demographics_server("demographics_ui_1",
     filter_data = filter_data
   )
