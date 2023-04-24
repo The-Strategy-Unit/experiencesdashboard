@@ -24,7 +24,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     ns <- session$ns
 
     # Create global variable ####
-    
+
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
@@ -33,20 +33,26 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         "comment_txt", "comment_type", "category", "fft", "gender",
         "age", "ethnicity", "sexuality", "patient_carer", "disability",
         "faith", "pt_id", "crit"
-      )
+      ),
+      complex_comments = data.frame()
     )
 
-    # dynamic UI ####
-    
+    # dynamic UI ----
+
     output$data_management_UI <- renderUI({
-      # server data
-      
+      ## server data ----
+
       dt_out$data <- filter_data()$filter_data %>%
         dplyr::filter(hidden == 0) %>%
         dplyr::select(-hidden) %>%
         dplyr::select(dt_out$column_names)
 
-      # UI
+
+      # complex comments ----
+
+      dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
+
+      # UI ----
 
       tagList(
         tags$br(),
@@ -84,8 +90,16 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           )
         ),
         tags$br(),
-        p("Double click a row to edit its value and press CTRL+ENTER to confirm"),
+
+        # UI complex comment
+
+        fluidRow(
+          column(12, uiOutput(ns("dynamic_complex_ui")))
+        ),
+        p("To edit any row: Double click the row, edit its value and press CTRL+ENTER to confirm"),
+
         # display the table
+
         fluidRow(
           column(
             width = 12,
@@ -110,28 +124,27 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         pageLength = 10,
         lengthMenu = c(10, 30, 50),
         dom = "Blfrtip",
-        search = list(caseInsensitive = F),
+        search = list(caseInsensitive = FALSE),
         scrollX = TRUE
       )
     )
-    
+
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy(ns("pat_table"))
-    
+
 
     # Edit a row and effect it in the UI view ####
 
     observeEvent(input$pat_table_cell_edit, {
-      
-      info <- input$pat_table_cell_edit         # get the edited row information
+      info <- input$pat_table_cell_edit # get the edited row information
 
-      info$value <- sapply(info$value, html_decoder, USE.NAMES = F) # decode any html character introduced to the values 
+      info$value <- sapply(info$value, html_decoder, USE.NAMES = FALSE) # decode any html character introduced to the values
 
       old_dt <- dt_out$data # Track the initial state of the data before recording user changes
 
       tryCatch(
         {
-          dt_out$data <- DT::editData(dt_out$data, info, rownames = F)
+          dt_out$data <- DT::editData(dt_out$data, info, rownames = FALSE)
 
           # Data Validation
 
@@ -166,7 +179,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           # if any allowed changes was made to the data then update the UI data
 
           if (!identical(old_dt, dt_out$data)) {
-            DT::replaceData(proxy, dt_out$data, rownames = F, resetPaging = F)
+            DT::replaceData(proxy, dt_out$data, rownames = FALSE, resetPaging = FALSE)
 
             # track edits
             dt_out$index <- unique(dt_out$index %>% append((info$value[1]))) # track row ids that has been edited
@@ -189,7 +202,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     deleteData <- reactive({
       # print(input$pat_table_rows_selected) # for debugging and logging
 
-      rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>% unlist(use.name = F)
+      rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>% unlist(use.name = FALSE)
 
       # update database
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})",
@@ -199,7 +212,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
       # update UI
       dt_out$data <- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
-      DT::replaceData(proxy, dt_out$data, resetPaging = F) # update the data on the UI
+      DT::replaceData(proxy, dt_out$data, resetPaging = FALSE) # update the data on the UI
 
       cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging
 
@@ -303,43 +316,61 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     output$download1 <- downloadHandler(
       filename = paste0("pat_data-", Sys.Date(), ".csv"),
       content = function(file) {
-        write.csv(dt_out$data, file, row.names = FALSE)
+        withProgress(message = "Downloading...", value = 0, {
+          write.csv(dt_out$data, file, row.names = FALSE)
+          incProgress(1)
+        })
       }
     )
 
-    # data module
+    # complex comments ----
+
+    output$dynamic_complex_ui <- renderUI({
+      if ((nrow(dt_out$complex_comments) > 1)) {
+        n_complex_comments <- dt_out$complex_comments |>
+          dplyr::pull(comment_txt) |>
+          length()
+
+        downloadLink(ns("complex_com"), strong(paste(n_complex_comments, "complex comments identified. click here to download them")))
+
+        # downloadButton(
+        #   # ns("complex_com"),
+        #   'complex_com',
+        #   'Complex comments',
+        #   icon = icon('comment')
+        # )
+      }
+    })
+
+    output$complex_com <- downloadHandler(
+      filename = paste0("complex_comments-", Sys.Date(), ".csv"),
+      content = function(file) {
+        withProgress(message = "Downloading...", value = 0, {
+          write.csv(dt_out$complex_comments, file, row.names = FALSE)
+          incProgress(1)
+        })
+      }
+    )
+
+    # data upload module ----
 
     observeEvent(input$upload_new_data, {
+      # create an upload interface
+
       datamods::import_modal(
         id = session$ns("myid"),
         from = "file",
-        title = "Import data to be used in application"
+        title = "Import data to be used in Dashboard"
       )
     })
 
-    imported <- datamods::import_server("myid", return_class = "tbl_df")
+    # Get the imported data as tibble
 
-    observe({
-      req(imported$data())
+    tryCatch(
+      import_dt <- datamods::import_server("myid", return_class = "tbl_df"),
+      error = function(e) {
+        print(e)
 
-      raw_df <- imported$data() %>%
-        dplyr::mutate(pt_id = dplyr::row_number())
-
-      withProgress(message = "Processing data. This may take a while.
-                   Please wait...", value = 0, {
-        success <- T # upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
-
-        incProgress(1)
-      })
-
-      if (success) {
-        showModal(modalDialog(
-          title = "Success!",
-          paste0(nrow(raw_df), " records successfully imported. Please refresh
-               your browser to access the new data"),
-          easyClose = TRUE
-        ))
-      } else {
         showModal(modalDialog(
           title = "Error!",
           "There was a problem importing your data. Try reuploading and check
@@ -347,6 +378,73 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           easyClose = TRUE
         ))
       }
+    )
+
+    observe({
+      req(import_dt$data())
+
+      raw_df <- import_dt$data()
+      # print(str(raw_df))
+
+      compulsory_cols <- c("date", "location_1", "question_1", "fft_score")
+
+      tryCatch(
+        {
+          if (!all(compulsory_cols %in% names(raw_df))) {
+            stop("the following columns are required [date, location_1, question_1, fft_score]", call. = FALSE)
+          }
+
+          withProgress(message = "Processing data. This may take a while.
+                     Please wait...", value = 0, {
+            upload_data(data = raw_df, conn = db_conn, trust_id = "trust_a_bk")
+            incProgress(1)
+          })
+
+
+          showModal(modalDialog(
+            title = "Success!",
+            paste0(nrow(raw_df), " records successfully imported. Please refresh
+             your browser to access the new data"),
+            easyClose = TRUE
+          ))
+        },
+        error = function(e) {
+          print(e$message) # for logging error
+
+          # try to guess the error type to improve user experience
+
+          col_error <- stringr::str_detect(e$message, "the following columns are required")
+          api_error <- stringr::str_detect(e$message, "Connection refused")
+          db_error <- stringr::str_detect(e$message, "dbWriteTable|nanodbc/nanodbc")
+
+          if (db_error) {
+            showModal(modalDialog(
+              title = "Database Error!",
+              "Please try again or contact project admin if error persist",
+              easyClose = TRUE
+            ))
+          } else if (col_error) {
+            showModal(modalDialog(
+              title = "Data Column Error!",
+              paste(e),
+              easyClose = TRUE
+            ))
+          } else if (api_error) {
+            showModal(modalDialog(
+              title = "API Error!",
+              "Please try again or contact project admin if error persist",
+              easyClose = TRUE
+            ))
+          } else {
+            showModal(modalDialog(
+              title = "Data Error!",
+              "There was a problem importing your data. Try reuploading and check
+            in the 'View' section to ensure that the data is well formatted",
+              easyClose = TRUE
+            ))
+          }
+        }
+      )
     })
   })
 }

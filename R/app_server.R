@@ -28,14 +28,6 @@ app_server <- function(input, output, session) {
   ) %>%
     tidy_all_trusts()
 
-  # vector of sentiment names
-
-  nrc_sentiments <- sentiment_nrc %>%
-    dplyr::select(sentiment) %>%
-    dplyr::distinct() %>%
-    dplyr::pull() %>%
-    sort()
-
   # find out if there is data in the table
 
   data_exists <- db_data %>%
@@ -232,10 +224,6 @@ app_server <- function(input, output, session) {
       "unique_data" = unique_data,
       "demography_number" = demography_number
     ))
-  })
-
-  filter_sentiment <- reactive({
-    calc_sentiment(filter_data()$filter_data, nrc_sentiments)
   })
 
   # combine UI server ----
