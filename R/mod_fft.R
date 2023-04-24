@@ -43,7 +43,13 @@ mod_fft_server <- function(id, filter_data){
       
     graph_data <- reactive({
       
-      split_data_spc(filter_data()$unique_data, variable = "fft", chunks = 'monthly')
+      tryCatch({
+        
+        split_data_spc(filter_data()$unique_data, variable = "fft", chunks = 'monthly')
+        
+      }, error = function(e){
+        paste(e)
+      })
       
     })
     
