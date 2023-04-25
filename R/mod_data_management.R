@@ -70,15 +70,12 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           column(
             width = 1,
             actionButton(ns("del_pat"), "Delete",
-              class = "btn-success",
-              # style = "color: #fff;",
               icon = icon("trash-can")
             ),
           ),
           column(
             width = 1,
             actionButton(ns("save_to_db"), "Save edit",
-              class = "btn-success",
               icon = icon("save"),
             ),
           ),
