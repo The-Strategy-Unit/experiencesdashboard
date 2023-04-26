@@ -59,11 +59,10 @@ Imports:
     reshape2,
     NHSRtheme (>= 0.1.0),
     fresh (>= 0.2.0)
-Remotes:  
+Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,
-    nhs-r-community/NHSRtheme,
-    dreamRs/fresh
+    nhs-r-community/NHSRtheme
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
