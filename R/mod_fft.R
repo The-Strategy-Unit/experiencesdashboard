@@ -25,25 +25,34 @@ mod_fft_server <- function(id, filter_data){
     # confirm if there are at least 10 groups (potential data points) in the data before potting 
     output$dynamic_fft <- renderUI({
       
-      if (no_group() < 9){
-        
-        fluidRow(
-          tags$br(),
-          column(12, tags$strong('There are not enough stable SPC points to plot.
-                      Please expand your selection') 
+      
+      tryCatch({
+      
+        if (no_group() < 9){
+          
+          fluidRow(
+            tags$br(),
+            column(12, tags$strong('There are not enough stable SPC points to plot.
+                        Please expand your selection') 
+            )
           )
-        )
+          
+        } else{
+          
+          plotOutput(ns("spc_plot")) %>% 
+            shinycssloaders::withSpinner()
+        }
+      }, error = function(e){
         
-      } else{
+        print(e$message)
+        paste('Can\'t display SPC plot. No enough data')
         
-        plotOutput(ns("spc_plot")) %>% 
-          shinycssloaders::withSpinner()
-      }
+      })
     })
       
     graph_data <- reactive({
-      
-      split_data_spc(filter_data()$unique_data, variable = "fft", chunks = 'monthly')
+        
+        split_data_spc(filter_data()$unique_data, variable = "fft", chunks = 'monthly')
       
     })
     
