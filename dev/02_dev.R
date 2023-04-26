@@ -52,6 +52,7 @@ usethis::use_package( "xml2" )
 usethis::use_package( "plotly" )
 usethis::use_package( "NHSRplotthedots" )
 usethis::use_dev_package( "NHSRtheme" )
+usethis::use_dev_package( "fresh" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -77,12 +78,14 @@ golem::add_utils( "helpers" )
 golem::add_utils( "overlap_plot_helpers" )
 golem::add_fct( "api_pred" )
 golem::add_fct( "get_complex_comments" )
+golem::add_fct( "nhs_shiny_theme" )
 
 ## External resources
 ## Creates .js and .css files at inst/app/www
 golem::add_js_file( "script" )
 golem::add_js_handler( "handlers" )
 golem::add_css_file( "custom" )
+golem::add_css_file( "button-style" )
 
 ## Add internal datasets ----
 ## If you have data in your package

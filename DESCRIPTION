@@ -57,8 +57,9 @@ Imports:
     plotly,
     NHSRplotthedots,
     reshape2,
-    NHSRtheme (>= 0.1.0)
-Remotes:  
+    NHSRtheme (>= 0.1.0),
+    fresh (>= 0.2.0)
+Remotes: 
     CDU-data-science-team/nottshcMethods,
     CDU-data-science-team/experienceAnalysis,
     nhs-r-community/NHSRtheme
