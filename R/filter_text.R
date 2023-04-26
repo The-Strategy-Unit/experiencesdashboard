@@ -32,7 +32,7 @@ input_sanitizer <- function(filter_text){
 #' @return list of tokenized words 
 split_comments <- function(comments){
   comments %>%
-    sub("[^[:graph:]]", " ", .) %>%
+    gsub("[^[:graph:]]", " ", .) %>%
     tolower() %>%
     strsplit(" ")
 }
