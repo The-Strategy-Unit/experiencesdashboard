@@ -49,13 +49,13 @@ mod_demographics_selection_server <- function(id, filter_data) {
 
     output$age_UI <- renderUI({
       isolate(
-        choices <- filter_data()$unique_data %>%
+        data <- filter_data()$unique_data %>%
           dplyr::arrange(age) %>%
           dplyr::distinct(age, .keep_all = TRUE) %>%
           dplyr::filter(!is.na(age))
       )
 
-      choices <- factor(choices$age,
+      choices <- factor(data$age,
         exclude = NULL
       )
 
@@ -71,12 +71,12 @@ mod_demographics_selection_server <- function(id, filter_data) {
         choices <- filter_data()$unique_data %>%
           dplyr::arrange(gender) %>%
           dplyr::distinct(gender) %>%
-          dplyr::filter(!gender == "")
+          dplyr::filter(gender != "")
       )
 
       selectInput(session$ns("select_gender"),
         label = "Select gender (defaults to all)",
-        choices = na.omit(choices) %>% dplyr::pull(gender),
+        choices = dplyr::pull(na.omit(choices), gender),
         selected = NULL, multiple = TRUE
       )
     })
@@ -86,12 +86,12 @@ mod_demographics_selection_server <- function(id, filter_data) {
         choices <- filter_data()$unique_data %>%
           dplyr::arrange(ethnicity) %>%
           dplyr::distinct(ethnicity) %>%
-          dplyr::filter(!ethnicity == "")
+          dplyr::filter(ethnicity != "")
       )
 
       selectInput(session$ns("select_ethnicity"),
         label = "Select ethnicity (defaults to all)",
-        choices = na.omit(choices) %>% dplyr::pull(ethnicity),
+        choices = dplyr::pull(na.omit(choices), ethnicity),
         selected = NULL, multiple = TRUE
       )
     })
