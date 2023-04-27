@@ -12,5 +12,5 @@ a string value of the compiled CSS
 #' @noRd
 }
 \description{
-Create a shiny theme
+Create a shiny theme with NHS blue color
 }
