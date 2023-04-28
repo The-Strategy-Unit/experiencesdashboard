@@ -14,6 +14,9 @@ nhs_shiny_theme <- function() {
       width = "250px",
       dark_hover_bg = "#41B6E6",
       dark_bg = "#D8DEE9",
+    ),
+    fresh::adminlte_global(
+      content_bg = "#FFF",
     )
   )
 }
