@@ -280,17 +280,17 @@ app_server <- function(input, output, session) {
     comment_type = "comment_2"
   )
 
-  mod_click_plot_server("click_plot_ui_1",
-    filter_data = filter_data,
-    comment_type = "comment_1",
-    event_id = "click_plot_event_1"
-  )
-
-  mod_click_plot_server("click_plot_ui_2",
-    filter_data = filter_data,
-    comment_type = "comment_2",
-    event_id = "click_plot_event_2"
-  )
+  # mod_click_plot_server("click_plot_ui_1",
+  #   filter_data = filter_data,
+  #   comment_type = "comment_1",
+  #   event_id = "click_plot_event_1"
+  # )
+  # 
+  # mod_click_plot_server("click_plot_ui_2",
+  #   filter_data = filter_data,
+  #   comment_type = "comment_2",
+  #   event_id = "click_plot_event_2"
+  # )
 
   mod_text_reactable_server("text_reactable_ui_1",
     filter_data = filter_data,
