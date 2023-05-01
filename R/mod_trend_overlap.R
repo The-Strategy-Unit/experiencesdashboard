@@ -17,33 +17,37 @@ mod_trend_overlap_ui <- function(id) {
       tabsetPanel(
         id = ns("tabset_trend"),
         type = "tabs",
-
+        
         # A Sub-tab
-
+        
         tabPanel("Trend",
-          value = "trend",
-          br(),
-          plotly::plotlyOutput(ns("category_trend_plot")) %>%
-            shinycssloaders::withSpinner()
+                 value = "trend",
+                 br(),
+                 plotly::plotlyOutput(ns("category_trend_plot")) %>%
+                   shinycssloaders::withSpinner()
         ),
-
+        
         # A Sub-tab
-
+        
         tabPanel("Theme Overlap",
-          value = "overlap",
-          br(),
-          fluidRow(
-            column(
-              12,
-              # plotly::plotlyOutput(ns("category_overlap_plot")) %>%
-              #   shinycssloaders::withSpinner(),
-              plotOutput(ns("category_upset")) %>%
-                shinycssloaders::withSpinner(),
-              hr(),
-              uiOutput(ns("trendUI_2")),
-              uiOutput(ns("dynamic_overlap_text"))
-            )
-          )
+                 value = "overlap",
+                 br(),
+                 fluidRow(
+                   column(
+                     12,
+                     # plotly::plotlyOutput(ns("category_overlap_plot")) %>%
+                     #   shinycssloaders::withSpinner(),
+                     selectInput(ns("min_size"),
+                       label = h5(strong("Select Minimum intercept size (defaults to 1):")),
+                       choices = c(1, seq.int(10, 100, 10), seq.int(200, 3000, 100)),
+                     ),
+                     plotOutput(ns("category_upset")) %>%
+                       shinycssloaders::withSpinner(),
+                     hr(),
+                     uiOutput(ns("trendUI_2")),
+                     uiOutput(ns("dynamic_overlap_text"))
+                   )
+                 )
         )
       )
     )
@@ -57,25 +61,25 @@ mod_trend_overlap_server <- function(id, filter_data,
                                      overlap_plot_type = c("count", "correlation")) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
-
+    
     global <- reactiveValues(selected_cat1 = NULL, selected_cat2 = NULL, selected_cats = NULL)
-
+    
     # an internal function to check user selected categories
-
+    
     check_cat_selection <- function(selected_list) {
       selected_list <- selected_list[selected_list != ""]
       selected_list <- unique(selected_list)
-
+      
       return(length(selected_list) > 1)
     }
-
+    
     output$trendUI <- renderUI({
       choices <- na.omit(unique(filter_data()$filter_data$category))
-
+      
       # select the first 5 category for the trend tab
-
+      
       req(input$tabset_trend == "trend")
-
+      
       selectInput(
         session$ns("select_super_category"),
         label = h5(strong("Select categories (defaults to all):")),
@@ -84,12 +88,12 @@ mod_trend_overlap_server <- function(id, filter_data,
         selected = choices[1:5]
       )
     })
-
+    
     output$trendUI_2 <- renderUI({
       req(input$tabset_trend == "overlap")
-
+      
       choices <- c("", na.omit(unique(filter_data()$filter_data$category)))
-
+      
       fluidRow(
         column(4, selectInput(
           session$ns("select_category1"),
@@ -114,9 +118,9 @@ mod_trend_overlap_server <- function(id, filter_data,
         ),
       )
     })
-
+    
     # overlap tab UI ----
-
+    
     output$dynamic_overlap_text <- renderUI({
       validate(
         need(
@@ -125,13 +129,13 @@ mod_trend_overlap_server <- function(id, filter_data,
           "Please select at least two distinct categories to view"
         )
       )
-
+      
       selected_cat1 <- input$select_category1
       selected_cat2 <- input$select_category2
       selected_cat3 <- input$select_category3
-
+      
       selected_cats <- unique(c(selected_cat1, selected_cat2, selected_cat3))
-
+      
       global$selected_cats <- selected_cats[selected_cats != ""]
       
       if (length(global$selected_cats) > 1) {
@@ -143,9 +147,9 @@ mod_trend_overlap_server <- function(id, filter_data,
         )
       }
     })
-
+    
     # Verbatim output
-
+    
     # output$dynamic_overlap_text <- renderUI({
     #
     #   validate(
@@ -161,18 +165,18 @@ mod_trend_overlap_server <- function(id, filter_data,
     #   )
     #
     # })
-
+    
     # Create category trend
-
+    
     trend_data <- reactive({
       return_data <- filter_data()$filter_data %>%
         dplyr::mutate(
           comment_type = factor(comment_type,
-            levels = unique(comment_type),
-            labels = c(
-              get_golem_config("comment_1"),
-              get_golem_config("comment_2")
-            )
+                                levels = unique(comment_type),
+                                labels = c(
+                                  get_golem_config("comment_1"),
+                                  get_golem_config("comment_2")
+                                )
           )
         ) %>%
         dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
@@ -181,17 +185,21 @@ mod_trend_overlap_server <- function(id, filter_data,
         dplyr::group_by(comment_type, date) %>%
         dplyr::mutate(prop = round(cat / sum(cat), 2)) %>%
         dplyr::filter(!is.na(category))
-
+      
       if (isTruthy(input$select_super_category)) {
         return_data <- return_data %>%
           dplyr::filter(category %in% input$select_super_category)
       }
-
+      
       return_data
-    })
-
+    })  %>% 
+      bindCache(filter_data()$filter_data, 
+                get_golem_config("comment_1"),
+                get_golem_config("comment_2"), 
+                input$select_super_category)
+    
     # trend plot
-
+    
     output$category_trend_plot <- plotly::renderPlotly({
       p <- trend_data() %>%
         ggplot2::ggplot(ggplot2::aes(
@@ -206,7 +214,7 @@ mod_trend_overlap_server <- function(id, filter_data,
         ggplot2::facet_grid(. ~ comment_type) +
         ggplot2::labs(x = NULL, y = "% contribution", color = "Category") +
         add_theme_nhs()
-
+      
       return(
         p %>%
           plotly::ggplotly() %>%
@@ -219,49 +227,56 @@ mod_trend_overlap_server <- function(id, filter_data,
             x = 0.5
           ))
       )
-    })
-
-    # Create tidy data for the overlapping plot / upset plot
-
+    }) %>% 
+      bindCache(trend_data())
+    
+    # Create reactive data to be use by the upset plot function and verbatim comment outputs
+    
     tidy_data <- reactive({
       filter_data()$filter_data %>%
         make_sample_multilabeled_data() %>%
-        multi_to_single_label(column_name = "labels")
-    })
-
-
-    output$category_upset <- renderPlot({
-      upset_data <- tidy_data() %>%
+        multi_to_single_label(column_name = "labels") 
+    }) %>% 
+      bindCache(filter_data()$filter_data)
+    
+    # the overlapping plot / upset plot ----
+    
+    upset_data <- reactive({tidy_data() %>%
         dplyr::select(-name) %>% # to ensure  the rows are well mapped
         one_hot_labels(column = "value") # apply one hot encoding to the single label column
-
-      # upset_plot(upset_data, intersect = unique(tidy_data$value),
-      #            title = "Without empty groups (Short dropped)")
-
-      upset_plot(upset_data,
-        intersect = unique(tidy_data()$value),
-        show_all = TRUE, title = "Upset plot showing relationship across categories"
+    }) %>% 
+      bindCache(tidy_data())
+    
+    output$category_upset <- renderPlot({
+      
+      upset_plot(upset_data(),
+                 intersect = unique(tidy_data()$value),
+                 min_size = as.integer(input$min_size), 
+                 title = "Upset plot showing relationship across categories"
       )
-    })
-
+    }) %>% bindCache(upset_data(), 
+                     tidy_data()$value,
+                     input$min_size)
+    
     # Verbatim text ----
-
+    
     output$overlap_text <- renderText({
       # only run when at least 2 categories are selected
       req(
         length(global$selected_cats) > 1
         # check_cat_selection(input$select_category1, input$select_category2, input$select_category3)
       )
-
+      
       final_text <- show_multilabeled_text(tidy_data(), "value", na.omit(global$selected_cats))
-
+      
       cat(paste(toupper(c(global$selected_cats)), "|"), " :: ", length(final_text), "\n")
-
+      
       return(final_text)
-    })
-
-
-
+    }) %>% 
+      bindCache(tidy_data(), global$selected_cats)
+    
+    
+    
     # output$category_overlap_plot <- plotly::renderPlotly({
     #
     #   clicked_data <- tidy_data()  %>%

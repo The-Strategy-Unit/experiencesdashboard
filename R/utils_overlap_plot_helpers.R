@@ -349,17 +349,18 @@ add_theme_nhs <- function() {
 #' @param upset_data  a dataframe with each column representing a membership in the class. values are
 #'                    1 - if the row is a member of the class or 0 if otherwise
 #' @param intersect columns containing the classes
-#' @param show_all if all intersections should be included. it oerides `min_size`
 #' @param min_size minimal number of observations in an intersection for it to be included
 #' @param title title of the plot
 #' @param ...
 #'
 #' @return a plot of upset object (not a ggplot object)
 #' @noRd
-upset_plot <- function(upset_data, intersect, show_all = FALSE, min_size = 1, title = "", ...) {
+upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
+                      
   ComplexUpset::upset(upset_data, intersect,
                       width_ratio = 0.1,
-                      if (!show_all) min_size <- min_size, #  focus on the intersections with at least ten members (intersection size)
+                      min_size = min_size, # minimum intersections members (intersection size)
+                      
                       height_ratio = 1, # cause the intersection matrix and the intersection size to have an equal height
                       
                       # Manipulate the set size plot
@@ -440,7 +441,7 @@ upset_plot <- function(upset_data, intersect, show_all = FALSE, min_size = 1, ti
                           ) +
                           ggplot2::ylab("Intersection size")
                       ),
-                      wrap = TRUE # add it so the title to the entire plot instead of the intersection matrix
+                      wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
   ) +
     ggplot2::ggtitle(title)
 }
