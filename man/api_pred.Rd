@@ -4,14 +4,12 @@
 \alias{api_pred}
 \title{api_pred}
 \usage{
-api_pred(endpoint, json)
+api_pred(json)
 }
 \arguments{
-\item{endpoint}{API endpoint}
-
 \item{json}{JSON list of dictionaries with the following compulsory keys:
-`comment_id` (string) and `comment_text` (string). For example, 
-`[{'comment_id': '1', 'comment_text': 'Thank you'}, {'comment_id': '2', 'comment_text': 'Food was cold'}]`}
+`comment_id` (string), `comment_text` (string) and `question_type` (any of ("what_good", "could_improve", "nonspecific"). For example, 
+`[{'comment_id': '1', 'comment_text': 'Thank you', 'question_type': 'what_good'}, {'comment_id': '2', 'comment_text': 'Food was cold', 'question_type': 'could_improve'}]`}
 }
 \value{
 a dataframe

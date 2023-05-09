@@ -86,6 +86,12 @@ upload_data <- function(data, conn, trust_id){
                      "gender", "age", "ethnicity", "sexuality", "disability",
                      "faith", "pt_id")
   
+  # list to match the configuration question to the fort required by the API
+  
+  api_question_code = list(`What did we do well?` = 'could_improve',
+                       `What could be improved?` = 'what_good',
+                       `Non-specific question?` = 'nonspecific')
+  
   # get the current maximum pt_id value in the database table
   
   max_ptid <- DBI::dbGetQuery(conn, paste0("SELECT MAX(pt_id) FROM ", trust_id))$`MAX(pt_id)`
@@ -97,7 +103,7 @@ upload_data <- function(data, conn, trust_id){
                         names_to = "comment_type",
                         values_to = "comment_text") %>% 
     dplyr::select(dplyr::any_of(required_cols)) %>% 
-    dplyr::mutate(comment_id = 1:nrow(.)) %>%   # to track individual comment
+    dplyr::mutate(comment_id = 1:nrow(.)) %>%   # to uniquely identify individual comment
     clean_dataframe('comment_text') 
   
   # do trust specific data cleaning ----
@@ -110,10 +116,14 @@ upload_data <- function(data, conn, trust_id){
   
   # convert data to json for API as specified in the API doc
   json_data <- db_tidy  |>
-    dplyr::select(comment_id, comment_text) |>
+    dplyr::mutate(question_type = comment_type) |> 
+    dplyr::mutate(question_type = stringr::str_replace_all(question_type,'question_1', api_question_code[[get_golem_config('comment_1')]]),
+                  question_type = stringr::str_replace_all(question_type,'question_2', api_question_code[[get_golem_config('comment_2')]])
+    ) |>
+    dplyr::select(comment_id, comment_text, question_type) |> 
     jsonlite::toJSON()
   
-  preds <-  api_pred("http://127.0.0.1:8000/predict_multilabel", json=json_data) %>% 
+  preds <-  api_pred(json_data) %>% 
     dplyr::mutate(comment_id = as.integer(comment_id))
   
   print('Done with API call ...')
@@ -122,7 +132,7 @@ upload_data <- function(data, conn, trust_id){
   
   final_df <- db_tidy %>% dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
     dplyr::rename(fft = fft_score, category = labels,
-                  comment_txt = comment_text, 
+                  comment_txt = comment_text
     ) %>% 
     dplyr::select(-comment_id)  %>% 
     dplyr::mutate(hidden = 0,
@@ -130,7 +140,7 @@ upload_data <- function(data, conn, trust_id){
     ) %>%
     tidy_label_column('category') 
   
-  # get the current maximum  row_id value in the database table
+  # get the current maximum row_id value in the database table
   
   max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(row_id) FROM ", trust_id))$`MAX(row_id)`
   
@@ -167,3 +177,27 @@ upload_data <- function(data, conn, trust_id){
   cat(row_difference, 'rows added \n') # confirm data addition
   DBI::dbExecute(conn, paste0('DELETE FROM `trust_a_bk` WHERE `row_id`> ',old_row_count))
 }
+
+# # test code
+# 
+# library(tidyverse)
+# 
+# pool <- odbc::dbConnect(
+#   drv = odbc::odbc(),
+#   driver = Sys.getenv("odbc_driver"),
+#   server = Sys.getenv("HOST_NAME"),
+#   UID = Sys.getenv("DB_USER"),
+#   PWD = Sys.getenv("MYSQL_PASSWORD"),
+#   database = "TEXT_MINING",
+#   Port = 3306
+# )
+# 
+# DBI::dbReadTable(pool, 'trust_a_bk') %>% arrange(desc(row_id)) %>% View('db b4')
+# 
+# # load sample upload data
+# 
+# df <- readr::read_csv("secret-data/p1_data_for_upload.csv",
+#                       show_col_types = FALSE) %>% head(15)
+# 
+# # test the upload function
+# upload_data(data = df, conn = pool, trust_id = "trust_a_bk")
