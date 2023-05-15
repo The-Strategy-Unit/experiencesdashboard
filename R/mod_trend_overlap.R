@@ -37,9 +37,12 @@ mod_trend_overlap_ui <- function(id) {
                      12,
                      # plotly::plotlyOutput(ns("category_overlap_plot")) %>%
                      #   shinycssloaders::withSpinner(),
-                     selectInput(ns("min_size"),
+                     numericInput(
+                       ns("min_size"),
                        label = h5(strong("Select Minimum intercept size (defaults to 1):")),
-                       choices = c(1, seq.int(10, 100, 10), seq.int(200, 3000, 100)),
+                       value = 1,
+                       min = 1,
+                       max = 3000
                      ),
                      plotOutput(ns("category_upset")) %>%
                        shinycssloaders::withSpinner(),
@@ -73,8 +76,10 @@ mod_trend_overlap_server <- function(id, filter_data,
       return(length(selected_list) > 1)
     }
     
+    # dynamic ui part ----
+    
     output$trendUI <- renderUI({
-      choices <- na.omit(unique(filter_data()$filter_data$category))
+      choices <- na.omit(unique(filter_data()$single_labeled_filter_data$category))
       
       # select the first 5 category for the trend tab
       
@@ -92,7 +97,7 @@ mod_trend_overlap_server <- function(id, filter_data,
     output$trendUI_2 <- renderUI({
       req(input$tabset_trend == "overlap")
       
-      choices <- c("", na.omit(unique(filter_data()$filter_data$category)))
+      choices <- c("", na.omit(unique(filter_data()$single_labeled_filter_data$category)))
       
       fluidRow(
         column(4, selectInput(
@@ -166,10 +171,10 @@ mod_trend_overlap_server <- function(id, filter_data,
     #
     # })
     
-    # Create category trend
+    # tab 1 server codes - category trend ----
     
     trend_data <- reactive({
-      return_data <- filter_data()$filter_data %>%
+      return_data <- filter_data()$single_labeled_filter_data %>%
         dplyr::mutate(
           comment_type = factor(comment_type,
                                 levels = unique(comment_type),
@@ -193,7 +198,7 @@ mod_trend_overlap_server <- function(id, filter_data,
       
       return_data
     })  %>% 
-      bindCache(filter_data()$filter_data, 
+      bindCache(filter_data()$single_labeled_filter_data, 
                 get_golem_config("comment_1"),
                 get_golem_config("comment_2"), 
                 input$select_super_category)
@@ -230,35 +235,77 @@ mod_trend_overlap_server <- function(id, filter_data,
     }) %>% 
       bindCache(trend_data())
     
+    # tab 2 server codes - the overlapping plot / upset plot ----
+    
     # Create reactive data to be use by the upset plot function and verbatim comment outputs
     
     tidy_data <- reactive({
-      filter_data()$filter_data %>%
-        make_sample_multilabeled_data() %>%
-        multi_to_single_label(column_name = "labels") 
+      filter_data()$single_labeled_filter_data %>%
+        dplyr::rename(value = category)
     }) %>% 
-      bindCache(filter_data()$filter_data)
-    
-    # the overlapping plot / upset plot ----
+      bindCache(filter_data()$single_labeled_filter_data)
     
     upset_data <- reactive({tidy_data() %>%
-        dplyr::select(-name) %>% # to ensure  the rows are well mapped
+        # dplyr::select(-name) %>% # to ensure  the rows are well mapped
         one_hot_labels(column = "value") # apply one hot encoding to the single label column
     }) %>% 
       bindCache(tidy_data())
     
-    output$category_upset <- renderPlot({
-      
-      upset_plot(upset_data(),
-                 intersect = unique(tidy_data()$value),
-                 min_size = as.integer(input$min_size), 
-                 title = "Upset plot showing relationship across categories"
-      )
-    }) %>% bindCache(upset_data(), 
-                     tidy_data()$value,
-                     input$min_size)
+    ## the upset plot ----
     
-    # Verbatim text ----
+    output$category_upset <- renderImage({
+      
+      pixelratio <- session$clientData$pixelratio
+      width  <- session$clientData$output_category_upset_width
+      height <- session$clientData$output_category_upset_height
+      
+      # A temp file to save the output. This file will be removed later by renderImage
+      
+      # outfile <- system.file("app", "www", "tempfile.png",package = "experiencesdashboard")
+      # outfile <- here::here(app_sys(), "app/www", "tempfile.png")
+      # if(!file.exists(outfile)) outfile = file.create(outfile)
+                    
+      outfile <- tempfile(tmpdir = here::here(app_sys(), "app/www"), fileext='.png')
+      png(outfile,
+          width=width*pixelratio, height=height*pixelratio*1.03,
+          res=120*pixelratio)
+      
+      tryCatch({
+        
+        upset_plot(upset_data(),
+                   intersect = unique(tidy_data()$value),
+                   min_size = as.integer(input$min_size), 
+                   title = "Upset plot showing relationship between categories"
+        ) %>%
+          print()
+        
+      }, error = function(e) {
+        print(e)
+      })
+      dev.off()
+      # Return a list containing the filename
+      list(src = outfile,
+           contentType = 'image/png',
+           width = width,
+           height = height,
+           alt = "upsett plot showing relationship between categories" # This is alternate text
+           )
+      },
+    deleteFile = TRUE)
+    
+    # output$category_upset <- renderPlot({
+    #   
+    #   upset_plot(upset_data(),
+    #              intersect = unique(tidy_data()$value),
+    #              min_size = as.integer(input$min_size), 
+    #              title = "Upset plot showing relationship across categories"
+    #   )
+    # },
+    # res = 100) %>% bindCache(upset_data(), 
+    #                  tidy_data()$value,
+    #                  input$min_size)
+    
+    ## Verbatim text ----
     
     output$overlap_text <- renderText({
       # only run when at least 2 categories are selected

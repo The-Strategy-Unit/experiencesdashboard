@@ -6,6 +6,7 @@ params:
   dates: NA
   inputs: NA
   data: NA
+  single_label_data: NA
   options: NA
   comment_1: NA
   comment_2: NA
@@ -53,7 +54,7 @@ if("category_table" %in% params$options){
   cat("###", params$comment_1,  "  \n")
   
   calculate_table(
-    table_data = params$data, 
+    table_data = params$single_label_data, 
     count_column = "category",
     comment_type = "comment_1", 
     click_column = NULL
@@ -65,7 +66,7 @@ if("category_table" %in% params$options){
   cat("###", params$comment_2,  "  \n")
   
   calculate_table(
-    table_data = params$data, 
+    table_data = params$single_label_data, 
     count_column = "category",
     comment_type = "comment_2", 
     click_column = NULL
@@ -84,8 +85,8 @@ if("verbatim_comments" %in% params$options){
   
   cat("## Verbatim comments  \n")
   
-  cat("Note that in the interests of brevity comments where the respondent 
-      indicated 'couldn't be improved' are omitted  \n")
+  cat("Note that in the interests of brevity comments where the assined category
+      is 'Labelling not possible' are omitted  \n")
   
   cat("  \n")
   
@@ -138,17 +139,17 @@ if("fft_graph" %in% params$options){
   cat("## FFT  \n")
   
   graph_data <- split_data_spc(
-    unique_data, variable = "fft", chunks = 15
+    unique_data, variable = "fft", chunks = "monthly"
   )
   
-  # confirm we have more than 3 groups to plot
+  # confirm we have at least 10 groups to plot
   no_group <- graph_data %>% 
     dplyr::pull() %>% 
     unique() %>% 
     length()
   
    
-  if (no_group < 3){
+  if (no_group < 10){
     
      print(p('There are not enough stable SPC points to plot.
                     Please expand your selection'))

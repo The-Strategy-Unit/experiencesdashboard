@@ -50,6 +50,6 @@ show_multilabeled_text <- function(data, theme_column, filter_by_themes) {
         paste0(., hr())
     )
   } else{
-    return(paste('No comment to return'))
+    return(paste('No Matching comment'))
   }
 }

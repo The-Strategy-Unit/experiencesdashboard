@@ -81,10 +81,11 @@ upload_data <- function(data, conn, trust_id){
   
   # reformat and clean the uploaded data ----
   
-  required_cols <- c("date", "location_1", "location_2", "location_3", 
-                     "comment_type","comment_text", "fft_score",
+  required_cols <- c("date", "pt_id", "location_1", "location_2", "location_3", 
+                     "comment_type","comment_text", "fft_score", "sex",
                      "gender", "age", "ethnicity", "sexuality", "disability",
-                     "faith", "pt_id")
+                     "religion", get_golem_config("extra_variable_1"), 
+                     get_golem_config("extra_variable_2"), get_golem_config("extra_variable_3"))
   
   # list to match the configuration question to the fort required by the API
   
@@ -130,7 +131,8 @@ upload_data <- function(data, conn, trust_id){
   
   # rename the columns to make the data compatible with old data format currently in use
   
-  final_df <- db_tidy %>% dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
+  final_df <- db_tidy %>% 
+    dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
     dplyr::rename(fft = fft_score, category = labels,
                   comment_txt = comment_text
     ) %>% 
@@ -140,16 +142,16 @@ upload_data <- function(data, conn, trust_id){
     ) %>%
     tidy_label_column('category') 
   
-  # get the current maximum row_id value in the database table
+  # get the current maximum comment_id value in the database table
   
-  max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(row_id) FROM ", trust_id))$`MAX(row_id)`
+  max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(comment_id) FROM ", trust_id))$`MAX(comment_id)`
   
-  # set the starting value for the auto-incremented row_id
+  # set the starting value for the auto-incremented comment_id
   # This will ensure that when we append the new data, 
-  # the row_id values will be sequential and there will be no gaps.
+  # the comment_id values will be sequential and there will be no gaps.
   final_df <- final_df %>% 
     dplyr::mutate(
-      row_id = seq.int(max_id + 1, max_id + nrow(.)),
+      comment_id = seq.int(max_id + 1, max_id + nrow(.)),
       comment_type = stringr::str_replace_all(.data$comment_type, 'question', 'comment')
     )
   
@@ -169,13 +171,10 @@ upload_data <- function(data, conn, trust_id){
   print('Done appending to database ...')
   
   # reset the db data ------------------- remove later ------------------------
-  old_row_count <- 52745
-  nw_row_count <- DBI::dbReadTable(conn, 'trust_a_bk') %>% dplyr::arrange(desc(row_id)) %>% nrow()
-  row_difference <- nw_row_count - old_row_count
+  # cat(nrow(final_df), 'rows in data to append \n')
+  # DBI::dbExecute(conn, paste0('TRUNCATE TABLE `phase_2_trust`'))
   
-  cat(nrow(final_df), 'rows in data to append \n')
-  cat(row_difference, 'rows added \n') # confirm data addition
-  DBI::dbExecute(conn, paste0('DELETE FROM `trust_a_bk` WHERE `row_id`> ',old_row_count))
+  return(final_df)
 }
 
 # # test code
@@ -192,7 +191,7 @@ upload_data <- function(data, conn, trust_id){
 #   Port = 3306
 # )
 # 
-# DBI::dbReadTable(pool, 'trust_a_bk') %>% arrange(desc(row_id)) %>% View('db b4')
+# DBI::dbReadTable(pool, 'trust_a_bk') %>% arrange(desc(comment_id)) %>% View('db b4')
 # 
 # # load sample upload data
 # 

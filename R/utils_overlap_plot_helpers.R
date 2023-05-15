@@ -361,7 +361,7 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
                       width_ratio = 0.1,
                       min_size = min_size, # minimum intersections members (intersection size)
                       
-                      height_ratio = 1, # cause the intersection matrix and the intersection size to have an equal height
+                      height_ratio = 1.5, # cause the intersection matrix and the intersection size to have an equal height
                       
                       # Manipulate the set size plot
                       
@@ -372,10 +372,10 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
                           filter_intersections=TRUE
                         ) +
                           # display the count text
-                          ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
-                                             hjust = -0.2, stat = "count"
-                          ) +
-                          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45))
+                          # ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
+                          #                    hjust = -0.2, stat = "count"
+                          # ) +
+                          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 0))
                       ),
                       
                       # set_sizes=FALSE,    # or hide the set size
@@ -418,9 +418,6 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
                         
                         # Manipulate the set size plot
                         "Intersection size" = ComplexUpset::intersection_size(
-                          # text_colors=c(
-                          #   on_background='brown', on_bar='yellow'
-                          # ),
                           # Any parameter supported by geom_text can be passed in text list
                           text = list(
                             vjust = -0.3,

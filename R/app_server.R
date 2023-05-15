@@ -238,9 +238,17 @@ app_server <- function(input, output, session) {
 
     unique_data <- return_data %>%
       dplyr::distinct(pt_id, .keep_all = TRUE)
+    
+    # return the data in single labelled form 
+    
+    tidy_filter_data <- return_data %>% 
+      multi_to_single_label('category')  %>% 
+      dplyr::select(-original_label, -name) %>% 
+      dplyr::rename(category = value)
 
     return(list(
       "filter_data" = return_data,
+      "single_labeled_filter_data" = tidy_filter_data,
       "unique_data" = unique_data,
       "demography_number" = no_responders
     ))
@@ -265,7 +273,6 @@ app_server <- function(input, output, session) {
   mod_fft_server("fft_ui_1", filter_data = filter_data)
 
   mod_report_builder_server("report_builder_ui_1",
-    filter_sentiment = filter_sentiment,
     filter_data = filter_data,
     all_inputs = all_inputs
   )

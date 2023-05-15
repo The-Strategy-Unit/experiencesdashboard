@@ -7,7 +7,7 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_report_builder_ui <- function(id, filter_data, filter_sentiment){
+mod_report_builder_ui <- function(id){
   ns <- NS(id)
   tagList(
     
@@ -30,7 +30,7 @@ mod_report_builder_ui <- function(id, filter_data, filter_sentiment){
 #' report_builder Server Functions
 #'
 #' @noRd 
-mod_report_builder_server <- function(id, filter_sentiment, filter_data,
+mod_report_builder_server <- function(id, filter_data,
                                       all_inputs){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
@@ -112,6 +112,7 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
             params <- list(dates = dates,
                            inputs = all_inputs(),
                            data = filter_data()$filter_data,
+                           single_label_data = filter_data()$single_labeled_filter_data,
                            options = input$report_components,
                            comment_1 = get_golem_config("comment_1"),
                            comment_2 = get_golem_config("comment_2")

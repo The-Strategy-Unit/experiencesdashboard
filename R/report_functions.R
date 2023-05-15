@@ -53,7 +53,7 @@ verbatim_comments <- function(data, comment_selection){
   comment_df <-  data %>% 
     dplyr::filter(comment_type == comment_selection) %>% 
     dplyr::filter(!is.na(comment_txt) & !is.na(category)) %>%
-    dplyr::filter(category != "Couldn't be improved")  %>% 
+    dplyr::filter(category != "Labelling not possible")  %>% 
     dplyr::filter(category != "")
   
   if (nrow(comment_df) == 0){
