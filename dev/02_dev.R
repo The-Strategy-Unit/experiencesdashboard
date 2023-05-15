@@ -54,6 +54,9 @@ usethis::use_package( "NHSRplotthedots" )
 usethis::use_dev_package( "NHSRtheme" )
 usethis::use_dev_package( "fresh" )
 
+## Amend DESCRIPTION with dependencies read from package code parsing
+attachment::att_amend_desc()
+
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "sentiment" ) # Name of the module
