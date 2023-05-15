@@ -342,8 +342,6 @@ add_theme_nhs <- function() {
   )
 }
 
-
-
 #' Draw upset plot
 #'
 #' @param upset_data  a dataframe with each column representing a membership in the class. values are
@@ -358,10 +356,9 @@ add_theme_nhs <- function() {
 upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
                       
   ComplexUpset::upset(upset_data, intersect,
-                      width_ratio = 0.1,
                       min_size = min_size, # minimum intersections members (intersection size)
-                      
-                      height_ratio = 1.5, # cause the intersection matrix and the intersection size to have an equal height
+                      width_ratio = 0.1,
+                      height_ratio = 1.5, # height of intersection matrix to the intersection plot
                       
                       # Manipulate the set size plot
                       
@@ -370,12 +367,15 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
                           geom = ggplot2::geom_bar(fill = "#005EB8"),
                           position = "right",
                           filter_intersections=TRUE
-                        ) +
+                        )  + 
                           # display the count text
                           # ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
                           #                    hjust = -0.2, stat = "count"
                           # ) +
-                          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 0))
+                          ggplot2::ylab("No. of comments") +
+                          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 0),
+                                         text = ggplot2::element_text(size = 7)
+                                         )
                       ),
                       
                       # set_sizes=FALSE,    # or hide the set size
@@ -390,24 +390,9 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
                       #
                       matrix = (
                         ComplexUpset::intersection_matrix(
-                          geom = ggplot2::geom_point(
-                            size = 3
-                          ),
-                          outline_color = list(
-                            # active = "#005EB8",
-                            active = "#000000",
-                            inactive = "grey70"
-                          ) #+
-                          #   ggplot2::scale_color_manual(
-                          #   values=c('#005EB8', 'grey'),
-                          #   # labels=c('TRUE'='yes', 'FALSE'='no'),
-                          # breaks=c('TRUE', 'FALSE'),#
-                          # na.value = "grey50"
-                          # # name='Is intersection member?'
-                          # )
-                          # ggplot2::scale_y_discrete(
-                          # position='right')
-                        )
+                          geom = ggplot2::geom_point(size = 2),
+                          outline_color = list(active = "#000000", inactive = "grey70")
+                        ) 
                       ),
                       
                       # stripes='white',
@@ -419,28 +404,21 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
                         # Manipulate the set size plot
                         "Intersection size" = ComplexUpset::intersection_size(
                           # Any parameter supported by geom_text can be passed in text list
-                          text = list(
-                            vjust = -0.3,
-                            size = 3
-                          ),
+                          text = list(vjust = -0.3, size = 2),
                           fill = "#005EB8"
-                          
                           # counts=FALSE, # uncheck to remove the count text
                         ) +
-                          ggplot2::annotate(
-                            geom = "text", x = Inf, y = Inf,
-                            label = paste("Total Rows:", nrow(upset_data)),
-                            vjust = 1, hjust = 1
-                          ) +
                           ggplot2::theme(
                             panel.grid.minor = ggplot2::element_blank(),
                             panel.grid.major.x = ggplot2::element_blank(),
+                            text = ggplot2::element_text(size = 7)
                           ) +
-                          ggplot2::ylab("Intersection size")
+                          ggplot2::ylab("No. of comments")
                       ),
                       wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
   ) +
-    ggplot2::ggtitle(title)
+    ggplot2::ggtitle(title) + 
+    ggplot2::theme(text = ggplot2::element_text(size = 9))   
 }
 
 
