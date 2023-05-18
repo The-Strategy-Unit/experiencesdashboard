@@ -1,5 +1,21 @@
 # function to do trust specific data cleaning
 
+tidy_trust_gosh <- function(db_tidy){
+  
+  db_tidy %>% 
+    dplyr::mutate(age = as.integer(age)) %>% 
+    dplyr::mutate(
+      age = dplyr::case_when(age < 12 ~ "0 - 11",
+                             age > 11 | age < 18 ~ "12 - 17",
+                             age > 17 | age < 26 ~ "18 - 25",
+                             age > 25 | age < 40 ~ "26 - 39",
+                             age > 39 | age < 65 ~ "40 - 64",
+                             age > 64 | age < 80 ~ "65 - 79",
+                             age > 79 ~ "80+",
+                             TRUE ~ as.character(age))
+      )
+}
+
 tidy_trust_d <- function(db_tidy){
   
   db_tidy %>% 
@@ -80,26 +96,16 @@ upload_data <- function(data, conn, trust_id){
   }
   
   # reformat and clean the uploaded data ----
-  
   required_cols <- c("date", "pt_id", "location_1", "location_2", "location_3", 
                      "comment_type","comment_text", "fft_score", "sex",
-                     "gender", "age", "ethnicity", "sexuality", "disability",
-                     "religion", get_golem_config("extra_variable_1"), 
-                     get_golem_config("extra_variable_2"), get_golem_config("extra_variable_3"))
-  
-  # list to match the configuration question to the fort required by the API
-  
-  api_question_code = list(`What did we do well?` = 'could_improve',
-                       `What could be improved?` = 'what_good',
-                       `Non-specific question?` = 'nonspecific')
+                     "gender", "age", "ethnicity", "sexuality", "disability", "religion", 
+                     "extra_variable_1", "extra_variable_2", "extra_variable_3")
   
   # get the current maximum pt_id value in the database table
-  
   max_ptid <- DBI::dbGetQuery(conn, paste0("SELECT MAX(pt_id) FROM ", trust_id))$`MAX(pt_id)`
   
   db_tidy <- data %>%  
     dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>% 
-    # dplyr::mutate(pt_id = uuid::UUIDgenerate(use.time = TRUE, n = nrow(.))) %>% # generate time based unique id
     tidyr::pivot_longer(cols = dplyr::starts_with("question"),
                         names_to = "comment_type",
                         values_to = "comment_text") %>% 
@@ -108,23 +114,31 @@ upload_data <- function(data, conn, trust_id){
     clean_dataframe('comment_text') 
   
   # do trust specific data cleaning ----
-  
-  if (trust_id == "trust_c") db_tidy <- db_tidy %>% tidy_trust_c_e()
-  if (trust_id == "trust_d")  db_tidy <- db_tidy %>% tidy_trust_d()
-  if (trust_id == "trust_e") db_tidy <- db_tidy %>% tidy_trust_c_e()
+  if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
   
   # call API for label predictions ----
+  # prepare the data for the API
   
-  # convert data to json for API as specified in the API doc
-  json_data <- db_tidy  |>
+  tidy_data <- db_tidy  |>
     dplyr::mutate(question_type = comment_type) |> 
-    dplyr::mutate(question_type = stringr::str_replace_all(question_type,'question_1', api_question_code[[get_golem_config('comment_1')]]),
-                  question_type = stringr::str_replace_all(question_type,'question_2', api_question_code[[get_golem_config('comment_2')]])
+    dplyr::mutate(
+      question_type = stringr::str_replace_all(question_type,'question_1', 
+                                               api_question_code(get_golem_config('comment_1')))
     ) |>
-    dplyr::select(comment_id, comment_text, question_type) |> 
-    jsonlite::toJSON()
+    dplyr::select(comment_id, comment_text, question_type) 
   
-  preds <-  api_pred(json_data) %>% 
+  if(isTruthy(get_golem_config('comment_2'))){
+    tidy_data <- tidy_data  |>
+      dplyr::mutate(
+        question_type = stringr::str_replace_all(question_type,'question_2', 
+                                                 api_question_code(get_golem_config('comment_2')))
+      ) |>
+      dplyr::select(comment_id, comment_text, question_type) 
+  }
+
+  cat("Making predictions for ", nrow(db_tidy), "comments from pxtextming API \n")
+
+  preds <-  batch_predict(tidy_data) %>%
     dplyr::mutate(comment_id = as.integer(comment_id))
   
   print('Done with API call ...')

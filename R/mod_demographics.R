@@ -23,17 +23,26 @@ mod_demographics_server <- function(id, filter_data) {
     # the UI render
 
     output$dynamic_demo_UI <- renderUI({
+      
+      validate(
+        need(
+          data_exists <- filter_data()$filter_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0,
+          "Demography plots will appear here"
+        )
+      )
+      
       # check which demographic variables are present
-
       isolate({
-        has_age <- "age" %in% colnames(filter_data()$unique_data)
-        has_gender <- "gender" %in% colnames(filter_data()$unique_data)
-        has_ethnicity <- "ethnicity" %in% colnames(filter_data()$unique_data)
+        has_demography_1 <- isTruthy(get_golem_config("demography_1")) 
+        has_demography_2 <- isTruthy(get_golem_config("demography_2")) 
+        has_demography_3 <- isTruthy(get_golem_config("demography_3")) 
       })
 
       # determine the column width base on the number of demographic variables present
 
-      demography_cond <- sum(has_age, has_gender, has_ethnicity)
+      demography_cond <- sum(has_demography_1, has_demography_2, has_demography_3)
 
       width <- dplyr::case_when(
         demography_cond == 3 ~ 4,
@@ -47,28 +56,28 @@ mod_demographics_server <- function(id, filter_data) {
         ),
         hr(),
         fluidRow(
-          if (has_age) {
-            column(width, plotOutput(ns("age_graph")))
+          if (has_demography_1) {
+            column(width, plotOutput(ns("demography_1_graph")))
           },
-          if (has_gender) {
-            column(width, plotOutput(ns("gender_graph")))
+          if (has_demography_2) {
+            column(width, plotOutput(ns("demography_2_graph")))
           },
-          if (has_ethnicity) {
-            column(width, plotOutput(ns("ethnicity_graph")))
+          if (has_demography_3) {
+            column(width, plotOutput(ns("demography_3_graph")))
           }
         ),
         hr(),
         h3("Categories with fewer than 10 individuals are excluded"),
         p("The below chart shows the average percentage of maximum FFT score for each category."),
         fluidRow(
-          if (has_age) {
-            column(width, plotly::plotlyOutput(ns("compare_age")))
+          if (has_demography_1) {
+            column(width, plotly::plotlyOutput(ns("compare_demography_1")))
           },
-          if (has_gender) {
-            column(width, plotly::plotlyOutput(ns("compare_gender")))
+          if (has_demography_2) {
+            column(width, plotly::plotlyOutput(ns("compare_demography_2")))
           },
-          if (has_ethnicity) {
-            column(width, plotly::plotlyOutput(ns("compare_ethnicity")))
+          if (has_demography_3) {
+            column(width, plotly::plotlyOutput(ns("compare_demography_3")))
           }
         )
       )
@@ -95,35 +104,38 @@ mod_demographics_server <- function(id, filter_data) {
 
     # distribution----
 
-    output$age_graph <- renderPlot({
-      filter_data()$unique_data %>%
-        dplyr::arrange(age) %>%
-        dplyr::mutate(age = factor(age)) %>%
-        demographic_distribution(variable = "age")
+    output$demography_1_graph <- renderPlot({
+      
+      demo_data <- filter_data()$unique_data %>%
+        dplyr::arrange(get_golem_config("demography_1")) 
+      demo_data[,get_golem_config("demography_1")] = demo_data[,get_golem_config("demography_1")] %>%
+        unlist(use.names=F) %>% factor()
+      demo_data %>%
+        demographic_distribution(variable = get_golem_config("demography_1"))
     })
 
-    output$gender_graph <- renderPlot({
+    output$demography_2_graph <- renderPlot({
       filter_data()$unique_data %>%
-        demographic_distribution(variable = "gender")
+        demographic_distribution(variable = get_golem_config("demography_2"))
     })
 
-    output$ethnicity_graph <- renderPlot({
+    output$demography_3_graph <- renderPlot({
       filter_data()$unique_data %>%
-        demographic_distribution(variable = "ethnicity")
+        demographic_distribution(variable = get_golem_config("demography_3"))
     })
 
     # compare scores----
 
-    output$compare_age <- plotly::renderPlotly({
-      compare_demographics(filter_data()$unique_data, "age")
+    output$compare_demography_1 <- plotly::renderPlotly({
+      compare_demographics(filter_data()$unique_data, get_golem_config("demography_1"))
     })
 
-    output$compare_gender <- plotly::renderPlotly({
-      compare_demographics(filter_data()$unique_data, "gender")
+    output$compare_demography_2 <- plotly::renderPlotly({
+      compare_demographics(filter_data()$unique_data, get_golem_config("demography_2"))
     })
 
-    output$compare_ethnicity <- plotly::renderPlotly({
-      compare_demographics(filter_data()$unique_data, "ethnicity")
+    output$compare_demography_3 <- plotly::renderPlotly({
+      compare_demographics(filter_data()$unique_data, get_golem_config("demography_3"))
     })
   })
 }

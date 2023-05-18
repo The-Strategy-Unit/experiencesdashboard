@@ -73,9 +73,9 @@ mod_patient_experience_server <- function(id){
       
       # Demographics tab
       
-      if(isTruthy(get_golem_config("gender")) | 
-         isTruthy(get_golem_config("age")) | 
-         isTruthy(get_golem_config("ethnicity"))){
+      if(isTruthy(get_golem_config("demography_1")) | 
+         isTruthy(get_golem_config("demography_2")) | 
+         isTruthy(get_golem_config("demography_3"))){
         
         ui_list <- c(ui_list,
                      list(

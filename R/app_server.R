@@ -182,21 +182,21 @@ app_server <- function(input, output, session) {
 
     # filter 3: demographics
 
-    demography_data <- return_data
+    demography_data <- return_data 
 
-    if (isTruthy(demographic_filters()$select_age)) {
+    if (isTruthy(demographic_filters()$select_demography_1)) {
       demography_data <- demography_data %>%
-        dplyr::filter(age %in% !!demographic_filters()$select_age)
+        dplyr::filter(!!rlang::sym(get_golem_config("demography_1")) %in% !!demographic_filters()$select_demography_1)
     }
 
-    if (isTruthy(demographic_filters()$select_gender)) {
+    if (isTruthy(demographic_filters()$select_demography_2)) {
       demography_data <- demography_data %>%
-        dplyr::filter(gender %in% !!demographic_filters()$select_gender)
+        dplyr::filter(!!rlang::sym(get_golem_config("demography_2")) %in% !!demographic_filters()$select_demography_2)
     }
 
-    if (isTruthy(demographic_filters()$select_ethnicity)) {
+    if (isTruthy(demographic_filters()$select_demography_3)) {
       demography_data <- demography_data %>%
-        dplyr::filter(ethnicity %in% !!demographic_filters()$select_ethnicity)
+        dplyr::filter(!!rlang::sym(get_golem_config("demography_3")) %in% !!demographic_filters()$select_demography_3)
     }
 
     # get the number of patients in data filtered by demographics
@@ -208,7 +208,7 @@ app_server <- function(input, output, session) {
 
     # only return demography filtered data if the number of responders is more than 20
 
-    if (no_responders < 20) {
+    if (no_responders < 20 & data_exists) {
       return_data <- return_data %>%
         dplyr::collect() %>%
         dplyr::arrange(date)
@@ -216,9 +216,9 @@ app_server <- function(input, output, session) {
       # add a pop up warning whenever any of the demographic filter is selected and
       # there are less than 20 responders in the data
 
-      if ((isTruthy(demographic_filters()$select_age)) |
-        (isTruthy(demographic_filters()$select_gender)) |
-        (isTruthy(demographic_filters()$select_ethnicity))
+      if ((isTruthy(demographic_filters()$select_demography_1)) |
+        (isTruthy(demographic_filters()$select_demography_2)) |
+        (isTruthy(demographic_filters()$select_demography_3))
       ) {
         showModal(modalDialog(
           title = "Warning!",
@@ -241,10 +241,14 @@ app_server <- function(input, output, session) {
     
     # return the data in single labelled form 
     
-    tidy_filter_data <- return_data %>% 
-      multi_to_single_label('category')  %>% 
-      dplyr::select(-original_label, -name) %>% 
-      dplyr::rename(category = value)
+    if (data_exists){
+      tidy_filter_data <- return_data %>% 
+        multi_to_single_label('category')  %>% 
+        dplyr::select(-original_label, -name) %>% 
+        dplyr::rename(category = value)
+    } else {
+      tidy_filter_data <- return_data
+    }
 
     return(list(
       "filter_data" = return_data,

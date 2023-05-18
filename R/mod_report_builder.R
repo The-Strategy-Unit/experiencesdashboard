@@ -10,20 +10,7 @@
 mod_report_builder_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
-    fluidRow(
-      column(6,
-             selectInput(ns("time_period"), "Reporting period",
-                         choices = c("Previous quarter" = "quarter",
-                                     "Previous 12 months" = "year",
-                                     "Current selection" = "custom")),
-             
-             uiOutput(ns("report_componentsUI")),
-             
-             downloadButton(ns("download_report"),
-                            "Download report")
-      )
-    )
+    uiOutput(ns("dynamic_report_UI"))
   )
 }
 
@@ -35,6 +22,31 @@ mod_report_builder_server <- function(id, filter_data,
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
+    
+    output$dynamic_report_UI <- renderUI({
+      req(
+        isolate(
+          data_exists <- filter_data()$filter_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0
+        )
+      )
+      
+      fluidRow(
+        column(6,
+               selectInput(ns("time_period"), "Reporting period",
+                           choices = c("Previous quarter" = "quarter",
+                                       "Previous 12 months" = "year",
+                                       "Current selection" = "custom")),
+               
+               uiOutput(ns("report_componentsUI")),
+               
+               downloadButton(ns("download_report"),
+                              "Download report")
+        )
+      )
+    })
+    
     output$report_componentsUI <- renderUI({
       
       choices = c("% categories table" = "category_table",
@@ -42,9 +54,9 @@ mod_report_builder_server <- function(id, filter_data,
       
       # do we have demographic data?
       
-      demographic_ui <- isTruthy(get_golem_config("gender")) | 
-        isTruthy(get_golem_config("age")) | 
-        isTruthy(get_golem_config("ethnicity"))
+      demographic_ui <- isTruthy(get_golem_config("demography_1")) | 
+        isTruthy(get_golem_config("demography_2")) | 
+        isTruthy(get_golem_config("demography_3"))
       
       if(demographic_ui){
         
@@ -115,7 +127,10 @@ mod_report_builder_server <- function(id, filter_data,
                            single_label_data = filter_data()$single_labeled_filter_data,
                            options = input$report_components,
                            comment_1 = get_golem_config("comment_1"),
-                           comment_2 = get_golem_config("comment_2")
+                           comment_2 = if (isTruthy(get_golem_config("comment_2"))) get_golem_config("comment_2"),
+                           demography_1 = get_golem_config("demography_1"),
+                           demography_2 = get_golem_config("demography_2"),
+                           demography_3 = get_golem_config("demography_3")
             )
             
             rmarkdown::render(

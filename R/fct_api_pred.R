@@ -1,11 +1,8 @@
 #' api_pred 
-#'
 #' @description A function to call the `pxtextmining` API 
-#' 
 #' @param json JSON list of dictionaries with the following compulsory keys:
 #' `comment_id` (string), `comment_text` (string) and `question_type` (any of ("what_good", "could_improve", "nonspecific"). For example, 
 #' `[{'comment_id': '1', 'comment_text': 'Thank you', 'question_type': 'what_good'}, {'comment_id': '2', 'comment_text': 'Food was cold', 'question_type': 'could_improve'}]`
-#'
 #' @return a dataframe 
 #' @export
 api_pred <- function(json){
@@ -27,6 +24,28 @@ api_pred <- function(json){
     jsonlite::fromJSON()
   
   return(data)
+}
+
+#' Make prediction in batches from the pxtextming API
+#' @param df a dataframe  
+#' @return a dataframe of length `df`
+#' @examples batch_predict(data)
+#' @noRd
+batch_predict <- function(df){
+  preds <- data.frame()
+  a = nrow(df)
+  f = c(seq(1, a, by = 1000))
+  l = setdiff(unique(c(seq(0, a, by = 1000), a)), 0)
+  
+  for (i in 1:length(f)){
+    d = df[f[i]:l[i], ]
+    cat(paste0("Making predictions for batch ", i, '/', length(f)), " \n")
+    p <- d |> 
+      jsonlite::toJSON() |> 
+      api_pred()
+    preds  <- dplyr::bind_rows(preds, p)
+  }
+  return(preds)
 }
 
 # test code 
