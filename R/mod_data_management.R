@@ -11,6 +11,16 @@ mod_data_management_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidPage(
+        tags$br(),
+        fluidRow(
+          column(
+            width = 1,
+            actionButton(ns("upload_new_data"), "Upload new data",
+              icon = icon("person-circle-plus")
+            )
+          )
+        ),
+        tags$hr(),
       uiOutput(ns("data_management_UI"))
     )
   )
@@ -63,36 +73,51 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     # dynamic UI ----
 
     output$data_management_UI <- renderUI({
+      
+      validate(
+        need(
+          data_exists <- filter_data()$filter_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0,
+          "Data Table will appear here"
+        )
+      )
+      
       ## server data ----
-
-      dt_out$data <- filter_data()$filter_data %>%
-        dplyr::filter(hidden == 0) %>%
-        dplyr::select(-hidden) %>%
-        dplyr::select(dplyr::any_of(dt_out$column_names)) %>% 
-        # dplyr::select(dt_out$column_names) %>% 
-        dplyr::mutate(comment_type = stringr::str_replace_all(comment_type,'comment_1', get_golem_config('comment_1')),
-                      comment_type = stringr::str_replace_all(comment_type,'comment_2', get_golem_config('comment_2'))
-        ) %>% 
-        purrr::keep(~ any(!is.na(.)))  # delete all empty columns 
-
+      
+      if (isTruthy( get_golem_config('comment_2'))) {
+        
+        dt_out$data <- filter_data()$filter_data %>%
+          dplyr::filter(hidden == 0) %>%
+          dplyr::select(-hidden) %>%
+          dplyr::select(dplyr::any_of(dt_out$column_names)) %>% 
+          dplyr::mutate(
+            comment_type = stringr::str_replace_all(comment_type,'comment_1', get_golem_config('comment_1')),
+            comment_type = stringr::str_replace_all(comment_type,'comment_2', get_golem_config('comment_2'))
+          ) %>% 
+          purrr::keep(~ any(!is.na(.)))  # delete all empty columns 
+        # 
+        # dt_out$data <- dt_out$data %>% 
+        #   dplyr::mutate(
+        #     comment_type = stringr::str_replace_all(comment_type,'comment_2', get_golem_config('comment_2'))
+        #   )
+      } else{
+        
+        dt_out$data <- filter_data()$filter_data %>%
+          dplyr::filter(hidden == 0) %>%
+          dplyr::select(-hidden) %>%
+          dplyr::select(dplyr::any_of(dt_out$column_names)) %>% 
+          dplyr::mutate(
+            comment_type = stringr::str_replace_all(comment_type,'comment_1', get_golem_config('comment_1'))
+          ) %>% 
+          purrr::keep(~ any(!is.na(.)))  # delete all empty columns 
+      }
 
       # complex comments ----
-
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
 
       # UI ----
-
       tagList(
-        tags$br(),
-        fluidRow(
-          column(
-            width = 1,
-            actionButton(ns("upload_new_data"), "Upload new data",
-              icon = icon("person-circle-plus")
-            )
-          )
-        ),
-        tags$hr(),
         # add button for editing the table
         fluidRow(
           column(
@@ -137,8 +162,11 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
     # render the data table ####
 
-    output$pat_table <- DT::renderDT(
+    output$pat_table <- DT::renderDT({
+      
+      # print(colnames(dt_out$dat))
 
+      DT::datatable(
       dt_out$data,
       selection = "multiple",
       rownames = F,
@@ -156,8 +184,8 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         dom = "Blfrtip",
         search = list(caseInsensitive = FALSE),
         scrollX = TRUE
-      )
-    )
+      ))
+    })
 
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy(ns("pat_table"))

@@ -9,41 +9,9 @@
 #' @importFrom shiny NS tagList
 mod_trend_overlap_ui <- function(id) {
   ns <- NS(id)
+  
   tagList(
-    fluidPage(
-      fluidRow(
-        uiOutput(ns("trendUI"))
-      ),
-      tabsetPanel(
-        id = ns("tabset_trend"),
-        type = "tabs",
-        
-        # A Sub-tab
-        
-        tabPanel("Trend",
-                 value = "trend",
-                 br(),
-                 plotly::plotlyOutput(ns("category_trend_plot")) %>%
-                   shinycssloaders::withSpinner()
-        ),
-        
-        # A Sub-tab
-        
-        tabPanel("Theme Overlap",
-                 value = "overlap",
-                 br(),
-                 fluidRow(
-                   column(12,
-                     plotOutput(ns("category_upset")) %>%
-                       shinycssloaders::withSpinner(),
-                     hr(),
-                     uiOutput(ns("trendUI_2")),
-                     uiOutput(ns("dynamic_overlap_text"))
-                   )
-                 )
-        )
-      )
-    )
+    uiOutput(ns("dynamic_trend_overlap"))
   )
 }
 
@@ -66,10 +34,57 @@ mod_trend_overlap_server <- function(id, filter_data,
       return(length(selected_list) > 1)
     }
     
-    # dynamic ui part ----
+    # Super UI ----
+    output$dynamic_trend_overlap <- renderUI({
+      
+      validate(
+        need(
+          data_exists <- filter_data()$filter_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0,
+          "Category Trends and inter-relationship plots will appear here"
+        )
+      )
+      
+      fluidPage(
+        fluidRow(
+          uiOutput(ns("trendUI"))
+        ),
+        tabsetPanel(
+          id = ns("tabset_trend"),
+          type = "tabs",
+          
+          # A Sub-tab
+          
+          tabPanel("Trend",
+                   value = "trend",
+                   br(),
+                   plotly::plotlyOutput(ns("category_trend_plot")) %>%
+                     shinycssloaders::withSpinner()
+          ),
+          
+          # A Sub-tab
+          
+          tabPanel("Theme Overlap",
+                   value = "overlap",
+                   br(),
+                   fluidRow(
+                     column(12,
+                            plotOutput(ns("category_upset")) %>%
+                              shinycssloaders::withSpinner(),
+                            hr(),
+                            uiOutput(ns("trendUI_2")),
+                            uiOutput(ns("dynamic_overlap_text"))
+                     )
+                   )
+          )
+        )
+      )
+    })
     
+    # dynamic ui part ----
     output$trendUI <- renderUI({
-      choices <- na.omit(unique(filter_data()$single_labeled_filter_data$category))
+      choices <- filter_data()$single_labeled_filter_data$category %>% unique() %>% na.omit()
       
       # select the first 5 category for the trend tab
       ui_list <- list(
@@ -86,17 +101,20 @@ mod_trend_overlap_server <- function(id, filter_data,
       
       if (input$tabset_trend == "overlap") {
         
-        ui_list <- c(ui_list,
-                     list(column(6, 
-                             numericInput(
-                                ns("min_size"),
-                                label = h5(strong("Select Minimum intercept size (defaults to 1):")),
-                                value = 1,
-                                min = 1,
-                                max = 3000
-                                )
-                             )
-                           )
+        ui_list <- c(
+          ui_list,
+          list(
+            column(
+              6,
+              numericInput(
+                ns("min_size"),
+                label = h5(strong("Select Minimum intercept size (defaults to 2):")),
+                value = 2,
+                min = 1,
+                max = 3000
+                )
+             )
+           )
         )
       }
       
@@ -106,7 +124,7 @@ mod_trend_overlap_server <- function(id, filter_data,
     output$trendUI_2 <- renderUI({
       req(input$tabset_trend == "overlap")
       
-      choices <- c("", na.omit(unique(filter_data()$single_labeled_filter_data$category)))
+      choices <- c("", filter_data()$single_labeled_filter_data$category %>% unique() %>% na.omit() %>% sort())
       
       fluidRow(
         column(4, selectInput(
