@@ -1,5 +1,4 @@
-# trust A
-
+# select Trust
 Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_trust")
 
 # Set options here
