@@ -92,7 +92,7 @@ if("verbatim_comments" %in% params$options){
   
   cat("## Verbatim comments  \n")
   
-  cat("Note that in the interests of brevity comments where the assined category
+  cat("Note that in the interests of brevity comments where the assigned category
       is 'Labelling not possible' are omitted  \n")
   
   cat("  \n")
