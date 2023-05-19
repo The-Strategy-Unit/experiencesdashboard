@@ -144,7 +144,6 @@ upload_data <- function(data, conn, trust_id){
   print('Done with API call ...')
   
   # rename the columns to make the data compatible with old data format currently in use
-  
   final_df <- db_tidy %>% 
     dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
     dplyr::rename(fft = fft_score, category = labels,
@@ -156,8 +155,8 @@ upload_data <- function(data, conn, trust_id){
     ) %>%
     tidy_label_column('category') 
   
+  print('Doing final data tidy')
   # get the current maximum comment_id value in the database table
-  
   max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(comment_id) FROM ", trust_id))$`MAX(comment_id)`
   
   # set the starting value for the auto-incremented comment_id
@@ -171,9 +170,7 @@ upload_data <- function(data, conn, trust_id){
   
   # write the processed data to database
   print('Just started appending to database ...')
-  
   # DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
-  
   # this throw error when data can't be appended e.g when data column can't be coerce into the db table datatype
   dplyr::rows_append(
     dplyr::tbl(conn, trust_id),
@@ -183,12 +180,6 @@ upload_data <- function(data, conn, trust_id){
   )
   
   print('Done appending to database ...')
-  
-  # reset the db data ------------------- remove later ------------------------
-  # cat(nrow(final_df), 'rows in data to append \n')
-  # DBI::dbExecute(conn, paste0('TRUNCATE TABLE `phase_2_trust`'))
-  
-  return(final_df)
 }
 
 # # test code

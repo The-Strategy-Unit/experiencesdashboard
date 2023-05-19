@@ -455,7 +455,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
           withProgress(message = "Processing data. This may take a while.
                      Please wait...", value = 0, {
-            upload_data(data = raw_df, conn = db_conn, trust_id = "trust_a_bk")
+            upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
             incProgress(1)
           })
 
