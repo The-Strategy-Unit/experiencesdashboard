@@ -95,12 +95,10 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
             comment_type = stringr::str_replace_all(comment_type,'comment_1', get_golem_config('comment_1')),
             comment_type = stringr::str_replace_all(comment_type,'comment_2', get_golem_config('comment_2'))
           ) %>% 
-          purrr::keep(~ any(!is.na(.)))  # delete all empty columns 
-        # 
-        # dt_out$data <- dt_out$data %>% 
-        #   dplyr::mutate(
-        #     comment_type = stringr::str_replace_all(comment_type,'comment_2', get_golem_config('comment_2'))
-        #   )
+          dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
+          dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>%  # delete all empty columns 
+          dplyr::mutate(date = as.Date(date)) 
+        
       } else{
         
         dt_out$data <- filter_data()$filter_data %>%
@@ -110,9 +108,11 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           dplyr::mutate(
             comment_type = stringr::str_replace_all(comment_type,'comment_1', get_golem_config('comment_1'))
           ) %>% 
-          purrr::keep(~ any(!is.na(.)))  # delete all empty columns 
+          dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
+          dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>%  # delete all empty columns 
+          dplyr::mutate(date = as.Date(date))  # delete all empty columns 
       }
-
+      
       # complex comments ----
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
 
@@ -120,18 +120,18 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
       tagList(
         # add button for editing the table
         fluidRow(
-          column(
-            width = 1,
-            actionButton(ns("del_pat"), "Delete",
-              icon = icon("trash-can")
-            ),
-          ),
-          column(
-            width = 1,
-            actionButton(ns("save_to_db"), "Save edit",
-              icon = icon("save"),
-            ),
-          ),
+          # column(
+          #   width = 1,
+          #   actionButton(ns("del_pat"), "Delete",
+          #     icon = icon("trash-can")
+          #   ),
+          # ),
+          # column(
+          #   width = 1,
+          #   actionButton(ns("save_to_db"), "Save edit",
+          #     icon = icon("save"),
+          #   ),
+          # ),
           column(
             width = 1,
             downloadButton(ns("download1"), "Download data",
@@ -164,17 +164,14 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
     output$pat_table <- DT::renderDT({
       
-      # print(colnames(dt_out$dat))
-
       DT::datatable(
       dt_out$data,
       selection = "multiple",
-      rownames = F,
-      editable = list(
-        "target" = "row",
-        disable = list(columns = c(0,5,length(names(dt_out$data))-1)) # disable editing of comment_id (0), comment_type(5), n pat_id (last column) cols
-        # disable = list(columns = c(0,2)) # disable editing of comment_id (0) n pat_id (2) cols
-        ),
+      rownames = FALSE,
+      # editable = list(
+      #   "target" = "row",
+      #   disable = list(columns = c(0,5,length(names(dt_out$data))-1)) # disable editing of comment_id (0), comment_type(5), n pat_id (last column) cols
+      #   ),
       filter = "top",
       class = "display cell-border compact",
       colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE),
@@ -190,9 +187,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy(ns("pat_table"))
 
-
     # Edit a row and effect it in the UI view ####
-
     observeEvent(input$pat_table_cell_edit, {
       info <- input$pat_table_cell_edit # get the edited row information
 
@@ -239,8 +234,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           }
 
           # if any allowed changes was made to the data then update the UI data
-          
-          cat('is identical?', identical(old_dt, dt_out$data), '\n')
+          cat('is UI and server data identical?', identical(old_dt, dt_out$data), '\n')
 
           if (!identical(old_dt, dt_out$data)) {
             DT::replaceData(proxy, dt_out$data, rownames = FALSE, resetPaging = FALSE)
