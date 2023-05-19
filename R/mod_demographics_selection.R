@@ -20,87 +20,97 @@ mod_demographics_selection_ui <- function(id) {
 mod_demographics_selection_server <- function(id, filter_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
-
+    
     # the UI render
 
     output$dynamic_demographics_selection <- renderUI({
-      # check which demographic variables are present
-
-      isolate({
-        has_age <- "age" %in% colnames(filter_data()$unique_data)
-        has_gender <- "gender" %in% colnames(filter_data()$unique_data)
-        has_ethnicity <- "ethnicity" %in% colnames(filter_data()$unique_data)
-      })
-
+      
+      req(
+        isolate(
+          data_exists <- filter_data()$unique_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0
+        )
+      )
+      
+      # check which demographic variables are present before displaying its associated output
       tagList(
-        if (has_age) {
-          uiOutput(ns("age_UI"))
+        if (isTruthy(get_golem_config("demography_1"))) {
+          uiOutput(ns("demography_1_UI"))
         },
-        if (has_gender) {
-          uiOutput(ns("gender_UI"))
+        if (isTruthy(get_golem_config("demography_2"))) {
+          uiOutput(ns("demography_2_UI"))
         },
-        if (has_ethnicity) {
-          uiOutput(ns("ethnicity_UI"))
+        if (isTruthy(get_golem_config("demography_3"))) {
+          uiOutput(ns("demography_3_UI"))
         }
       )
     })
 
     # demography selection----
 
-    output$age_UI <- renderUI({
+    output$demography_1_UI <- renderUI({
       isolate(
-        data <- filter_data()$unique_data %>%
-          dplyr::arrange(age) %>%
-          dplyr::distinct(age, .keep_all = TRUE) %>%
-          dplyr::filter(!is.na(age))
+        choices <- filter_data()$unique_data %>% 
+          dplyr::filter(!is.na(get_golem_config("demography_1")),
+                        get_golem_config("demography_1") != "",
+                        get_golem_config("demography_1") != "NA",
+                        get_golem_config("demography_1") != "NULL") %>% 
+          dplyr::pull(get_golem_config("demography_1")) %>% 
+          unique() %>% 
+          sort()
       )
 
-      choices <- factor(data$age,
-        exclude = NULL
-      )
-
-      selectInput(session$ns("select_age"),
-        label = "Select age (defaults to all)",
+      selectInput(session$ns("select_demography_1"),
+        label = paste("Select", get_golem_config("demography_1"), "(defaults to all)"),
         choices = na.omit(choices),
         selected = NULL, multiple = TRUE
       )
     })
 
-    output$gender_UI <- renderUI({
+    output$demography_2_UI <- renderUI({
       isolate(
-        choices <- filter_data()$unique_data %>%
-          dplyr::arrange(gender) %>%
-          dplyr::distinct(gender) %>%
-          dplyr::filter(gender != "")
+        choices <- filter_data()$unique_data %>% 
+          dplyr::filter(!is.na(get_golem_config("demography_2")),
+                        get_golem_config("demography_2") != "",
+                        get_golem_config("demography_2") != "NA",
+                        get_golem_config("demography_2") != "NULL") %>% 
+          dplyr::pull(get_golem_config("demography_2")) %>% 
+          unique() %>% 
+          sort()
       )
 
-      selectInput(session$ns("select_gender"),
-        label = "Select gender (defaults to all)",
-        choices = dplyr::pull(na.omit(choices), gender),
+      selectInput(session$ns("select_demography_2"),
+        label = paste("Select", get_golem_config("demography_2"), "(defaults to all)"),
+        choices = na.omit(choices),
         selected = NULL, multiple = TRUE
       )
     })
 
-    output$ethnicity_UI <- renderUI({
+    output$demography_3_UI <- renderUI({
       isolate(
-        choices <- filter_data()$unique_data %>%
-          dplyr::arrange(ethnicity) %>%
-          dplyr::distinct(ethnicity) %>%
-          dplyr::filter(ethnicity != "")
+        choices <- filter_data()$unique_data %>% 
+          dplyr::filter(!is.na(get_golem_config("demography_3")),
+                        get_golem_config("demography_3") != "",
+                        get_golem_config("demography_3") != "NA",
+                        get_golem_config("demography_3") != "NULL") %>% 
+          dplyr::pull(get_golem_config("demography_3")) %>% 
+          unique() %>% 
+          sort()
       )
 
-      selectInput(session$ns("select_ethnicity"),
-        label = "Select ethnicity (defaults to all)",
-        choices = dplyr::pull(na.omit(choices), ethnicity),
+      selectInput(session$ns("select_demography_3"),
+        label = paste("Select", get_golem_config("demography_3"), "(defaults to all)"),
+        choices = na.omit(choices), 
         selected = NULL, multiple = TRUE
       )
     })
 
     reactive(
       list(
-        "select_age" = input$select_age,
-        "select_gender" = input$select_gender,
-        "select_ethnicity" = input$select_ethnicity
+        "select_demography_1" = input$select_demography_1,
+        "select_demography_2" = input$select_demography_2,
+        "select_demography_3" = input$select_demography_3
       )
     )
   })

@@ -14,6 +14,8 @@ tidy_all_trusts <- function(data) {
       dplyr::filter(
         !is.na(comment_txt),
         !is.null(comment_txt),
+        comment_txt != 'NA',
+        comment_txt != 'NULL',
         hidden == 0
       )
   } else {

@@ -32,7 +32,7 @@ compare_demographics <- function(pass_data, variable) {
 
 #' Draw the distribution of demographics in the sample
 #' @param pass_data A dataframe, filtered to unique individuals
-#' @param variable String. Name of variable- "age", "gender", "ethnicity"
+#' @param variable String. Name of variable - e.g. "age", "gender", "ethnicity"
 #'
 #' @return a ggplot2 graph
 #' @export

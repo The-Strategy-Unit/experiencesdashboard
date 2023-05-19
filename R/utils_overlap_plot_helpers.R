@@ -45,14 +45,18 @@ tidy_label_column <- function(data, column_name) {
 #' @export
 multi_to_single_label <- function(mt_data, column_name, n_labels = 10) {
   mt_data %>%
+    dplyr::filter(!is.na(mt_data[[column_name]]),
+                  mt_data[[column_name]]!="") %>% 
     dplyr::mutate(original_label = .data[[column_name]]) %>%
     tidyr::separate(column_name,
       into = paste("label_", 1:n_labels),
-      sep = ","
+      sep = ",",
+      fill = "right"
     ) %>%
     tidyr::pivot_longer(dplyr::starts_with("label_")) %>%
     dplyr::mutate(value = stringi::stri_trim_both(.data$value)) %>%
-    tidyr::drop_na(value)
+    tidyr::drop_na(value) %>% 
+    dplyr::filter(value!="")
 }
 
 
@@ -261,27 +265,6 @@ interactive_heatmap <- function(data, group_type = c("count", "correlation"), so
 }
 
 
-#' find the common comments between two categories
-#'
-#' @param data a dataframe with a unique row identifier
-#' @param theme_column the column where the look values to compare is
-#' @param filter_by_themes list of the two values to compare
-#'
-#' @return strings
-#' @noRd
-show_multilabeled_text <- function(data, theme_column, filter_by_themes) {
-  data %>%
-    dplyr::filter(.data[[theme_column]] == filter_by_themes[1]) %>%
-    dplyr::semi_join(
-      data %>%
-        dplyr::filter(.data[[theme_column]] == filter_by_themes[2]),
-      by = "row_id"
-    ) %>%
-    dplyr::pull(comment_txt) %>%
-    paste0(., hr())
-}
-
-
 #' make_sample_multilabeled_data
 #'
 #' @description this is a temporary function needed to make a sample
@@ -358,4 +341,122 @@ add_theme_nhs <- function() {
       margin = ggplot2::margin(5, 0, 10, 0)
     )
   )
+}
+
+#' Draw upset plot
+#'
+#' @param upset_data  a dataframe with each column representing a membership in the class. values are
+#'                    1 - if the row is a member of the class or 0 if otherwise
+#' @param intersect columns containing the classes
+#' @param min_size minimal number of observations in an intersection for it to be included
+#' @param title title of the plot
+#' @param ...
+#'
+#' @return a plot of upset object (not a ggplot object)
+#' @noRd
+upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
+  
+  label_size = 8
+  group_text_size = 7
+  
+  ComplexUpset::upset(upset_data, intersect,
+                      min_size = min_size, # minimum number of observation in a group for the group to be shown (intersection size)
+                      width_ratio = 0.1,
+                      height_ratio = 1.6, # height of intersection matrix to the intersection plot
+                      min_degree = 2, # show intersections with at least 2 groups
+                      # n_intersections = 40, # the max number of the intersections (bars) to be displayed;
+                      name = 'Groups',
+                      
+                      # Manipulate the set size plot
+                      
+                      set_sizes = (
+                        ComplexUpset::upset_set_size(
+                          geom = ggplot2::geom_bar(fill = "#005EB8"),
+                          position = "right",
+                          filter_intersections=TRUE
+                        )  + 
+                          # display the count text
+                          # ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
+                          #                    hjust = -0.2, stat = "count"
+                          # ) +
+                          ggplot2::ylab("No. of comments") +
+                          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 0),
+                                         text = ggplot2::element_text(size = label_size)
+                          )
+                      ),
+                      
+                      # set_sizes=FALSE,    # or hide the set size
+                      
+                      # Manipulate the intersection matrix color
+                      
+                      stripes = ComplexUpset::upset_stripes(
+                        geom = ggplot2::geom_segment(linewidth = 1.8),
+                        # color = "white"
+                      ),
+                      encode_sets = FALSE, # for annotate() to select the set by name disable encoding
+                      #
+                      matrix = (
+                        ComplexUpset::intersection_matrix(
+                          geom = ggplot2::geom_point(size = 1.6),
+                          outline_color = list(active = "#000000", inactive = "grey70")
+                        ) 
+                      ),
+                      
+                      # stripes='white',
+                      
+                      # Add plots (panels) to the upper part of the intersection matrix
+                      
+                      base_annotations = list(
+                        
+                        # Manipulate the set size plot
+                        "Intersection size" = ComplexUpset::intersection_size(
+                          # Any parameter supported by geom_text can be passed in text list
+                          text = list(vjust = -0.3, size = 2.3),
+                          fill = "#005EB8"
+                          # counts=FALSE, # uncheck to remove the count text
+                        ) +
+                          ggplot2::theme(
+                            panel.grid.minor = ggplot2::element_blank(),
+                            panel.grid.major.x = ggplot2::element_blank(),
+                            text = ggplot2::element_text(size = label_size)
+                          ) +
+                          ggplot2::ylab("No. of comments")
+                      ),
+                      
+                      themes = ComplexUpset::upset_modify_themes(
+                        list(
+                          'intersections_matrix' = ggplot2::theme(
+                            axis.text.y=ggplot2::element_text(size=group_text_size)
+                          )
+                        )
+                      ),
+                      wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
+  ) +
+    ggplot2::ggtitle(title) + 
+    ggplot2::theme(text = ggplot2::element_text(size = 7))   
+}
+
+
+#' one hot encode a single column while still keeping other columns 
+#'
+#' @param df dataframe to encode.
+#' @param column column of interests. Other columns combined must uniquely identify each row (best is unique row_id is present).
+#'
+#' @return dataframe
+#' @noRd
+#'
+#' @examples
+#' data.frame(
+#'   group = c("A", "A", "A", "A", "A", "B", "C"),
+#'   student = c("01", "01", "01", "02", "02", "01", "02"),
+#'   exam_pass = c("Y", "N", "Y", "N", "Y", "Y", "N"),
+#'   subject = c("Math", "Science", "Japanese", "Math", "Science", "Japanese", "Math")
+#' ) |> one_hot_labels("subject")
+one_hot_labels <- function(df, column) {
+  df |>
+    dplyr::mutate(input = 1) |>
+    tidyr::pivot_wider(
+      names_from = dplyr::any_of(column),
+      values_from = input, values_fill = 0
+    )
 }

@@ -6,9 +6,13 @@ params:
   dates: NA
   inputs: NA
   data: NA
+  single_label_data: NA
   options: NA
   comment_1: NA
   comment_2: NA
+  demography_1: NA
+  demography_2: NA
+  demography_3: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -53,7 +57,7 @@ if("category_table" %in% params$options){
   cat("###", params$comment_1,  "  \n")
   
   calculate_table(
-    table_data = params$data, 
+    table_data = params$single_label_data, 
     count_column = "category",
     comment_type = "comment_1", 
     click_column = NULL
@@ -62,17 +66,21 @@ if("category_table" %in% params$options){
   
   cat("  \n")
   
-  cat("###", params$comment_2,  "  \n")
-  
-  calculate_table(
-    table_data = params$data, 
-    count_column = "category",
-    comment_type = "comment_2", 
-    click_column = NULL
-  ) %>% 
-    pander::pandoc.table()
-  
-  cat("  \n")
+  if(isTruthy(params$inputs$comment_2)){
+    
+    cat("###", params$comment_2,  "  \n")
+    
+    calculate_table(
+      table_data = params$single_label_data, 
+      count_column = "category",
+      comment_type = "comment_2", 
+      click_column = NULL
+    ) %>% 
+      pander::pandoc.table()
+    
+    cat("  \n")
+    
+  }
   
 }
 
@@ -84,8 +92,8 @@ if("verbatim_comments" %in% params$options){
   
   cat("## Verbatim comments  \n")
   
-  cat("Note that in the interests of brevity comments where the respondent 
-      indicated 'couldn't be improved' are omitted  \n")
+  cat("Note that in the interests of brevity comments where the assigned category
+      is 'Labelling not possible' are omitted  \n")
   
   cat("  \n")
   
@@ -106,23 +114,23 @@ if("sample_demographics" %in% params$options){
 
   cat("## Demographic features of sample  \n")
   
-  cat("### Age  \n")
+  cat("### ", stringr::str_to_title(params$demography_1), "  \n")
   
-  print(demographic_distribution(unique_data, "age"))
-  
-  cat("  \n")
-  cat("  \n")
-  
-  cat("### Gender  \n")
-  
-  print(demographic_distribution(unique_data, "gender"))
+  print(demographic_distribution(unique_data, params$demography_1))
   
   cat("  \n")
   cat("  \n")
   
-  cat("### Ethnicity  \n")
+  cat("### ", stringr::str_to_title(params$demography_2), "  \n")
   
-  print(demographic_distribution(unique_data, "ethnicity"))
+  print(demographic_distribution(unique_data, params$demography_2))
+  
+  cat("  \n")
+  cat("  \n")
+  
+  cat("### ", stringr::str_to_title(params$demography_3), "  \n")
+  
+  print(demographic_distribution(unique_data, params$demography_3))
   
   cat("  \n")
     
@@ -138,17 +146,17 @@ if("fft_graph" %in% params$options){
   cat("## FFT  \n")
   
   graph_data <- split_data_spc(
-    unique_data, variable = "fft", chunks = 15
+    unique_data, variable = "fft", chunks = "monthly"
   )
   
-  # confirm we have more than 3 groups to plot
+  # confirm we have at least 10 groups to plot
   no_group <- graph_data %>% 
     dplyr::pull() %>% 
     unique() %>% 
     length()
   
    
-  if (no_group < 3){
+  if (no_group < 10){
     
      print(p('There are not enough stable SPC points to plot.
                     Please expand your selection'))

@@ -11,6 +11,16 @@ mod_data_management_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidPage(
+        tags$br(),
+        fluidRow(
+          column(
+            width = 1,
+            actionButton(ns("upload_new_data"), "Upload new data",
+              icon = icon("person-circle-plus")
+            )
+          )
+        ),
+        tags$hr(),
       uiOutput(ns("data_management_UI"))
     )
   )
@@ -29,56 +39,99 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
       data = data.frame(),
       index = list(),
       column_names = c(
-        "row_id", "date", "location_1", "location_2", "location_3",
-        "comment_txt", "comment_type", "category", "fft", "gender",
-        "age", "ethnicity", "sexuality", "patient_carer", "disability",
-        "faith", "pt_id", "crit"
+        "comment_id", "date", "location_1", "location_2", "location_3",
+        "comment_type", "comment_txt", "category", "fft",
+        "gender", "age", "ethnicity", "sexuality", "disability", "religion", 
+        "extra_variable_1", "extra_variable_2", "extra_variable_3", 
+        "pt_id"
       ),
-      complex_comments = data.frame()
+      complex_comments = data.frame(),
+      display_column_name = list(
+        "comment_id" = "Comment ID", 
+        "date" = "Date",
+        "location_1" = get_golem_config("location_1"), 
+        "location_2" = get_golem_config("location_2"),
+        "location_3" = get_golem_config("location_3"),
+        "comment_type" = "Question Type",
+        "comment_txt" = "Comment", 
+        "category" = "Category",  
+        "fft" = "FFT Score", 
+        "gender" = "Gender",
+        "age" = "Age Group", 
+        "ethnicity" = "Ethnicity", 
+        "sexuality" = "Sexuality", 
+        "disability" = "Disability",
+        "religion" = "Religion", 
+        "extra_variable_1" = get_golem_config("extra_variable_1"), 
+        "extra_variable_2" = get_golem_config("extra_variable_2"), 
+        "extra_variable_3" = get_golem_config("extra_variable_3"), 
+        "pt_id" = "Patient ID"
+        )
+      
     )
 
     # dynamic UI ----
 
     output$data_management_UI <- renderUI({
+      
+      validate(
+        need(
+          data_exists <- filter_data()$filter_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0,
+          "Data Table will appear here"
+        )
+      )
+      
       ## server data ----
-
-      dt_out$data <- filter_data()$filter_data %>%
-        dplyr::filter(hidden == 0) %>%
-        dplyr::select(-hidden) %>%
-        dplyr::select(dt_out$column_names)
-
-
+      
+      if (isTruthy( get_golem_config('comment_2'))) {
+        
+        dt_out$data <- filter_data()$filter_data %>%
+          dplyr::filter(hidden == 0) %>%
+          dplyr::select(-hidden) %>%
+          dplyr::select(dplyr::any_of(dt_out$column_names)) %>% 
+          dplyr::mutate(
+            comment_type = stringr::str_replace_all(comment_type,'comment_1', get_golem_config('comment_1')),
+            comment_type = stringr::str_replace_all(comment_type,'comment_2', get_golem_config('comment_2'))
+          ) %>% 
+          dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
+          dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>%  # delete all empty columns 
+          dplyr::mutate(date = as.Date(date)) 
+        
+      } else{
+        
+        dt_out$data <- filter_data()$filter_data %>%
+          dplyr::filter(hidden == 0) %>%
+          dplyr::select(-hidden) %>%
+          dplyr::select(dplyr::any_of(dt_out$column_names)) %>% 
+          dplyr::mutate(
+            comment_type = stringr::str_replace_all(comment_type,'comment_1', get_golem_config('comment_1'))
+          ) %>% 
+          dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
+          dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>%  # delete all empty columns 
+          dplyr::mutate(date = as.Date(date))  # delete all empty columns 
+      }
+      
       # complex comments ----
-
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
 
       # UI ----
-
       tagList(
-        tags$br(),
-        fluidRow(
-          column(
-            width = 1,
-            actionButton(ns("upload_new_data"), "Upload new data",
-              icon = icon("person-circle-plus")
-            )
-          )
-        ),
-        tags$hr(),
         # add button for editing the table
         fluidRow(
-          column(
-            width = 1,
-            actionButton(ns("del_pat"), "Delete",
-              icon = icon("trash-can")
-            ),
-          ),
-          column(
-            width = 1,
-            actionButton(ns("save_to_db"), "Save edit",
-              icon = icon("save"),
-            ),
-          ),
+          # column(
+          #   width = 1,
+          #   actionButton(ns("del_pat"), "Delete",
+          #     icon = icon("trash-can")
+          #   ),
+          # ),
+          # column(
+          #   width = 1,
+          #   actionButton(ns("save_to_db"), "Save edit",
+          #     icon = icon("save"),
+          #   ),
+          # ),
           column(
             width = 1,
             downloadButton(ns("download1"), "Download data",
@@ -109,29 +162,32 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
     # render the data table ####
 
-    output$pat_table <- DT::renderDT(
-
+    output$pat_table <- DT::renderDT({
+      
+      DT::datatable(
       dt_out$data,
       selection = "multiple",
-      rownames = F,
-      editable = list("target" = "row", disable = list(columns = c(0))), # prevent editing of the first n second col
+      rownames = FALSE,
+      # editable = list(
+      #   "target" = "row",
+      #   disable = list(columns = c(0,5,length(names(dt_out$data))-1)) # disable editing of comment_id (0), comment_type(5), n pat_id (last column) cols
+      #   ),
       filter = "top",
       class = "display cell-border compact",
+      colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE),
       options = list(
         pageLength = 10,
         lengthMenu = c(10, 30, 50),
         dom = "Blfrtip",
         search = list(caseInsensitive = FALSE),
         scrollX = TRUE
-      )
-    )
+      ))
+    })
 
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy(ns("pat_table"))
 
-
     # Edit a row and effect it in the UI view ####
-
     observeEvent(input$pat_table_cell_edit, {
       info <- input$pat_table_cell_edit # get the edited row information
 
@@ -146,9 +202,13 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           # Data Validation
 
           check_list <- list()
-          column_to_check <- c(3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18) # column index of columns to check
-
-          # check if the value entered for each column is part of the existing unique values
+          #  column index of columns to check (all columns aside "comment_id" = 1, 
+          # "date" = 2, "comment_type" = 6, "comment_txt" = 7, "pt_id" = last column index)
+          # column mapping can be gotten from global variable {dt_out$column_names}
+          len_col <- 1:(length(names(dt_out$data))-1)
+          column_to_check <- setdiff(len_col, c(1,2,6,7))
+          
+          # check if the value entered for each column in column_to_check is part of the existing unique values
           # of that column  or empty string
           for (i in column_to_check) {
             check <- info$value[i] %in% c(unique(old_dt[[dt_out$column_names[i]]]), "")
@@ -174,6 +234,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           }
 
           # if any allowed changes was made to the data then update the UI data
+          cat('is UI and server data identical?', identical(old_dt, dt_out$data), '\n')
 
           if (!identical(old_dt, dt_out$data)) {
             DT::replaceData(proxy, dt_out$data, rownames = FALSE, resetPaging = FALSE)
@@ -182,6 +243,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
             dt_out$index <- unique(dt_out$index %>% append((info$value[1]))) # track row ids that has been edited
 
             cat("Edited rows: ", unlist(dt_out$index), " \n") # for debugging
+            print(dt_out$data %>% dplyr::filter(comment_id == dt_out$index))
           }
         },
         error = function(e) {
@@ -199,16 +261,16 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     deleteData <- reactive({
       # print(input$pat_table_rows_selected) # for debugging and logging
 
-      rowselected <- dt_out$data[input$pat_table_rows_selected, "row_id"] %>% unlist(use.name = FALSE)
+      rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] %>% unlist(use.name = FALSE)
 
       # update database
-      query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE row_id IN ({ids*})",
+      query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE comment_id IN ({ids*})",
         ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
 
       # update UI
-      dt_out$data <- dt_out$data %>% dplyr::filter(!row_id %in% rowselected)
+      dt_out$data <- dt_out$data %>% dplyr::filter(!comment_id %in% rowselected)
       DT::replaceData(proxy, dt_out$data, resetPaging = FALSE) # update the data on the UI
 
       cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging
@@ -284,8 +346,8 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         {
           # update the database
           trust_db <- dplyr::tbl(db_conn, get_golem_config("trust_name"))
-          dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(row_id %in% unlist(dt_out$index)),
-            by = "row_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
+          dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)),
+            by = "comment_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
           )
 
           showModal(modalDialog(
@@ -393,7 +455,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
 
           withProgress(message = "Processing data. This may take a while.
                      Please wait...", value = 0, {
-            upload_data(data = raw_df, conn = db_conn, trust_id = "trust_a_bk")
+            upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
             incProgress(1)
           })
 

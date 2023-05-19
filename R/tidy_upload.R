@@ -1,5 +1,21 @@
 # function to do trust specific data cleaning
 
+tidy_trust_gosh <- function(db_tidy){
+  
+  db_tidy %>% 
+    dplyr::mutate(age = as.integer(age)) %>% 
+    dplyr::mutate(
+      age = dplyr::case_when(age < 12 ~ "0 - 11",
+                             age > 11 | age < 18 ~ "12 - 17",
+                             age > 17 | age < 26 ~ "18 - 25",
+                             age > 25 | age < 40 ~ "26 - 39",
+                             age > 39 | age < 65 ~ "40 - 64",
+                             age > 64 | age < 80 ~ "65 - 79",
+                             age > 79 ~ "80+",
+                             TRUE ~ as.character(age))
+      )
+}
+
 tidy_trust_d <- function(db_tidy){
   
   db_tidy %>% 
@@ -80,49 +96,59 @@ upload_data <- function(data, conn, trust_id){
   }
   
   # reformat and clean the uploaded data ----
-  
-  required_cols <- c("date", "location_1", "location_2", "location_3", 
-                     "comment_type","comment_text", "fft_score",
-                     "gender", "age", "ethnicity", "sexuality", "disability",
-                     "faith", "pt_id")
+  required_cols <- c("date", "pt_id", "location_1", "location_2", "location_3", 
+                     "comment_type","comment_text", "fft_score", "sex",
+                     "gender", "age", "ethnicity", "sexuality", "disability", "religion", 
+                     "extra_variable_1", "extra_variable_2", "extra_variable_3")
   
   # get the current maximum pt_id value in the database table
-  
   max_ptid <- DBI::dbGetQuery(conn, paste0("SELECT MAX(pt_id) FROM ", trust_id))$`MAX(pt_id)`
+  max_ptid <- if (!is.na(max_ptid)) max_ptid else 0  # when there is no data in the database
   
   db_tidy <- data %>%  
     dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>% 
-    # dplyr::mutate(pt_id = uuid::UUIDgenerate(use.time = TRUE, n = nrow(.))) %>% # generate time based unique id
     tidyr::pivot_longer(cols = dplyr::starts_with("question"),
                         names_to = "comment_type",
                         values_to = "comment_text") %>% 
     dplyr::select(dplyr::any_of(required_cols)) %>% 
-    dplyr::mutate(comment_id = 1:nrow(.)) %>%   # to track individual comment
+    dplyr::mutate(comment_id = 1:nrow(.)) %>%   # to uniquely identify individual comment
     clean_dataframe('comment_text') 
   
   # do trust specific data cleaning ----
-  
-  if (trust_id == "trust_c") db_tidy <- db_tidy %>% tidy_trust_c_e()
-  if (trust_id == "trust_d")  db_tidy <- db_tidy %>% tidy_trust_d()
-  if (trust_id == "trust_e") db_tidy <- db_tidy %>% tidy_trust_c_e()
+  if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
   
   # call API for label predictions ----
+  # prepare the data for the API
   
-  # convert data to json for API as specified in the API doc
-  json_data <- db_tidy  |>
-    dplyr::select(comment_id, comment_text) |>
-    jsonlite::toJSON()
+  tidy_data <- db_tidy  |>
+    dplyr::mutate(question_type = comment_type) |> 
+    dplyr::mutate(
+      question_type = stringr::str_replace_all(question_type,'question_1', 
+                                               api_question_code(get_golem_config('comment_1')))
+    ) |>
+    dplyr::select(comment_id, comment_text, question_type) 
   
-  preds <-  api_pred("http://127.0.0.1:8000/predict_multilabel", json=json_data) %>% 
+  if(isTruthy(get_golem_config('comment_2'))){
+    tidy_data <- tidy_data  |>
+      dplyr::mutate(
+        question_type = stringr::str_replace_all(question_type,'question_2', 
+                                                 api_question_code(get_golem_config('comment_2')))
+      ) |>
+      dplyr::select(comment_id, comment_text, question_type) 
+  }
+
+  cat("Making predictions for ", nrow(db_tidy), "comments from pxtextming API \n")
+
+  preds <-  batch_predict(tidy_data) %>%
     dplyr::mutate(comment_id = as.integer(comment_id))
   
   print('Done with API call ...')
   
   # rename the columns to make the data compatible with old data format currently in use
-  
-  final_df <- db_tidy %>% dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
+  final_df <- db_tidy %>% 
+    dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
     dplyr::rename(fft = fft_score, category = labels,
-                  comment_txt = comment_text, 
+                  comment_txt = comment_text
     ) %>% 
     dplyr::select(-comment_id)  %>% 
     dplyr::mutate(hidden = 0,
@@ -130,24 +156,23 @@ upload_data <- function(data, conn, trust_id){
     ) %>%
     tidy_label_column('category') 
   
-  # get the current maximum  row_id value in the database table
+  print('Doing final data tidy')
+  # get the current maximum comment_id value in the database table
+  max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(comment_id) FROM ", trust_id))$`MAX(comment_id)`
+  max_id <- if (!is.na(max_id)) max_id else 0 # when there is no data in the database
   
-  max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(row_id) FROM ", trust_id))$`MAX(row_id)`
-  
-  # set the starting value for the auto-incremented row_id
+  # set the starting value for the auto-incremented comment_id
   # This will ensure that when we append the new data, 
-  # the row_id values will be sequential and there will be no gaps.
+  # the comment_id values will be sequential and there will be no gaps.
   final_df <- final_df %>% 
     dplyr::mutate(
-      row_id = seq.int(max_id + 1, max_id + nrow(.)),
+      comment_id = seq.int(max_id + 1, max_id + nrow(.)),
       comment_type = stringr::str_replace_all(.data$comment_type, 'question', 'comment')
     )
   
   # write the processed data to database
   print('Just started appending to database ...')
-  
   # DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
-  
   # this throw error when data can't be appended e.g when data column can't be coerce into the db table datatype
   dplyr::rows_append(
     dplyr::tbl(conn, trust_id),
@@ -157,13 +182,28 @@ upload_data <- function(data, conn, trust_id){
   )
   
   print('Done appending to database ...')
-  
-  # reset the db data ------------------- remove later ------------------------
-  old_row_count <- 52745
-  nw_row_count <- DBI::dbReadTable(conn, 'trust_a_bk') %>% dplyr::arrange(desc(row_id)) %>% nrow()
-  row_difference <- nw_row_count - old_row_count
-  
-  cat(nrow(final_df), 'rows in data to append \n')
-  cat(row_difference, 'rows added \n') # confirm data addition
-  DBI::dbExecute(conn, paste0('DELETE FROM `trust_a_bk` WHERE `row_id`> ',old_row_count))
 }
+
+# # test code
+# 
+# library(tidyverse)
+# 
+# pool <- odbc::dbConnect(
+#   drv = odbc::odbc(),
+#   driver = Sys.getenv("odbc_driver"),
+#   server = Sys.getenv("HOST_NAME"),
+#   UID = Sys.getenv("DB_USER"),
+#   PWD = Sys.getenv("MYSQL_PASSWORD"),
+#   database = "TEXT_MINING",
+#   Port = 3306
+# )
+# 
+# DBI::dbReadTable(pool, 'trust_a_bk') %>% arrange(desc(comment_id)) %>% View('db b4')
+# 
+# # load sample upload data
+# 
+# df <- readr::read_csv("secret-data/p1_data_for_upload.csv",
+#                       show_col_types = FALSE) %>% head(15)
+# 
+# # test the upload function
+# upload_data(data = df, conn = pool, trust_id = "trust_a_bk")
