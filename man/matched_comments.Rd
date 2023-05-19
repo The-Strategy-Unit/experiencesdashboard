@@ -2,17 +2,30 @@
 % Please edit documentation in R/filter_text.R
 \name{matched_comments}
 \alias{matched_comments}
-\title{Find  rows with matching string(s)}
+\title{Find index in a list of string where search word(s) exist}
 \usage{
-matched_comments(split_comments, search_fn, search_strings)
+matched_comments(lowered_comments, search_fn, search_strings)
 }
 \arguments{
-\item{split_comments}{list of tokenized words}
+\item{lowered_comments}{list of strings in lowercase}
 
-\item{search_fn}{type of search ('and', 'or')}
+\item{search_fn}{type of search type ('and', 'or')}
 
 \item{search_strings}{list of strings with search terms in it}
 }
+\value{
+list of logical values
+}
 \description{
-Find  rows with matching string(s)
+Find index in a list of string where search word(s) exist
+}
+\examples{
+matched_comments(
+  lowered_comments = c(
+    "tricky times, I recommend quick appraisals ",
+    "time of my situation.",
+    ">quick response time, competent appraisal of my situation"
+  ),
+  search_fn = all, search_strings = c("quick", "time", "appraisal")
+)
 }

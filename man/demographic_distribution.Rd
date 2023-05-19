@@ -9,7 +9,7 @@ demographic_distribution(pass_data, variable)
 \arguments{
 \item{pass_data}{A dataframe, filtered to unique individuals}
 
-\item{variable}{String. Name of variable- "age", "gender", "ethnicity"}
+\item{variable}{String. Name of variable - e.g. "age", "gender", "ethnicity"}
 }
 \value{
 a ggplot2 graph

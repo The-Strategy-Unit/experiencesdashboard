@@ -31,24 +31,16 @@ mod_patient_experience_server <- function(id){
           "Summary",
           mod_summary_ui("summary_ui_1")
         ),
+        
+        # Data management tab
+        
         tabPanel(
-          "Report builder",
-          mod_report_builder_ui("report_builder_ui_1")
+          "Data Management",
+          mod_data_management_ui("data_management_1")
         )
       )
       
-      # FFT tab (do we have FFT data?)
-      
-      if(isTruthy(get_golem_config("question_1"))){
-        
-        ui_list <- c(ui_list,
-                     list(
-                       tabPanel(
-                         "FFT",
-                         mod_fft_ui("fft_ui_1")
-                       )
-                     ))
-      }
+      # Theme categories 
       
       ui_list <- c(ui_list,
                    list(
@@ -81,9 +73,9 @@ mod_patient_experience_server <- function(id){
       
       # Demographics tab
       
-      if(isTruthy(get_golem_config("gender")) | 
-         isTruthy(get_golem_config("age")) | 
-         isTruthy(get_golem_config("ethnicity"))){
+      if(isTruthy(get_golem_config("demography_1")) | 
+         isTruthy(get_golem_config("demography_2")) | 
+         isTruthy(get_golem_config("demography_3"))){
         
         ui_list <- c(ui_list,
                      list(

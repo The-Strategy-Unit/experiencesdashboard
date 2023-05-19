@@ -7,33 +7,45 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_report_builder_ui <- function(id, filter_data, filter_sentiment){
+mod_report_builder_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
-    fluidRow(
-      column(6,
-             selectInput(ns("time_period"), "Reporting period",
-                         choices = c("Previous quarter" = "quarter",
-                                     "Previous 12 months" = "year",
-                                     "Current selection" = "custom")),
-             
-             uiOutput(ns("report_componentsUI")),
-             
-             downloadButton(ns("download_report"),
-                            "Download report")
-      )
-    )
+    uiOutput(ns("dynamic_report_UI"))
   )
 }
 
 #' report_builder Server Functions
 #'
 #' @noRd 
-mod_report_builder_server <- function(id, filter_sentiment, filter_data,
+mod_report_builder_server <- function(id, filter_data,
                                       all_inputs){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    
+    
+    output$dynamic_report_UI <- renderUI({
+      req(
+        isolate(
+          data_exists <- filter_data()$filter_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0
+        )
+      )
+      
+      fluidRow(
+        column(6,
+               selectInput(ns("time_period"), "Reporting period",
+                           choices = c("Previous quarter" = "quarter",
+                                       "Previous 12 months" = "year",
+                                       "Current selection" = "custom")),
+               
+               uiOutput(ns("report_componentsUI")),
+               
+               downloadButton(ns("download_report"),
+                              "Download report")
+        )
+      )
+    })
     
     output$report_componentsUI <- renderUI({
       
@@ -42,9 +54,9 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
       
       # do we have demographic data?
       
-      demographic_ui <- isTruthy(get_golem_config("gender")) | 
-        isTruthy(get_golem_config("age")) | 
-        isTruthy(get_golem_config("ethnicity"))
+      demographic_ui <- isTruthy(get_golem_config("demography_1")) | 
+        isTruthy(get_golem_config("demography_2")) | 
+        isTruthy(get_golem_config("demography_3"))
       
       if(demographic_ui){
         
@@ -99,36 +111,46 @@ mod_report_builder_server <- function(id, filter_sentiment, filter_data,
         # calculate parameters
         else{
           
-          dates <- switch(input$time_period,
-                          quarter = previous_quarter(Sys.Date()),
-                          year = c(Sys.Date(), Sys.Date() - 365),
-                          custom = c(all_inputs()$date_from[1],
-                                     all_inputs()$date_to[2])
-          )
-          
-          params <- list(dates = dates,
-                         inputs = all_inputs(),
-                         data = filter_data()$filter_data,
-                         options = input$report_components,
-                         comment_1 = get_golem_config("comment_1"),
-                         comment_2 = get_golem_config("comment_2")
-          )
-          
-          rmarkdown::render(
-            system.file("app", "www", "report.Rmd",
-                        package = "experiencesdashboard"), 
-            output_format = "word_document",
-            output_file = here::here(app_sys(), "app/www", "report.docx"),
-            # output_dir =
-            quiet = TRUE, params = params,
-            envir = new.env(parent = globalenv())
-          )
-          
-          # copy docx to 'file'
-          file.copy(here::here(app_sys(), "app/www", "report.docx"),
-                    file, overwrite = TRUE)
+          withProgress(message = "Preparing report, Please wait...", value = 0, {
+            
+            
+            dates <- switch(input$time_period,
+                            quarter = previous_quarter(Sys.Date()),
+                            year = c(Sys.Date(), Sys.Date() - 365),
+                            custom = c(all_inputs()$date_from[1],
+                                       all_inputs()$date_to[2])
+            )
+            
+            params <- list(dates = dates,
+                           inputs = all_inputs(),
+                           data = filter_data()$filter_data,
+                           single_label_data = filter_data()$single_labeled_filter_data,
+                           options = input$report_components,
+                           comment_1 = get_golem_config("comment_1"),
+                           comment_2 = if (isTruthy(get_golem_config("comment_2"))) get_golem_config("comment_2"),
+                           demography_1 = get_golem_config("demography_1"),
+                           demography_2 = get_golem_config("demography_2"),
+                           demography_3 = get_golem_config("demography_3")
+            )
+            
+            rmarkdown::render(
+              system.file("app", "www", "report.Rmd",
+                          package = "experiencesdashboard"), 
+              output_format = "word_document",
+              output_file = here::here(app_sys(), "app/www", "report.docx"),
+              # output_dir =
+              quiet = TRUE, params = params,
+              envir = new.env(parent = globalenv())
+            )
+            
+            # copy docx to 'file'
+            file.copy(here::here(app_sys(), "app/www", "report.docx"),
+                      file, overwrite = TRUE)
+            
+            incProgress(1)
+            })
+          }
         }
-      }
-    )
+      )
   })
 }

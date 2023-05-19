@@ -1,0 +1,117 @@
+#' demographics_selection UI Function
+#'
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#'
+#' @noRd
+#'
+#' @importFrom shiny NS tagList
+mod_demographics_selection_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    uiOutput(ns("dynamic_demographics_selection"))
+  )
+}
+
+#' demographics_selection Server Functions
+#'
+#' @noRd
+mod_demographics_selection_server <- function(id, filter_data) {
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    
+    # the UI render
+
+    output$dynamic_demographics_selection <- renderUI({
+      
+      req(
+        isolate(
+          data_exists <- filter_data()$unique_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0
+        )
+      )
+      
+      # check which demographic variables are present before displaying its associated output
+      tagList(
+        if (isTruthy(get_golem_config("demography_1"))) {
+          uiOutput(ns("demography_1_UI"))
+        },
+        if (isTruthy(get_golem_config("demography_2"))) {
+          uiOutput(ns("demography_2_UI"))
+        },
+        if (isTruthy(get_golem_config("demography_3"))) {
+          uiOutput(ns("demography_3_UI"))
+        }
+      )
+    })
+
+    # demography selection----
+
+    output$demography_1_UI <- renderUI({
+      isolate(
+        choices <- filter_data()$unique_data %>% 
+          dplyr::filter(!is.na(get_golem_config("demography_1")),
+                        get_golem_config("demography_1") != "",
+                        get_golem_config("demography_1") != "NA",
+                        get_golem_config("demography_1") != "NULL") %>% 
+          dplyr::pull(get_golem_config("demography_1")) %>% 
+          unique() %>% 
+          sort()
+      )
+
+      selectInput(session$ns("select_demography_1"),
+        label = paste("Select", get_golem_config("demography_1"), "(defaults to all)"),
+        choices = na.omit(choices),
+        selected = NULL, multiple = TRUE
+      )
+    })
+
+    output$demography_2_UI <- renderUI({
+      isolate(
+        choices <- filter_data()$unique_data %>% 
+          dplyr::filter(!is.na(get_golem_config("demography_2")),
+                        get_golem_config("demography_2") != "",
+                        get_golem_config("demography_2") != "NA",
+                        get_golem_config("demography_2") != "NULL") %>% 
+          dplyr::pull(get_golem_config("demography_2")) %>% 
+          unique() %>% 
+          sort()
+      )
+
+      selectInput(session$ns("select_demography_2"),
+        label = paste("Select", get_golem_config("demography_2"), "(defaults to all)"),
+        choices = na.omit(choices),
+        selected = NULL, multiple = TRUE
+      )
+    })
+
+    output$demography_3_UI <- renderUI({
+      isolate(
+        choices <- filter_data()$unique_data %>% 
+          dplyr::filter(!is.na(get_golem_config("demography_3")),
+                        get_golem_config("demography_3") != "",
+                        get_golem_config("demography_3") != "NA",
+                        get_golem_config("demography_3") != "NULL") %>% 
+          dplyr::pull(get_golem_config("demography_3")) %>% 
+          unique() %>% 
+          sort()
+      )
+
+      selectInput(session$ns("select_demography_3"),
+        label = paste("Select", get_golem_config("demography_3"), "(defaults to all)"),
+        choices = na.omit(choices), 
+        selected = NULL, multiple = TRUE
+      )
+    })
+
+    reactive(
+      list(
+        "select_demography_1" = input$select_demography_1,
+        "select_demography_2" = input$select_demography_2,
+        "select_demography_3" = input$select_demography_3
+      )
+    )
+  })
+}

@@ -16,7 +16,7 @@
 stop()
 
 ## Dependencies ----
-## Add one line by package you want to add as dependency
+## Add one line by package you want to add as dependency - CRAN
 usethis::use_package( "thinkr" )
 usethis::use_package( "dplyr" )
 usethis::use_package( "tibble" )
@@ -31,7 +31,6 @@ usethis::use_package( "tidytext" )
 usethis::use_package( "janitor" )
 usethis::use_package( "UpSetR" )
 usethis::use_package( "tibbletime" )
-usethis::use_package( "qicharts2" )
 usethis::use_package( "shinydashboard" )
 usethis::use_package( "dashboardthemes" )
 usethis::use_package( "shinyWidgets" )
@@ -51,6 +50,15 @@ usethis::use_package( "here" )
 usethis::use_package( "shinycssloaders" )
 usethis::use_package( "xml2" )
 usethis::use_package( "plotly" )
+usethis::use_package( "NHSRplotthedots" )
+usethis::use_package( "fresh" )
+usethis::use_package( "writexl" )
+
+## Add one line by package you want to add as dependency - Non-CRAN e.g. GitHub
+usethis::use_dev_package( "NHSRtheme" )
+
+## Amend DESCRIPTION with dependencies read from package code parsing
+attachment::att_amend_desc()
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -65,18 +73,25 @@ golem::add_module( name = "text_reactable" ) # Name of the module
 golem::add_module( name = "demographics" ) # Name of the module
 golem::add_module( name = "summary" ) # Name of the module
 golem::add_module( name = "trend_overlap" ) # Name of the module
+golem::add_module( name = "data_management" ) # Name of the module
+golem::add_module( name = "summary_record" ) # Name of the module
+golem::add_module( name = "demographics_selection" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
 golem::add_fct( "helpers" ) 
 golem::add_utils( "helpers" )
 golem::add_utils( "overlap_plot_helpers" )
+golem::add_fct( "api_pred" )
+golem::add_fct( "get_complex_comments" )
+golem::add_fct( "nhs_shiny_theme" )
 
 ## External resources
 ## Creates .js and .css files at inst/app/www
 golem::add_js_file( "script" )
 golem::add_js_handler( "handlers" )
 golem::add_css_file( "custom" )
+golem::add_css_file( "button-style" )
 
 ## Add internal datasets ----
 ## If you have data in your package
@@ -91,7 +106,6 @@ usethis::use_test( "search_text" )
 usethis::use_test( "calculate_table" )
 usethis::use_test( "tidy_data" )
 usethis::use_test( "report_functions" )
-usethis::use_test( "pxtextmineR" )
 usethis::use_test( "tidy_upload" )
 
 # Documentation

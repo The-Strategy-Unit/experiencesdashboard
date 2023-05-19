@@ -75,4 +75,49 @@ trust_a_bk:
   gender: TRUE
   age: TRUE
   ethnicity: TRUE
-
+phase_2_trust:
+  trust_name: phase_2_trust
+  comment_1: What could be improved?
+  comment_2: Non-specific question
+  question_1: fft
+  location_1: Division
+  location_2: Specialty
+  location_3: Team
+  demography_1: age
+  demography_2: sex
+  demography_3: disability
+trust_NUH:
+  trust_name: trust_NUH
+  comment_1: Why give this answer and What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Specialty
+  location_3: Ward
+  demography_1: gender
+  demography_2: age
+  demography_3: ethnicity
+  extra_variable_1: Rating channels
+  extra_variable_2: Date feedback given
+  extra_variable_3: Exclude from reports
+trust_LPT:
+  trust_name: trust_LPT
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Directorate
+  location_3: Team
+  demography_1: sex
+  demography_2: age
+  demography_3: ethnicity
+trust_GOSH:
+  trust_name: trust_GOSH
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Directorate
+  location_3: Team
+  demography_1: disability
+  demography_2: religion
+  demography_3: ethnicity

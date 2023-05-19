@@ -62,3 +62,13 @@ drop_nulls <- function(x){
 rv <- shiny::reactiveValues
 rvtl <- shiny::reactiveValuesToList
 
+#' Match config questions to api code
+#'
+#' @param value get_golem_config('comment_2')
+#' @noRd
+#' @examples api_question_code(get_golem_config('comment_1'))
+api_question_code <- function(value){
+  dplyr::case_when(value == "What did we do well" ~ 'what_good',
+                   value == "What could be improved" ~ 'could_improve',
+                   TRUE ~ 'nonspecific')
+}

@@ -22,7 +22,7 @@ mod_click_plot_server <- function(id, filter_data, comment_type, event_id){
     ns <- session$ns
     
     clicked_data <- reactive(calculate_table(
-      table_data = filter_data()$filter_data,
+      table_data = filter_data()$single_labeled_filter_data,
       count_column = "category",
       comment_type = comment_type
       )
@@ -60,7 +60,7 @@ mod_click_plot_server <- function(id, filter_data, comment_type, event_id){
       
       clicked_data() %>% 
         plotly::plot_ly(x = ~n, y=~reorder(Category,n), type = "bar", 
-                        color = I('darkgrey'),
+                        color = I('#005EB8'),
                         source = event_id) %>% 
         plotly::layout(
           xaxis = list(title="Number of comments"), 
@@ -87,7 +87,7 @@ mod_click_plot_server <- function(id, filter_data, comment_type, event_id){
     
       cat("selected category:", global$category_selected, " \n")
       
-      final_text <- show_text(data = filter_data()$filter_data,
+      final_text <- show_text(data = filter_data()$single_labeled_filter_data,
                               filter_by_column = "category",
                               filter_by_text = global$category_selected,
                               comment_type_filter = comment_type)
