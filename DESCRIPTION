@@ -49,9 +49,10 @@ Imports:
     NHSRplotthedots,
     reshape2,
     NHSRtheme (>= 0.1.0),
-    fresh (>= 0.2.0),
+    fresh,
     ComplexUpset,
-    tm
+    tm,
+    writexl
 Remotes: 
     nhs-r-community/NHSRtheme
 Encoding: UTF-8

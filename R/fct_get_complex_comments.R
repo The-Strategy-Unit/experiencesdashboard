@@ -17,6 +17,6 @@ get_complex_comments <- function(data, multilabel_column = 'labels', long_words 
   data |> 
     dplyr::mutate(n_word = lengths(stringr::str_split(comment_txt, ' ')),
                   n_label = lengths(stringr::str_split(.data[[multilabel_column]], ','))) |> 
-    dplyr::filter(n_word > long_words | n_label > many_labels) 
-  
+    dplyr::filter(n_word > long_words | n_label > many_labels) %>% 
+    dplyr::select(-n_word, -n_label)
 }

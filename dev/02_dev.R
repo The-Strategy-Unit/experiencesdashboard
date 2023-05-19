@@ -16,7 +16,7 @@
 stop()
 
 ## Dependencies ----
-## Add one line by package you want to add as dependency
+## Add one line by package you want to add as dependency - CRAN
 usethis::use_package( "thinkr" )
 usethis::use_package( "dplyr" )
 usethis::use_package( "tibble" )
@@ -51,8 +51,11 @@ usethis::use_package( "shinycssloaders" )
 usethis::use_package( "xml2" )
 usethis::use_package( "plotly" )
 usethis::use_package( "NHSRplotthedots" )
+usethis::use_package( "fresh" )
+usethis::use_package( "writexl" )
+
+## Add one line by package you want to add as dependency - Non-CRAN e.g. GitHub
 usethis::use_dev_package( "NHSRtheme" )
-usethis::use_dev_package( "fresh" )
 
 ## Amend DESCRIPTION with dependencies read from package code parsing
 attachment::att_amend_desc()

@@ -110,7 +110,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           ) %>% 
           dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
           dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>%  # delete all empty columns 
-          dplyr::mutate(date = as.Date(date))  # delete all empty columns 
+          dplyr::mutate(date = as.Date(date))  
       }
       
       # complex comments ----
@@ -373,10 +373,10 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     # Download the data ####
 
     output$download1 <- downloadHandler(
-      filename = paste0("pat_data-", Sys.Date(), ".csv"),
+      filename = paste0("pat_data-", Sys.Date(), ".xlsx"),
       content = function(file) {
         withProgress(message = "Downloading...", value = 0, {
-          write.csv(dt_out$data, file, row.names = FALSE)
+          writexl::write_xlsx(dt_out$data, file)
           incProgress(1)
         })
       }
@@ -402,10 +402,10 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     })
 
     output$complex_com <- downloadHandler(
-      filename = paste0("complex_comments-", Sys.Date(), ".csv"),
+      filename = paste0("complex_comments-", Sys.Date(), ".xlsx"),
       content = function(file) {
         withProgress(message = "Downloading...", value = 0, {
-          write.csv(dt_out$complex_comments, file, row.names = FALSE)
+          writexl::write_xlsx(dt_out$complex_comments, file)
           incProgress(1)
         })
       }
