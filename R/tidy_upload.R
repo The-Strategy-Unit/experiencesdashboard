@@ -103,6 +103,7 @@ upload_data <- function(data, conn, trust_id){
   
   # get the current maximum pt_id value in the database table
   max_ptid <- DBI::dbGetQuery(conn, paste0("SELECT MAX(pt_id) FROM ", trust_id))$`MAX(pt_id)`
+  max_ptid <- if (!is.na(max_ptid)) max_ptid else 0  # when there is no data in the database
   
   db_tidy <- data %>%  
     dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>% 
@@ -158,6 +159,7 @@ upload_data <- function(data, conn, trust_id){
   print('Doing final data tidy')
   # get the current maximum comment_id value in the database table
   max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(comment_id) FROM ", trust_id))$`MAX(comment_id)`
+  max_id <- if (!is.na(max_id)) max_id else 0 # when there is no data in the database
   
   # set the starting value for the auto-incremented comment_id
   # This will ensure that when we append the new data, 

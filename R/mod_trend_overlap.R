@@ -91,7 +91,7 @@ mod_trend_overlap_server <- function(id, filter_data,
         column(6, 
              selectInput(
                session$ns("select_super_category"),
-               label = h5(strong("Select categories (defaults to first 5):")),
+               label = h5(strong("Select Categories (defaults to first 5):")),
                choices = choices,
                multiple = TRUE,
                selected = choices[1:5]
@@ -108,7 +108,7 @@ mod_trend_overlap_server <- function(id, filter_data,
               6,
               numericInput(
                 ns("min_size"),
-                label = h5(strong("Select Minimum intercept size (defaults to 2):")),
+                label = h5(strong("Select Minimum Number of comments in Groups (defaults to 2):")),
                 value = 2,
                 min = 1,
                 max = 3000
@@ -282,7 +282,7 @@ mod_trend_overlap_server <- function(id, filter_data,
         upset_plot(upset_data(),
                    intersect = if (length(intersect) > 1) intersect else unique(tidy_data()$category),
                    min_size = as.integer(min_size), 
-                   title = "Upset plot showing relationship between categories"
+                   title = "Upset plot showing relationship between Categories"
         ) %>%
           print()
         
@@ -293,7 +293,7 @@ mod_trend_overlap_server <- function(id, filter_data,
       # Return a list containing the filename
       list(src = outfile,
            contentType = 'image/png',
-           alt = "upset plot showing relationship between categories" # This is alternate text
+           alt = "Upset plot showing relationship between categories" # This is alternate text
            )
       },
     deleteFile = TRUE)
