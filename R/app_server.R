@@ -33,6 +33,13 @@ app_server <- function(input, output, session) {
   data_exists <- db_data %>%
     dplyr::tally() %>%
     dplyr::pull(n) > 0
+  
+  if (!data_exists){
+    showModal(modalDialog(
+      title = "NO DATA!",
+      HTML("<strong>Please go to the 'Data Management' tab to upload data.</strong>"),
+    ))
+  }
 
   # store values of demographics and location_1 from last 3 years
 
