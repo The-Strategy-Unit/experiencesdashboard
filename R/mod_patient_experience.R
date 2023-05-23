@@ -27,6 +27,13 @@ mod_patient_experience_server <- function(id){
       
       ui_list <- list(
         
+        # documentation tab
+        tabPanel(
+          "Data Categorisation Framework",
+          mod_decumentation_page_ui("decumentation_page_1")
+        ),
+        
+        # summary tab
         tabPanel(
           "Summary",
           mod_summary_ui("summary_ui_1")

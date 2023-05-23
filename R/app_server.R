@@ -270,7 +270,9 @@ app_server <- function(input, output, session) {
   mod_patient_experience_server("patient_experience_ui_1")
 
   # modules----
-
+  
+  mod_decumentation_page_server("decumentation_page_1")
+  
   mod_summary_server("summary_ui_1")
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)

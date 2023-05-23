@@ -76,6 +76,7 @@ golem::add_module( name = "trend_overlap" ) # Name of the module
 golem::add_module( name = "data_management" ) # Name of the module
 golem::add_module( name = "summary_record" ) # Name of the module
 golem::add_module( name = "demographics_selection" ) # Name of the module
+golem::add_module( name = "decumentation_page" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
