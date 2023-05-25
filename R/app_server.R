@@ -37,7 +37,10 @@ app_server <- function(input, output, session) {
   if (!data_exists){
     showModal(modalDialog(
       title = "NO DATA!",
-      HTML("<strong>Please go to the 'Data Management' tab to upload data.</strong>"),
+      HTML("<strong>Welcome to the Patient Experience Qualitative Data Categorisation Dashboard.
+          <b>To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can 
+          refresh your browser to start exploring your data.
+          <b>Please go to the 'Data Management' tab to upload data.</strong>"),
     ))
   }
 
@@ -252,7 +255,8 @@ app_server <- function(input, output, session) {
       tidy_filter_data <- return_data %>% 
         multi_to_single_label('category')  %>% 
         dplyr::select(-original_label, -name) %>% 
-        dplyr::rename(category = value)
+        dplyr::rename(category = value) %>% 
+        dplyr::mutate(super_category = assign_highlevel_categories(category)) # add the high-level category in line with framework v5 
     } else {
       tidy_filter_data <- return_data
     }
@@ -271,7 +275,9 @@ app_server <- function(input, output, session) {
 
   # modules----
   
-  mod_decumentation_page_server("decumentation_page_1")
+  mod_documentation_page_server("decumentation_page_1")
+  
+  mod_trend_server("trend_ui_1", filter_data)
   
   mod_summary_server("summary_ui_1")
 
@@ -329,8 +335,8 @@ app_server <- function(input, output, session) {
   )
 
   mod_trend_overlap_server("trend_overlap_ui",
-    filter_data = filter_data, overlap_plot_type = "count"
-  )
+    filter_data = filter_data
+    )
 
   mod_demographics_server("demographics_ui_1",
     filter_data = filter_data

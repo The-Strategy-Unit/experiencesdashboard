@@ -13,13 +13,13 @@ app_ui <- function(request) {
     # List the first level UI elements here
     dashboardPage(
       dashboardHeader(
-        title = "Patient experience",
-        titleWidth = 300
+        title = "Patient experience - Qualitative Data Categorisation (QDC)",
+        titleWidth = 1000
       ),
       dashboardSidebar(
         width = 300,
         sidebarMenu(
-          menuItem("Patient experience",
+          menuItem("Patient experience - QDC",
             tabName = "experiences-user",
             icon = shiny::icon("comment"),
             selected = TRUE,

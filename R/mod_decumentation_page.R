@@ -1,39 +1,43 @@
-#' decumentation_page UI Function#'
+#' documentation_page UI Function#'
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.#'
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_decumentation_page_ui <- function(id){
+mod_documentation_page_ui <- function(id){
   ns <- NS(id)
   tagList(
     br(),
-    strong("The Qualitative Data Categorisation (QDC) - framework has multiple categories, each with its own set of sub-categories. 
-    The category groups similar topics together in a meaningful way to help users navigate the framework  more easily. 
-    The sub-categories are the actual topics that better reflect the underlying data.
+    p('This dashboard uses a machine learning tool (pxtextmining API) to assign one or more sub-categories to free text comments.
+    The categories and subcategories developed in the Qualitative Data Categorisation (QDC) framework are used.
+    The visualisations and interactivity in this dashboard have been chosen to help users to engage with the comments and
+    not just quantify the data.'),
+    p("The QDC framework is an evidence-based work that has been carefully designed. it has multiple categories, each with its 
+    own set of sub-categories. The category groups similar topics together in a meaningful way to help users navigate the framework 
+    more easily. The sub-categories are the actual topics that better reflect the underlying data.
     A high-level visual of the categories and sub-categories is displayed below:"),
     
     img(src='www/framework_v5.png', width="100%"),
     hr(),
-    strong('To see detailed description of the sub-categories, please expand the categories below'),
+    p('To see detailed description of the sub-categories, please expand the categories below'),
     
     DT::DTOutput(ns("framework_table")),
     hr(),
     
-    tagList(strong("To get further detail about the data categorisation framework and the dashboard 
+    tagList(p("To get further detail about the data categorisation framework and the dashboard 
         including some illustrative examples for each of the sub-categories. 
         Please see the"),  
-      a(strong("Patient Experience - QDC documentation Page"), 
+      a(p("Patient Experience - QDC documentation Page"), 
         href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework3.html",
         target="_blank")
     ),
    )
 }
     
-#' decumentation_page Server Functions
+#' documentation_page Server Functions
 #' @noRd 
-mod_decumentation_page_server <- function(id){
+mod_documentation_page_server <- function(id){
   moduleServer( id, function(input, output, session){    
     ns <- session$ns
 

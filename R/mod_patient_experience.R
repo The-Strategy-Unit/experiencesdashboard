@@ -30,13 +30,13 @@ mod_patient_experience_server <- function(id){
         # documentation tab
         tabPanel(
           "Data Categorisation Framework",
-          mod_decumentation_page_ui("decumentation_page_1")
+          mod_documentation_page_ui("decumentation_page_1")
         ),
         
         # summary tab
         tabPanel(
-          "Summary",
-          mod_summary_ui("summary_ui_1")
+          "Distribution of comments over time",
+          mod_trend_ui("trend_ui_1")
         ),
         
         # Data management tab
@@ -52,7 +52,7 @@ mod_patient_experience_server <- function(id){
       ui_list <- c(ui_list,
                    list(
                      tabPanel(
-                       "Themes/weighting",
+                       "What people are telling us about",
                        mod_category_criticality_ui("category_criticality_ui_1")
                      )
                    )
@@ -63,7 +63,7 @@ mod_patient_experience_server <- function(id){
       ui_list <- c(ui_list, 
                    list(
                      tabPanel(
-                       "Trend/Overlap",
+                       "Sub-category trend and inter-relationship",
                        mod_trend_overlap_ui("trend_overlap_ui")
                      )
                    ))
@@ -87,11 +87,21 @@ mod_patient_experience_server <- function(id){
         ui_list <- c(ui_list,
                      list(
                        tabPanel(
-                         "Demographics",
+                         "Who we are hearing from",
                          mod_demographics_ui("demographics_ui_1")
                        ))
         )
       }
+      
+      
+      # summary tab
+      ui_list <- c(ui_list, 
+                   list(
+                     tabPanel(
+                       "Summary",
+                       mod_summary_ui("summary_ui_1")
+                     )
+                   ))
       
       do.call(tabsetPanel, ui_list)
       
