@@ -52,7 +52,8 @@ Imports:
     fresh,
     ComplexUpset,
     tm,
-    writexl
+    writexl,
+    memoise
 Remotes: 
     nhs-r-community/NHSRtheme
 Encoding: UTF-8

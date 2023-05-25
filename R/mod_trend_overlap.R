@@ -18,8 +18,7 @@ mod_trend_overlap_ui <- function(id) {
 #' trend_overlap Server Functions
 #'
 #' @noRd
-mod_trend_overlap_server <- function(id, filter_data,
-                                     overlap_plot_type = c("count", "correlation")) {
+mod_trend_overlap_server <- function(id, filter_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -51,7 +50,7 @@ mod_trend_overlap_server <- function(id, filter_data,
           uiOutput(ns("trendUI"))
         ),
         tabsetPanel(
-          id = ns("tabset_trend"),
+          id = ns("tabset_overlap"),
           type = "tabs",
           
           # A Sub-tab
@@ -99,7 +98,7 @@ mod_trend_overlap_server <- function(id, filter_data,
              )
       )
       
-      if (input$tabset_trend == "overlap") {
+      if (input$tabset_overlap == "overlap") {
         
         ui_list <- c(
           ui_list,
@@ -122,7 +121,7 @@ mod_trend_overlap_server <- function(id, filter_data,
     })
     
     output$trendUI_2 <- renderUI({
-      req(input$tabset_trend == "overlap")
+      req(input$tabset_overlap == "overlap")
       
       choices <- c("", filter_data()$single_labeled_filter_data$category %>% unique() %>% na.omit() %>% sort())
       

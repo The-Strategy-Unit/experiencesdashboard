@@ -32,10 +32,40 @@ tidy_label_column <- function(data, column_name) {
   return(data)
 }
 
+#' multilabeled_to_singlelabel
+#'
+#' @description internal function to Convert a single-label data like such made using `multi_to_single_label()`
+#'  function into a multi-labeled format with a unique comment per row
+#'
+#' @param sl_data A dataframe with a unique row per category per comment type per comment ID
+#' @param column_name The name of the column holding the comma separated labels
+#' @param n_labels maximum number of labels assigned to any row
+#'
+#' @return A dataframe with a row per comment per comment type
+#' @noRd
+single_to_multi_label <- function(sl_data) {
+  mt_data <- sl_data %>%
+    dplyr::group_by(comment_id, comment_type) %>%
+    dplyr::summarise(
+      comment_id = unique(comment_id),
+      date = unique(date),
+      comment_type = unique(comment_type),
+      comment_txt = unique(comment_txt),
+      fft = unique(fft),
+      category = toString(unique(category)),
+      super_category = toString(unique(super_category))
+    ) %>%
+    dplyr::arrange(comment_id, comment_type) %>%
+    dplyr::ungroup()
+
+  stopifnot("values in 'comment ID' should be unique" = mt_data$comment_id %>% duplicated() %>% sum() == 0)
+
+  return(mt_data)
+}
 
 #' multilabeled_to_singlelabel
 #'
-#' @description Convert a multi-labeled data to a tidy single-label data
+#' @description Convert a multi-labeled data to a single-label data with a category per comment per row
 #'
 #' @param mt_data A dataframe with a single column for the comma separated labels for each row
 #' @param column_name The name of the column holding the comma separated labels
@@ -45,8 +75,10 @@ tidy_label_column <- function(data, column_name) {
 #' @export
 multi_to_single_label <- function(mt_data, column_name, n_labels = 10) {
   mt_data %>%
-    dplyr::filter(!is.na(mt_data[[column_name]]),
-                  mt_data[[column_name]]!="") %>% 
+    dplyr::filter(
+      !is.na(mt_data[[column_name]]),
+      mt_data[[column_name]] != ""
+    ) %>%
     dplyr::mutate(original_label = .data[[column_name]]) %>%
     tidyr::separate(column_name,
       into = paste("label_", 1:n_labels),
@@ -55,8 +87,8 @@ multi_to_single_label <- function(mt_data, column_name, n_labels = 10) {
     ) %>%
     tidyr::pivot_longer(dplyr::starts_with("label_")) %>%
     dplyr::mutate(value = stringi::stri_trim_both(.data$value)) %>%
-    tidyr::drop_na(value) %>% 
-    dplyr::filter(value!="")
+    tidyr::drop_na(value) %>%
+    dplyr::filter(value != "")
 }
 
 
@@ -300,7 +332,6 @@ make_sample_multilabeled_data <- function(filter_data) {
 #'
 #' @export
 add_theme_nhs <- function() {
-  
   ggplot2::theme(
     # Set the title and subtitle to be much larger and bolder than other text
     plot.title = ggplot2::element_text(size = 18),
@@ -316,7 +347,7 @@ add_theme_nhs <- function() {
 
     # Set the legend to be aligned at the bottom with no title and background
     # Note: the legend may need manual tweaking based on plot coordinates
-    legend.title = ggplot2::element_blank(),
+    # legend.title = ggplot2::element_blank(),
     legend.text.align = 0,
     legend.background = ggplot2::element_blank(),
     legend.key = ggplot2::element_blank(),
@@ -355,89 +386,88 @@ add_theme_nhs <- function() {
 #' @return a plot of upset object (not a ggplot object)
 #' @noRd
 upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
-  
-  label_size = 8
-  group_text_size = 7
-  
+  label_size <- 8
+  group_text_size <- 7
+
   ComplexUpset::upset(upset_data, intersect,
-                      min_size = min_size, # minimum number of observation in a group for the group to be shown (intersection size)
-                      width_ratio = 0.1,
-                      height_ratio = 1.6, # height of intersection matrix to the intersection plot
-                      min_degree = 2, # show intersections with at least 2 groups
-                      # n_intersections = 40, # the max number of the intersections (bars) to be displayed;
-                      name = 'Groups',
-                      
-                      # Manipulate the set size plot
-                      
-                      set_sizes = (
-                        ComplexUpset::upset_set_size(
-                          geom = ggplot2::geom_bar(fill = "#005EB8"),
-                          position = "right",
-                          filter_intersections=TRUE
-                        )  + 
-                          # display the count text
-                          # ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
-                          #                    hjust = -0.2, stat = "count"
-                          # ) +
-                          ggplot2::ylab("No. of comments") +
-                          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 0),
-                                         text = ggplot2::element_text(size = label_size)
-                          )
-                      ),
-                      
-                      # set_sizes=FALSE,    # or hide the set size
-                      
-                      # Manipulate the intersection matrix color
-                      
-                      stripes = ComplexUpset::upset_stripes(
-                        geom = ggplot2::geom_segment(linewidth = 1.8),
-                        # color = "white"
-                      ),
-                      encode_sets = FALSE, # for annotate() to select the set by name disable encoding
-                      #
-                      matrix = (
-                        ComplexUpset::intersection_matrix(
-                          geom = ggplot2::geom_point(size = 1.6),
-                          outline_color = list(active = "#000000", inactive = "grey70")
-                        ) 
-                      ),
-                      
-                      # stripes='white',
-                      
-                      # Add plots (panels) to the upper part of the intersection matrix
-                      
-                      base_annotations = list(
-                        
-                        # Manipulate the set size plot
-                        "Intersection size" = ComplexUpset::intersection_size(
-                          # Any parameter supported by geom_text can be passed in text list
-                          text = list(vjust = -0.3, size = 2.3),
-                          fill = "#005EB8"
-                          # counts=FALSE, # uncheck to remove the count text
-                        ) +
-                          ggplot2::theme(
-                            panel.grid.minor = ggplot2::element_blank(),
-                            panel.grid.major.x = ggplot2::element_blank(),
-                            text = ggplot2::element_text(size = label_size)
-                          ) +
-                          ggplot2::ylab("No. of comments")
-                      ),
-                      
-                      themes = ComplexUpset::upset_modify_themes(
-                        list(
-                          'intersections_matrix' = ggplot2::theme(
-                            axis.text.y=ggplot2::element_text(size=group_text_size)
-                          )
-                        )
-                      ),
-                      wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
+    min_size = min_size, # minimum number of observation in a group for the group to be shown (intersection size)
+    width_ratio = 0.1,
+    height_ratio = 1.6, # height of intersection matrix to the intersection plot
+    min_degree = 2, # show intersections with at least 2 groups
+    # n_intersections = 40, # the max number of the intersections (bars) to be displayed;
+    name = "Groups",
+
+    # Manipulate the set size plot
+
+    set_sizes = (
+      ComplexUpset::upset_set_size(
+        geom = ggplot2::geom_bar(fill = "#005EB8"),
+        position = "right",
+        filter_intersections = TRUE
+      ) +
+        # display the count text
+        # ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
+        #                    hjust = -0.2, stat = "count"
+        # ) +
+        ggplot2::ylab("No. of comments") +
+        ggplot2::theme(
+          axis.text.x = ggplot2::element_text(angle = 0),
+          text = ggplot2::element_text(size = label_size)
+        )
+    ),
+
+    # set_sizes=FALSE,    # or hide the set size
+
+    # Manipulate the intersection matrix color
+
+    stripes = ComplexUpset::upset_stripes(
+      geom = ggplot2::geom_segment(linewidth = 1.8),
+      # color = "white"
+    ),
+    encode_sets = FALSE, # for annotate() to select the set by name disable encoding
+    #
+    matrix = (
+      ComplexUpset::intersection_matrix(
+        geom = ggplot2::geom_point(size = 1.6),
+        outline_color = list(active = "#000000", inactive = "grey70")
+      )
+    ),
+
+    # stripes='white',
+
+    # Add plots (panels) to the upper part of the intersection matrix
+
+    base_annotations = list(
+
+      # Manipulate the set size plot
+      "Intersection size" = ComplexUpset::intersection_size(
+        # Any parameter supported by geom_text can be passed in text list
+        text = list(vjust = -0.3, size = 2.3),
+        fill = "#005EB8"
+        # counts=FALSE, # uncheck to remove the count text
+      ) +
+        ggplot2::theme(
+          panel.grid.minor = ggplot2::element_blank(),
+          panel.grid.major.x = ggplot2::element_blank(),
+          text = ggplot2::element_text(size = label_size)
+        ) +
+        ggplot2::ylab("No. of comments")
+    ),
+    themes = ComplexUpset::upset_modify_themes(
+      list(
+        "intersections_matrix" = ggplot2::theme(
+          axis.text.y = ggplot2::element_text(size = group_text_size)
+        )
+      )
+    ),
+    wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
   ) +
-    ggplot2::ggtitle(title) + 
-    ggplot2::theme(text = ggplot2::element_text(size = 7))   
+    ggplot2::ggtitle(title) +
+    ggplot2::theme(text = ggplot2::element_text(size = 7))
 }
 
 
-#' one hot encode a single column while still keeping other columns 
+#' one hot encode a single column while still keeping other columns
 #'
 #' @param df dataframe to encode.
 #' @param column column of interests. Other columns combined must uniquely identify each row (best is unique row_id is present).
@@ -459,4 +489,94 @@ one_hot_labels <- function(df, column) {
       names_from = dplyr::any_of(column),
       values_from = input, values_fill = 0
     )
+}
+
+
+#' Internal function for the comment datatable in format required by `single_to_multi_label()` function
+#'
+#' @param single_label_filter_data a dataframe
+#' @param comment_ids the comment id for comments to show
+#'
+#' @return a formated datatable
+#'
+#' @noRd
+comment_table <- function(single_label_filter_data, comment_ids = NULL) {
+  data <- single_to_multi_label(single_label_filter_data)
+
+  if (!is.null(comment_ids)) {
+    data <- data %>%
+      dplyr::filter(comment_id %in% comment_ids)
+  }
+
+  data <- data %>%
+    dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
+    dplyr::mutate(
+      comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
+    ) %>%
+    dplyr::arrange(date)
+
+  if (isTruthy(get_golem_config("comment_2"))) {
+    data <- data %>%
+      dplyr::mutate(
+        comment_type = stringr::str_replace_all(comment_type, "comment_2", get_golem_config("comment_2"))
+      )
+  }
+
+  # rename the columms to be more user friendly
+  colnames(data) <- c(
+    "Date", "FFT Question", "FFT Score",
+    "FFT Answer", "Sub-Category", "Category"
+  )
+
+  # add NHS blue color to the table header
+  initComplete <- DT::JS(
+    "function(settings, json) {",
+    "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
+    "}"
+  )
+
+  # print(nrow(data)) # for debugging
+
+  return(
+    DT::datatable(
+      data,
+      extensions = "Buttons", # required to show the download buttons and groups
+      options = list(
+        dom = "Bipt",
+        buttons = c("csv", "excel", "pdf"),
+        # autoWidth = TRUE,            # required for width option for columns to  work
+        # columnDefs = list(list(width = '500px', targets = c(3))),
+        initComplete = initComplete,
+        pageLength = 50,
+        scrollX = TRUE,
+        selection = "single"
+      ),
+      filter = "top",
+      rownames = FALSE,
+      class = "display cell-border compact stripe",
+    )
+  )
+}
+
+#' Find high level categories of sub categories
+#'
+#' @description
+#' Internal function to fune the high level category to a list of sub categories as defined in the QDC framework
+#'
+#' @param sub_cats list of subcategories
+#'
+#' @return list of same length as sub_cats
+#' @noRd
+assign_highlevel_categories <- function(sub_cats) {
+  framework <- readxl::read_excel(here::here(app_sys(), "app/www", "FFT-QDC Framework v5 - 20230428.xlsx"), sheet = 2) %>%
+    dplyr::select(Category, `Sub-category`)
+
+  sapply(sub_cats, function(v) {
+    hl_cat <- framework %>%
+      dplyr::filter(`Sub-category` == v) %>% # View()
+      dplyr::pull(Category)
+    return(if (length(hl_cat) != 0) hl_cat else "Other Category")
+  },
+  simplify = TRUE, USE.NAMES = F
+  )
 }
