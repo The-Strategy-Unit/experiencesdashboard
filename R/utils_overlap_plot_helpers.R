@@ -378,7 +378,7 @@ add_theme_nhs <- function() {
 #'
 #' @param upset_data  a dataframe with each column representing a membership in the class. values are
 #'                    1 - if the row is a member of the class or 0 if otherwise
-#' @param intersect columns containing the classes
+#' @param intersect columns containing the classes i.e. names of the categories to show (Ex: c("staff manner", "staff attitude"))
 #' @param min_size minimal number of observations in an intersection for it to be included
 #' @param title title of the plot
 #' @param ...

@@ -52,7 +52,7 @@ mod_patient_experience_server <- function(id){
       ui_list <- c(ui_list, 
                    list(
                      tabPanel(
-                       "Sub-category trend and inter-relationship",
+                       "Inter-relationship between Sub-category ",
                        mod_trend_overlap_ui("trend_overlap_ui")
                      )
                    ))

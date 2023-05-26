@@ -10,12 +10,7 @@
 mod_click_tables_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
-    DT::DTOutput(ns("table")) %>% 
-      shinycssloaders::withSpinner(),
-    hr(),
-    h5('Please select a Sub-category from the table above in other to drill down the table below'),
-    DT::DTOutput(ns("comment_table"))
+    uiOutput(ns('dynamic_click_tableUI'))
   )
 }
 
@@ -34,6 +29,26 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL){
       "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
       "}"
     )
+    
+    output$dynamic_click_tableUI <- renderUI({
+      
+      validate(
+        need(
+          filter_data()$filter_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0,
+          "Data Table will appear here"
+        )
+      )
+      
+      fluidPage(
+        DT::DTOutput(ns("table")) %>% 
+          shinycssloaders::withSpinner(),
+        hr(),
+        h5('Please select a Sub-category from the table above in other to drill down the table below'),
+        DT::DTOutput(ns("comment_table"))
+      )
+    })
     
     calculatedTable <- reactive({
       

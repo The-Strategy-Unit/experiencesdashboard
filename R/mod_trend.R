@@ -11,6 +11,7 @@ mod_trend_ui <- function(id){
   ns <- NS(id)
   
   tagList(
+    br(),
     uiOutput(ns("dynamic_trendUI"))
   )
 }
@@ -29,10 +30,10 @@ mod_trend_server <- function(id, filter_data){
       # Only show module contents if the data from the database is not empty 
       validate(
         need(
-          data_exists <- filter_data()$filter_data %>%
+          filter_data()$filter_data %>%
             dplyr::tally() %>%
             dplyr::pull(n) > 0,
-          "<br>Category Trends plots will appear here"
+          "Category Trends plots will appear here"
         )
       )
       
