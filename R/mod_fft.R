@@ -54,7 +54,8 @@ mod_fft_server <- function(id, filter_data){
         
         split_data_spc(filter_data()$unique_data, variable = "fft", chunks = 'monthly')
       
-    })
+    }) %>% 
+      bindCache(filter_data()$unique_data)
     
     no_group <- reactive({
       
@@ -62,14 +63,15 @@ mod_fft_server <- function(id, filter_data){
         dplyr::pull() %>% 
         unique() %>% 
         length()
-    })
-      
+    }) %>% 
+      bindCache(filter_data()$unique_data)
+    
+    memoise_plot_fft_spc <-  memoise::memoise(plot_fft_spc, cache = session$cache) # create a session-level cacheable version of plot_fft_spc()
     output$spc_plot <- renderPlot({
       
       req(no_group() > 9) 
       
-      plot_fft_spc(graph_data())
-      
+      memoise_plot_fft_spc(graph_data())
     })
   })
 }

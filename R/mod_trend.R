@@ -22,6 +22,8 @@ mod_trend_server <- function(id, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
+    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
+    
     # Super UI ----
     output$dynamic_trendUI <- renderUI({
       # Only show module contents if the data from the database is not empty 
@@ -120,7 +122,6 @@ mod_trend_server <- function(id, filter_data){
     ## the comments tables - super category ----
     output$dynamic_super_category_table <- DT::renderDT({
       
-      memoised_comment_table <- memoise::memoise(comment_table) # create a cacheable version of comment_table()
       data <- filter_data()$single_labeled_filter_data
       
       if (isTruthy(plotly::event_data("plotly_click", source = super_plot_source, priority = 'input'))){
@@ -143,7 +144,6 @@ mod_trend_server <- function(id, filter_data){
     ## the comments tables - sub category ----
     output$dynamic_sub_category_table <- DT::renderDT({
       
-      memoised_comment_table2 <- memoise::memoise(comment_table) # create a cacheable version of comment_table()
       data <- filter_data()$single_labeled_filter_data
       
       if (isTruthy(plotly::event_data("plotly_click", source = sub_plot_source, priority = 'input'))){
@@ -160,7 +160,7 @@ mod_trend_server <- function(id, filter_data){
                         format(as.Date(date), "%Y-%m") == format(as.Date(selected_date), "%Y-%m")
           )
       }
-      memoised_comment_table2(data)
+      memoised_comment_table(data)
     })
   })
 }
