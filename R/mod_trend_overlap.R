@@ -37,7 +37,7 @@ mod_trend_overlap_server <- function(id, filter_data) {
     output$dynamic_trend_overlap <- renderUI({
       validate(
         need(
-          data_exists <- filter_data()$filter_data %>%
+          filter_data()$filter_data %>%
             dplyr::tally() %>%
             dplyr::pull(n) > 0,
           "Sub-category inter-relationship plots will appear here"
@@ -97,7 +97,6 @@ mod_trend_overlap_server <- function(id, filter_data) {
               session$ns("select_super_category"),
               label = h5(strong("Select a Category to see its Sub-categories relationships (defaults to first category):")),
               choices = choices,
-              # multiple = TRUE,
               selected = choices[1]
             )
           ),
@@ -113,7 +112,8 @@ mod_trend_overlap_server <- function(id, filter_data) {
           )
         )
       }
-    })
+    }) %>% 
+      bindCache(filter_data()$single_labeled_filter_data$super_category)
 
     output$trendUI_2 <- renderUI({
       req(input$tabset_overlap == "overlap_comments")
@@ -182,11 +182,23 @@ mod_trend_overlap_server <- function(id, filter_data) {
 
     ## the upset plot ----
     memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache) # create a session-level cacheable version of upset_plot()
-    output$category_upset <- renderImage(
-      {
+    output$category_upset <- renderImage({
+      
+        req(!is.null(input$select_super_category))
+        
         pixelratio <- session$clientData$pixelratio
         width <- session$clientData$`output_trend_overlap_ui-category_upset_width`
         height <- session$clientData$`output_trend_overlap_ui-category_upset_height`
+        
+        all_categories <- filter_data()$single_labeled_filter_data %>% 
+          dplyr::pull(category) %>% unique() %>% na.omit() %>% sort()
+
+        filtered_categories <- filter_data()$single_labeled_filter_data %>% 
+          dplyr::filter(super_category == input$select_super_category) %>% 
+          dplyr::pull(category) %>% unique() %>% na.omit() %>% sort()
+        
+        
+        min_size <- if (is.numeric(input$min_size)) input$min_size else 1
 
         # A temp file to save the output. This file will be removed later by renderImage
         # outfile <- tempfile(tmpdir = here::here(app_sys(), "app/www"), fileext='.png')
@@ -197,20 +209,41 @@ mod_trend_overlap_server <- function(id, filter_data) {
           res = 120 * pixelratio
         )
 
-        tryCatch(
-          {
-            min_size <- if (is.numeric(input$min_size)) input$min_size else 1
-            intersect <- intersect(input$select_super_category, unique(filter_data()$single_labeled_filter_data$category))
-
-            memoised_upset_plot(upset_data(),
-              intersect = if (length(intersect) > 1) intersect else unique(filter_data()$single_labeled_filter_data$category),
-              min_size = as.integer(min_size),
-              title = "Upset plot showing relationship between Sub-categories"
-            ) %>%
-              print()
-          },
+        tryCatch({
+          tryCatch({
+              memoised_upset_plot(upset_data(),
+                intersect = filtered_categories,
+                min_size = as.integer(min_size),
+                title = paste("Upset plot showing relationship between", 
+                              input$select_super_category, " - Sub categories")
+              ) %>%
+                print()
+            },
+            error = function(e) {
+              print(e)
+              memoised_upset_plot(upset_data(),
+                  intersect = all_categories,
+                  min_size = 2,
+                  title = "Upset plot showing relationship between All Sub-categories") %>%
+                print()
+              
+              showModal(modalDialog(
+                title = "Error!",
+                HTML(paste0(p('There is no relationship in this selection'),
+                            strong("Default back to  All sub-categories with '2' Minimum Number of comments"))
+                ),
+                easyClose = TRUE
+              ))
+            })
+        },
           error = function(e) {
             print(e)
+            showModal(modalDialog(
+              title = "Error!",
+              HTML(paste0(p("Sorry, this plot can't be plotted"))
+              ),
+              easyClose = TRUE
+            ))
           }
         )
         dev.off()
