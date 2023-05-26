@@ -36,11 +36,14 @@ app_server <- function(input, output, session) {
   
   if (!data_exists){
     showModal(modalDialog(
-      title = "NO DATA!",
-      HTML("<strong>Welcome to the Patient Experience Qualitative Data Categorisation Dashboard.
-          <b>To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can 
-          refresh your browser to start exploring your data.
-          <b>Please go to the 'Data Management' tab to upload data.</strong>"),
+      title = strong("NO DATA!"),
+      HTML(paste(
+        h2(strong("Welcome to the Patient Experience Qualitative Data Categorisation Dashboard."),
+           style="text-align:center"),
+        h4("To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can 
+          refresh your browser to start exploring your data."),
+        h4(HTML(paste0('To get started, Please go to the', strong(em(("'Data Management'"))), 'tab to upload your data')))
+      ))
     ))
   }
 
