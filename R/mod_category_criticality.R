@@ -18,7 +18,7 @@ mod_category_criticality_ui <- function(id){
                              package = "experiencesdashboard")),
       
       fluidRow(
-        h5("Click a bar to see comments related to that category"),
+        h5("Click a row to see comments related to that sub-category"),
         mod_click_tables_ui("click_tables_ui")
       )
     )

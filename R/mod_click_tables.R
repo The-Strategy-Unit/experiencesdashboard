@@ -14,6 +14,7 @@ mod_click_tables_ui <- function(id){
     DT::DTOutput(ns("table")) %>% 
       shinycssloaders::withSpinner(),
     hr(),
+    h5('Please select a Sub-category from the table above in other to drill down the table below'),
     DT::DTOutput(ns("comment_table"))
   )
 }
@@ -63,17 +64,6 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL){
     }) 
     
     output$comment_table <- DT::renderDT({
-      
-      # req(input$table_rows_selected)
-      # 
-      # category_selected <- calculatedTable()$Category[input$table_rows_selected]
-      # 
-      # final_text <- show_text(data = filter_data()$single_labeled_filter_data, 
-      #           filter_by_column = "category", 
-      #           filter_by_text = category_selected, 
-      #           comment_type_filter = comment_type)
-      # 
-      # return(final_text)
       
       data <- filter_data()$single_labeled_filter_data
       
