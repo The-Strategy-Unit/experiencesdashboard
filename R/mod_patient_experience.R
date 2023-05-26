@@ -30,32 +30,21 @@ mod_patient_experience_server <- function(id){
         # documentation tab
         tabPanel(
           "Data Categorisation Framework",
-          mod_documentation_page_ui("decumentation_page_1")
+          mod_documentation_page_ui("documentation_page")
+        ),
+        
+        # Data management tab
+        
+        tabPanel(
+          "Data Upload and Management",
+          mod_data_management_ui("data_management_1")
         ),
         
         # summary tab
         tabPanel(
           "Distribution of comments over time",
           mod_trend_ui("trend_ui_1")
-        ),
-        
-        # Data management tab
-        
-        tabPanel(
-          "Data Management",
-          mod_data_management_ui("data_management_1")
         )
-      )
-      
-      # Theme categories 
-      
-      ui_list <- c(ui_list,
-                   list(
-                     tabPanel(
-                       "What people are telling us about",
-                       mod_category_criticality_ui("category_criticality_ui_1")
-                     )
-                   )
       )
       
       # Theme Trend and overlap tab      
@@ -67,6 +56,17 @@ mod_patient_experience_server <- function(id){
                        mod_trend_overlap_ui("trend_overlap_ui")
                      )
                    ))
+      
+      # Theme categories 
+      
+      ui_list <- c(ui_list,
+                   list(
+                     tabPanel(
+                       "What people are telling us about",
+                       mod_category_criticality_ui("category_criticality_ui_1")
+                     )
+                   )
+      )
       
       # Comment search tab (key tab to show)
       
@@ -98,7 +98,7 @@ mod_patient_experience_server <- function(id){
       ui_list <- c(ui_list, 
                    list(
                      tabPanel(
-                       "Summary",
+                       "Summary/Report Builder",
                        mod_summary_ui("summary_ui_1")
                      )
                    ))
