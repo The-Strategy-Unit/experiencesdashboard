@@ -390,7 +390,10 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           dplyr::pull(comment_txt) |>
           length()
 
-        downloadLink(ns("complex_com"), h4(paste(n_complex_comments, "complex comments identified. click here to download them")))
+        downloadLink(ns("complex_com"), 
+                     HTML(paste(n_complex_comments, "complex comments identified. click here to download them") %>% 
+                       strong() %>% h4 %>% paste())
+                     )
 
         # downloadButton(
         #   # ns("complex_com"),
