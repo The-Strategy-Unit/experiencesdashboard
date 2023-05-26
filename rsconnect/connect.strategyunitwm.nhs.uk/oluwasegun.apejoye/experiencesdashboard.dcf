@@ -1,0 +1,14 @@
+name: experiencesdashboard
+title: experiencesdashboard
+username: oluwasegun.apejoye
+account: oluwasegun.apejoye
+server: connect.strategyunitwm.nhs.uk
+hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
+appId: 92
+bundleId: 456
+url: https://connect.strategyunitwm.nhs.uk/content/26a01775-5fe6-44a6-9d75-590d00c9fbfd/
+when: 1685097139.28244
+lastSyncTime: 1685097139.28245
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: secret-data|trial_scripts
