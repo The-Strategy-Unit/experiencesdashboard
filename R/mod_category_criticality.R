@@ -18,18 +18,8 @@ mod_category_criticality_ui <- function(id){
                              package = "experiencesdashboard")),
       
       fluidRow(
-        column(6, h2(get_golem_config("comment_1")),
-               p("Click a bar to see comments related to that category"),
-               # mod_click_plot_ui("click_plot_ui_1")),
-               mod_click_tables_ui("click_tables_ui_1")),
-        
-        if(isTruthy(get_golem_config("comment_2"))){
-          
-          column(6, h2(get_golem_config("comment_2")),
-                 p("Click a bar to see comments related to that category"),
-                 # mod_click_plot_ui("click_plot_ui_2"))
-                 mod_click_tables_ui("click_tables_ui_2"))
-        }
+        h5("Click a bar to see comments related to that category"),
+        mod_click_tables_ui("click_tables_ui")
       )
     )
   )

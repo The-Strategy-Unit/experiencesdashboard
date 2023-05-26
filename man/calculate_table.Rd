@@ -4,7 +4,7 @@
 \alias{calculate_table}
 \title{calculate percentage tables for comment themes}
 \usage{
-calculate_table(table_data, count_column, comment_type, click_column = NULL)
+calculate_table(table_data, count_column, comment_type = NULL)
 }
 \arguments{
 \item{table_data}{A dataframe}

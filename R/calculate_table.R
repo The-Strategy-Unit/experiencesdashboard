@@ -7,19 +7,17 @@
 #' @return a dataframe with category name, n, and %
 #' @export
 calculate_table <- function(table_data, count_column, 
-                            comment_type, 
-                            click_column = NULL) {
+                            comment_type = NULL) {
   
-  if(!is.null(click_column)){
+  if(!is.null(comment_type)){
     table_data <- table_data %>% 
-      dplyr::filter(category == click_column)
+      dplyr::filter(comment_type == rlang::expr(!!comment_type))
   }
   
   table_data %>% 
     dplyr::filter(comment_txt != "",
                   !is.na(comment_txt)) %>%
-    dplyr::filter(comment_type == rlang::expr(!!comment_type)) %>%
-    dplyr::filter(.data[[count_column]] != "Not assigned") %>% 
+    # dplyr::filter(.data[[count_column]] != "Not assigned") %>% 
     dplyr::count(.data[[count_column]]) %>%
     purrr::set_names(c("Category", "n")) %>% 
     dplyr::filter(!is.na(Category)) %>%

@@ -275,7 +275,7 @@ app_server <- function(input, output, session) {
 
   # modules----
   
-  mod_documentation_page_server("decumentation_page_1")
+  mod_documentation_page_server("documentation_page")
   
   mod_trend_server("trend_ui_1", filter_data)
   
@@ -296,14 +296,8 @@ app_server <- function(input, output, session) {
     all_inputs = all_inputs
   )
 
-  mod_click_tables_server("click_tables_ui_1",
-    filter_data = filter_data,
-    comment_type = "comment_1"
-  )
-
-  mod_click_tables_server("click_tables_ui_2",
-    filter_data = filter_data,
-    comment_type = "comment_2"
+  mod_click_tables_server("click_tables_ui",
+    filter_data = filter_data
   )
 
   # mod_click_plot_server("click_plot_ui_1",
@@ -317,18 +311,6 @@ app_server <- function(input, output, session) {
   #   comment_type = "comment_2",
   #   event_id = "click_plot_event_2"
   # )
-
-  mod_text_reactable_server("text_reactable_ui_1",
-    filter_data = filter_data,
-    filter_category = filter_category,
-    comment_select = "comment_1"
-  )
-
-  mod_text_reactable_server("text_reactable_ui_2",
-    filter_data = filter_data,
-    filter_category = filter_category,
-    comment_select = "comment_2"
-  )
 
   mod_search_text_server("search_text_ui_1",
     filter_data = filter_data

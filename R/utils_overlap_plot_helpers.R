@@ -495,21 +495,22 @@ one_hot_labels <- function(df, column) {
 #' Internal function for the comment datatable in format required by `single_to_multi_label()` function
 #'
 #' @param single_label_filter_data a dataframe
-#' @param comment_ids the comment id for comments to show
 #'
-#' @return a formated datatable
+#' @return a formatted datatable
 #'
 #' @noRd
-comment_table <- function(single_label_filter_data, comment_ids = NULL) {
-  data <- single_to_multi_label(single_label_filter_data)
-
-  if (!is.null(comment_ids)) {
-    data <- data %>%
-      dplyr::filter(comment_id %in% comment_ids)
+comment_table <- function(single_label_filter_data, no_super_category=FALSE) {
+  
+  if(no_super_category){
+    data <- single_label_filter_data %>%
+      dplyr::select(date, comment_type, fft, comment_txt, category)
+  }else{
+    data <- single_label_filter_data %>%
+      single_to_multi_label() %>% 
+      dplyr::select(date, comment_type, fft, comment_txt, category, super_category)
   }
-
+  
   data <- data %>%
-    dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
     dplyr::mutate(
       comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
     ) %>%
@@ -523,10 +524,17 @@ comment_table <- function(single_label_filter_data, comment_ids = NULL) {
   }
 
   # rename the columms to be more user friendly
-  colnames(data) <- c(
-    "Date", "FFT Question", "FFT Score",
-    "FFT Answer", "Sub-Category", "Category"
-  )
+  if (no_super_category){
+    colnames(data) <- c(
+      "Date", "FFT Question", "FFT Score",
+      "FFT Answer", "Sub-Category"
+    )
+  } else{
+    colnames(data) <- c(
+      "Date", "FFT Question", "FFT Score",
+      "FFT Answer", "Sub-Category", "Category"
+    )
+  }
 
   # add NHS blue color to the table header
   initComplete <- DT::JS(
@@ -535,7 +543,7 @@ comment_table <- function(single_label_filter_data, comment_ids = NULL) {
     "}"
   )
 
-  # print(nrow(data)) # for debugging
+  print(nrow(data)) # for debugging
 
   return(
     DT::datatable(
@@ -561,7 +569,7 @@ comment_table <- function(single_label_filter_data, comment_ids = NULL) {
 #' Find high level categories of sub categories
 #'
 #' @description
-#' Internal function to fune the high level category to a list of sub categories as defined in the QDC framework
+#' Internal function to find the high level category to a list of sub categories as defined in the QDC framework
 #'
 #' @param sub_cats list of subcategories
 #'
