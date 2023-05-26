@@ -26,7 +26,7 @@ mod_demographics_server <- function(id, filter_data) {
       
       validate(
         need(
-          data_exists <- filter_data()$filter_data %>%
+          filter_data()$filter_data %>%
             dplyr::tally() %>%
             dplyr::pull(n) > 0,
           "Demography plots will appear here"

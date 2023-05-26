@@ -7,8 +7,9 @@
 return_search_text(
   text_data,
   filter_text,
-  comment_type_filter,
-  search_type = c("or", "and")
+  comment_type_filter = NULL,
+  search_type = c("or", "and"),
+  return_dataframe = TRUE
 )
 }
 \arguments{

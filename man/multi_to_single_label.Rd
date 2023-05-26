@@ -17,5 +17,5 @@ multi_to_single_label(mt_data, column_name, n_labels = 10)
 A dataframe
 }
 \description{
-Convert a multi-labeled data to a tidy single-label data
+Convert a multi-labeled data to a single-label data with a category per comment per row
 }

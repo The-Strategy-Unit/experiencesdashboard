@@ -1,6 +1,5 @@
 ---
-title: "Summary report"
-author: "Chris Beeley"
+title: "Summary report from Patient Experience QDC Dashboard"
 output: word_document
 params:
   dates: NA
@@ -52,15 +51,14 @@ This report summarises data from `r format(params$dates[1], "%b %d %Y")` to `r f
 
 if("category_table" %in% params$options){
   
-  cat("## Themes  \n")
+  cat("## Sub Categories  \n")
   
   cat("###", params$comment_1,  "  \n")
   
   calculate_table(
     table_data = params$single_label_data, 
     count_column = "category",
-    comment_type = "comment_1", 
-    click_column = NULL
+    comment_type = "comment_1"
   ) %>% 
     pander::pandoc.table()
   
@@ -73,8 +71,7 @@ if("category_table" %in% params$options){
     calculate_table(
       table_data = params$single_label_data, 
       count_column = "category",
-      comment_type = "comment_2", 
-      click_column = NULL
+      comment_type = "comment_2"
     ) %>% 
       pander::pandoc.table()
     

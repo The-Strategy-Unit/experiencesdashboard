@@ -6,10 +6,18 @@
 #' @noRd
 #'
 #' @return list of strings
-filter_df <- function(text_data, comment_type_filter) {
-  text_data %>%
-    dplyr::filter(comment_type == comment_type_filter) %>%
-    dplyr::pull(comment_txt)
+filter_df <- function(text_data, comment_type_filter = NULL) {
+  
+  if(is.null(comment_type_filter)){
+    text_data %>%
+      dplyr::pull(comment_txt)
+    
+  } else{
+    
+    text_data %>%
+      dplyr::filter(comment_type == comment_type_filter) %>%
+      dplyr::pull(comment_txt)
+  }
 }
 
 #' Takes input strings and splits them/sanitizes them
@@ -103,7 +111,8 @@ matched_comments <- function(lowered_comments, search_fn, search_strings) {
 #' comment_type = c('comment_1', 'comment_1', 'comment_1')),
 #' filter_text = 'Uick, time, appraisal$, &!',
 #' comment_type_filter='comment_1', search_type = "and")
-return_search_text <- function(text_data, filter_text, comment_type_filter, search_type = c("or", "and")) {
+return_search_text <- function(text_data, filter_text, comment_type_filter = NULL,
+                               search_type = c("or", "and"), return_dataframe = TRUE) {
   # check argument is valid and choose the correct logical predicate
   search_type <- match.arg(search_type)
   stopifnot("search type must be one of 'or', or 'and'" = length(search_type) == 1)
@@ -125,6 +134,10 @@ return_search_text <- function(text_data, filter_text, comment_type_filter, sear
   matched_rows <- comments %>%
     lowered_comments() %>%
     matched_comments(search_fn, search_strings)
+  
+  if (return_dataframe){
+    return(text_data[matched_rows,])
+  }
 
   if (any(matched_rows)) {
     paste0(hr(), comments[matched_rows])

@@ -36,8 +36,14 @@ app_server <- function(input, output, session) {
   
   if (!data_exists){
     showModal(modalDialog(
-      title = "NO DATA!",
-      HTML("<strong>Please go to the 'Data Management' tab to upload data.</strong>"),
+      title = strong("NO DATA!"),
+      HTML(paste(
+        h2(strong("Welcome to the Patient Experience Qualitative Data Categorisation Dashboard."),
+           style="text-align:center"),
+        h4("To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can 
+          refresh your browser to start exploring your data."),
+        h4(HTML(paste0('To get started, Please go to the', strong(em(("'Data Management'"))), 'tab to upload your data')))
+      ))
     ))
   }
 
@@ -252,7 +258,8 @@ app_server <- function(input, output, session) {
       tidy_filter_data <- return_data %>% 
         multi_to_single_label('category')  %>% 
         dplyr::select(-original_label, -name) %>% 
-        dplyr::rename(category = value)
+        dplyr::rename(category = value) %>% 
+        dplyr::mutate(super_category = assign_highlevel_categories(category)) # add the high-level category in line with framework v5 
     } else {
       tidy_filter_data <- return_data
     }
@@ -270,7 +277,11 @@ app_server <- function(input, output, session) {
   mod_patient_experience_server("patient_experience_ui_1")
 
   # modules----
-
+  
+  mod_documentation_page_server("documentation_page")
+  
+  mod_trend_server("trend_ui_1", filter_data)
+  
   mod_summary_server("summary_ui_1")
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)
@@ -288,14 +299,8 @@ app_server <- function(input, output, session) {
     all_inputs = all_inputs
   )
 
-  mod_click_tables_server("click_tables_ui_1",
-    filter_data = filter_data,
-    comment_type = "comment_1"
-  )
-
-  mod_click_tables_server("click_tables_ui_2",
-    filter_data = filter_data,
-    comment_type = "comment_2"
+  mod_click_tables_server("click_tables_ui",
+    filter_data = filter_data
   )
 
   # mod_click_plot_server("click_plot_ui_1",
@@ -310,25 +315,13 @@ app_server <- function(input, output, session) {
   #   event_id = "click_plot_event_2"
   # )
 
-  mod_text_reactable_server("text_reactable_ui_1",
-    filter_data = filter_data,
-    filter_category = filter_category,
-    comment_select = "comment_1"
-  )
-
-  mod_text_reactable_server("text_reactable_ui_2",
-    filter_data = filter_data,
-    filter_category = filter_category,
-    comment_select = "comment_2"
-  )
-
   mod_search_text_server("search_text_ui_1",
     filter_data = filter_data
   )
 
   mod_trend_overlap_server("trend_overlap_ui",
-    filter_data = filter_data, overlap_plot_type = "count"
-  )
+    filter_data = filter_data
+    )
 
   mod_demographics_server("demographics_ui_1",
     filter_data = filter_data

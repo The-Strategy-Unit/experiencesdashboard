@@ -27,28 +27,24 @@ mod_patient_experience_server <- function(id){
       
       ui_list <- list(
         
+        # documentation tab
         tabPanel(
-          "Summary",
-          mod_summary_ui("summary_ui_1")
+          "Data Categorisation Framework",
+          mod_documentation_page_ui("documentation_page")
         ),
         
         # Data management tab
         
         tabPanel(
-          "Data Management",
+          "Data Upload and Management",
           mod_data_management_ui("data_management_1")
+        ),
+        
+        # summary tab
+        tabPanel(
+          "Distribution of comments over time",
+          mod_trend_ui("trend_ui_1")
         )
-      )
-      
-      # Theme categories 
-      
-      ui_list <- c(ui_list,
-                   list(
-                     tabPanel(
-                       "Themes/weighting",
-                       mod_category_criticality_ui("category_criticality_ui_1")
-                     )
-                   )
       )
       
       # Theme Trend and overlap tab      
@@ -56,10 +52,21 @@ mod_patient_experience_server <- function(id){
       ui_list <- c(ui_list, 
                    list(
                      tabPanel(
-                       "Trend/Overlap",
+                       "Inter-relationship between Sub-category ",
                        mod_trend_overlap_ui("trend_overlap_ui")
                      )
                    ))
+      
+      # Theme categories 
+      
+      ui_list <- c(ui_list,
+                   list(
+                     tabPanel(
+                       "What people are telling us about",
+                       mod_category_criticality_ui("category_criticality_ui_1")
+                     )
+                   )
+      )
       
       # Comment search tab (key tab to show)
       
@@ -80,11 +87,21 @@ mod_patient_experience_server <- function(id){
         ui_list <- c(ui_list,
                      list(
                        tabPanel(
-                         "Demographics",
+                         "Who we are hearing from",
                          mod_demographics_ui("demographics_ui_1")
                        ))
         )
       }
+      
+      
+      # summary tab
+      ui_list <- c(ui_list, 
+                   list(
+                     tabPanel(
+                       "Summary/Report Builder",
+                       mod_summary_ui("summary_ui_1")
+                     )
+                   ))
       
       do.call(tabsetPanel, ui_list)
       

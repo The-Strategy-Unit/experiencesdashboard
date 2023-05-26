@@ -68,7 +68,8 @@ verbatim_comments <- function(data, comment_selection){
     
     if(length(all_cat_comment) > 1000){
       
-      cat("Error. Too many comments. Please reduce your selection  \n")
+      cat("Error. Too many comments. There are ",length(all_cat_comment), " comments in this selection
+          (maximum number of comments expected is 1000). Please reduce your selection  \n")
       
       cat("  \n")
       

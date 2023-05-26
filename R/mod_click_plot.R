@@ -68,9 +68,7 @@ mod_click_plot_server <- function(id, filter_data, comment_type, event_id){
         plotly::config(displaylogo = FALSE,
                modeBarButtons = list(list("toImage")),
                toImageButtonOptions = list(
-                 format = "svg",
-                 width = 200,
-                 height = 100
+                 format = "png"
                )
         )
     })

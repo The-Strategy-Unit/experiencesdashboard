@@ -13,15 +13,10 @@ mod_search_text_ui <- function(id){
     
     fluidPage(
       p("Add multiple search terms with comma"),
-      fluidRow(
         textInput(ns("text_search"), "Search term(s)",
-                  placeholder = "e.g. staff, doctor, nurse")
-      ),
-      
-      fluidRow(
-        uiOutput(ns("comment_1_UI")),
-        uiOutput(ns("comment_2_UI"))
-      )
+                  placeholder = "e.g. staff, doctor, nurse"),
+      hr(),
+      DT::DTOutput(ns("comment_output"))
     )
   )
 }
@@ -33,50 +28,16 @@ mod_search_text_server <- function(id, filter_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
-    output$comment_1_UI <- renderUI({
-      
-      tagList(
-        column(6,
-               h2(get_golem_config("comment_1")),
-               htmlOutput(ns("comment_1_output"))
-        )
-      )
-    })
-    
-    output$comment_2_UI <- renderUI({
-      
-      if(isTruthy(get_golem_config("comment_2"))){
-        tagList(
-          column(6,
-                 h2(get_golem_config("comment_2")),
-                 htmlOutput(ns("comment_2_output"))
-          )
-        )
-      } else {
-        return()
-      }
-    })
-    
-    output$comment_1_output <- renderText({
+    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
+    output$comment_output <- DT::renderDT({
       
       validate(
         need(input$text_search, "Please enter a search term")
       )
-      
       return_search_text(text_data = filter_data()$filter_data, 
                        filter_text = input$text_search, 
-                       comment_type_filter = "comment_1", search_type='and')
-    })
-    
-    output$comment_2_output <- renderText({
-      
-      validate(
-        need(input$text_search, "Please enter a search term")
-      )
-      
-      return_search_text(text_data = filter_data()$filter_data, 
-                       filter_text = input$text_search, 
-                       comment_type_filter = "comment_2", search_type='and')
+                       comment_type_filter = NULL, search_type='and') %>% 
+        memoised_comment_table(no_super_category=TRUE)
     })
   })
 }
