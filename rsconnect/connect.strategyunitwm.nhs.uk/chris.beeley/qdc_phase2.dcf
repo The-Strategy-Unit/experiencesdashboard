@@ -1,0 +1,13 @@
+name: qdc_phase2
+title: qdc_phase2
+username: chris.beeley
+account: chris.beeley
+server: connect.strategyunitwm.nhs.uk
+hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
+appId: 71
+bundleId: 455
+url: https://connect.strategyunitwm.nhs.uk/qdc_phase2/
+when: 1685091754.2884
+lastSyncTime: 1685091754.28841
+asMultiple: FALSE
+asStatic: FALSE
