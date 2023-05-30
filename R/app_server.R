@@ -165,11 +165,12 @@ app_server <- function(input, output, session) {
         date < !!input$date_range[2]
       )
   })
-
+  
   filter_data <- reactive({
     if (get_golem_config("trust_name") == "demo_trust") {
       return(list(
-        "filter_data" = db_data %>% dplyr::collect(),
+        "filter_data" = db_data %>% 
+          dplyr::collect(),
         "demography_number" = NULL
       ))
     }
@@ -255,10 +256,9 @@ app_server <- function(input, output, session) {
     # return the data in single labelled form 
     
     if (data_exists){
-      tidy_filter_data <- return_data %>% 
-        multi_to_single_label('category')  %>% 
-        dplyr::select(-original_label, -name) %>% 
-        dplyr::rename(category = value) %>% 
+      tidy_filter_data <- return_data %>%         
+        dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list 
+        tidyr::unnest(category) %>% # Unnest the category column into rows and columns
         dplyr::mutate(super_category = assign_highlevel_categories(category)) # add the high-level category in line with framework v5 
     } else {
       tidy_filter_data <- return_data

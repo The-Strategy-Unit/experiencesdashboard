@@ -153,8 +153,7 @@ upload_data <- function(data, conn, trust_id){
     dplyr::select(-comment_id)  %>% 
     dplyr::mutate(hidden = 0,
                   date = as.Date(.data$date)
-    ) %>%
-    tidy_label_column('category') 
+    ) 
   
   print('Doing final data tidy')
   # get the current maximum comment_id value in the database table
@@ -168,7 +167,10 @@ upload_data <- function(data, conn, trust_id){
     dplyr::mutate(
       comment_id = seq.int(max_id + 1, max_id + nrow(.)),
       comment_type = stringr::str_replace_all(.data$comment_type, 'question', 'comment')
-    )
+    ) %>% 
+    # convert the category column to raw json before loading into the database
+    dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::toJSON))) %>%
+    dplyr::mutate(across(category, ~ purrr::map(.x, charToRaw)))
   
   # write the processed data to database
   print('Just started appending to database ...')

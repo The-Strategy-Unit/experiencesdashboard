@@ -27,7 +27,9 @@ reorder_cormat <- function(cormat) {
 tidy_label_column <- function(data, column_name) {
   data[[column_name]] <- stringr::str_remove_all(
     data[[column_name]],
-    "(c[(])|[)]|[\"\"]"
+    # "(c[(])|[)]|[\"\"]" # to remove c() and ""
+    # "(c[(])|[)]" # to remove c()
+    "\\[|\\]"  # to remove []
   )
   return(data)
 }
