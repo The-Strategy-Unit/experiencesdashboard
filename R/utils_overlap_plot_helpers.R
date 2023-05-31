@@ -578,8 +578,8 @@ comment_table <- function(single_label_filter_data, no_super_category=FALSE) {
 #' @return list of same length as sub_cats
 #' @noRd
 assign_highlevel_categories <- function(sub_cats) {
-  framework <- readxl::read_excel(here::here(app_sys(), "app/www", "FFT-QDC Framework v5 - 20230428.xlsx"), sheet = 2) %>%
-    dplyr::select(Category, `Sub-category`)
+  # framework <- readxl::read_excel(here::here(app_sys(), "app/www", "FFT-QDC Framework v5 - 20230428.xlsx"), sheet = 2) %>%
+  #   dplyr::select(Category, `Sub-category`)
 
   sapply(sub_cats, function(v) {
     hl_cat <- framework %>%

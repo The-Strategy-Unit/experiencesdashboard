@@ -99,6 +99,7 @@ golem::add_css_file( "button-style" )
 ## Add internal datasets ----
 ## If you have data in your package
 usethis::use_data_raw( name = "my_dataset", open = FALSE ) 
+usethis::use_data_raw( name = "framework", open = FALSE ) 
 
 ## Tests ----
 ## Add one line by test you want to create
@@ -110,6 +111,7 @@ usethis::use_test( "calculate_table" )
 usethis::use_test( "tidy_data" )
 usethis::use_test( "report_functions" )
 usethis::use_test( "tidy_upload" )
+usethis::use_test( "data" )
 
 # Documentation
 

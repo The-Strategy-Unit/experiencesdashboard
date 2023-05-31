@@ -44,10 +44,10 @@ mod_documentation_page_server <- function(id){
     # table    
     output$framework_table <- DT::renderDT({
       
-      framework <- readxl::read_excel(here::here(app_sys(), "app/www", "FFT-QDC Framework v5 - 20230428.xlsx"),
-                                    sheet=2) %>% 
-      dplyr::arrange(Category, `Sub-category`) %>% 
-      dplyr::select(-Examples)
+      # framework <- readxl::read_excel(here::here(app_sys(), "app/www", "FFT-QDC Framework v5 - 20230428.xlsx"),
+      #                               sheet=2) %>% 
+      # dplyr::arrange(Category, `Sub-category`) %>% 
+      # dplyr::select(-Examples)
     
       # JaveScript code to collapse the table
       callback_js <-  DT::JS(
