@@ -34,6 +34,14 @@ tidy_label_column <- function(data, column_name) {
   return(data)
 }
 
+#' Convert an vector to a Character String
+#' @param x a vector e.g. c("a", "b", "aaa")
+#' @return A character vector of length 1
+#' @noRd
+to_string <- function(x){
+  (\(.x) paste0('"', .x, '"', collapse = ", "))(x)
+}
+
 #' multilabeled_to_singlelabel
 #'
 #' @description internal function to Convert a single-label data like such made using `multi_to_single_label()`
@@ -46,20 +54,15 @@ tidy_label_column <- function(data, column_name) {
 #' @return A dataframe with a row per comment per comment type
 #' @noRd
 single_to_multi_label <- function(sl_data) {
-  mt_data <- sl_data %>%
+  mt_data <- sl_data %>% 
     dplyr::group_by(comment_id, comment_type) %>%
-    dplyr::summarise(
-      comment_id = unique(comment_id),
-      date = unique(date),
-      comment_type = unique(comment_type),
-      comment_txt = unique(comment_txt),
-      fft = unique(fft),
-      category = toString(unique(category)),
-      super_category = toString(unique(super_category))
-    ) %>%
-    dplyr::arrange(comment_id, comment_type) %>%
-    dplyr::ungroup()
-
+    dplyr::summarise(across(c(date, comment_txt, fft), unique),
+                     across(c(category, super_category), \(x) list(unique(x))), # remove duplicated
+                     ) %>% 
+    dplyr::ungroup()  %>% 
+    dplyr::arrange(date) %>% 
+    dplyr::mutate(across(c(category, super_category), ~lapply(.x, to_string))) # for user friendly print
+  
   stopifnot("values in 'comment ID' should be unique" = mt_data$comment_id %>% duplicated() %>% sum() == 0)
 
   return(mt_data)
@@ -496,23 +499,32 @@ one_hot_labels <- function(df, column) {
 
 #' Internal function for the comment datatable in format required by `single_to_multi_label()` function
 #'
-#' @param single_label_filter_data a dataframe
-#'
+#' @param comment_data a dataframe
 #' @return a formatted datatable
 #'
 #' @noRd
-comment_table <- function(single_label_filter_data, no_super_category=FALSE) {
+comment_table <- function(comment_data, tidy_format=TRUE) {
   
-  if(no_super_category){
-    data <- single_label_filter_data %>%
-      dplyr::select(date, comment_type, fft, comment_txt, category)
-  }else{
-    data <- single_label_filter_data %>%
-      single_to_multi_label() %>% 
-      dplyr::select(date, comment_type, fft, comment_txt, category, super_category)
+  data <- comment_data 
+  
+  if(tidy_format){
+    data <- data %>%
+      single_to_multi_label() 
   }
   
-  data <- data %>%
+  # if(no_super_category){
+  #   data <- comment_data %>%
+  #     dplyr::select(date, comment_type, fft, comment_txt, category) %>% 
+  #     dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) %>%
+  #     dplyr::mutate(across(category, ~ purrr::map(.x, to_string)))
+  # }else{
+  #   data <- comment_data %>%
+  #     single_to_multi_label() %>% 
+  #     dplyr::select(date, comment_type, fft, comment_txt, category, super_category)
+  # }
+  
+  data <- data %>% 
+    dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
     dplyr::mutate(
       comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
     ) %>%
@@ -525,19 +537,24 @@ comment_table <- function(single_label_filter_data, no_super_category=FALSE) {
       )
   }
 
-  # rename the columms to be more user friendly
-  if (no_super_category){
-    colnames(data) <- c(
-      "Date", "FFT Question", "FFT Score",
-      "FFT Answer", "Sub-Category"
-    )
-  } else{
-    colnames(data) <- c(
-      "Date", "FFT Question", "FFT Score",
-      "FFT Answer", "Sub-Category", "Category"
-    )
-  }
+  # # rename the columms to be more user friendly
+  # if (no_super_category){
+  #   colnames(data) <- c(
+  #     "Date", "FFT Question", "FFT Score",
+  #     "FFT Answer", "Sub-Category"
+  #   )
+  # } else{
+  #   colnames(data) <- c(
+  #     "Date", "FFT Question", "FFT Score",
+  #     "FFT Answer", "Sub-Category", "Category"
+  #   )
+  # }
 
+  colnames(data) <- c(
+    "Date", "FFT Question", "FFT Score",
+    "FFT Answer", "Sub-Category", "Category"
+  )
+  
   # add NHS blue color to the table header
   initComplete <- DT::JS(
     "function(settings, json) {",

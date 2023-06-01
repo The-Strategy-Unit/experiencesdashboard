@@ -40,7 +40,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
       index = list(),
       column_names = c(
         "comment_id", "date", "location_1", "location_2", "location_3",
-        "comment_type", "comment_txt", "category", "fft",
+        "comment_type", "comment_txt", "category", "super_category", "fft",
         "gender", "age", "ethnicity", "sexuality", "disability", "religion", 
         "extra_variable_1", "extra_variable_2", "extra_variable_3", 
         "pt_id"
@@ -54,7 +54,8 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         "location_3" = get_golem_config("location_3"),
         "comment_type" = "Question Type",
         "comment_txt" = "Comment", 
-        "category" = "Category",  
+        "category" = "Sub-Category",  
+        "super_category" = "Category",  
         "fft" = "FFT Score", 
         "gender" = "Gender",
         "age" = "Age Group", 
@@ -97,8 +98,11 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           ) %>% 
           dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
           dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>%  # delete all empty columns 
-          dplyr::mutate(date = as.Date(date)) 
-        
+          dplyr::mutate(date = as.Date(date)) %>% 
+          dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
+                        super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
+                        across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
+          )
       } else{
         
         dt_out$data <- filter_data()$filter_data %>%
@@ -178,7 +182,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
       options = list(
         pageLength = 10,
         lengthMenu = c(10, 30, 50),
-        dom = "Blfrtip",
+        dom = "lrtip", 
         search = list(caseInsensitive = FALSE),
         scrollX = TRUE
       ))
@@ -394,13 +398,6 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
                      HTML(paste(n_complex_comments, "complex comments identified. click here to download them") %>% 
                        strong() %>% h4 %>% paste())
                      )
-
-        # downloadButton(
-        #   # ns("complex_com"),
-        #   'complex_com',
-        #   'Complex comments',
-        #   icon = icon('comment')
-        # )
       }
     })
 

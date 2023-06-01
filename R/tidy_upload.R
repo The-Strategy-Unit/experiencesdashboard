@@ -168,9 +168,27 @@ upload_data <- function(data, conn, trust_id){
       comment_id = seq.int(max_id + 1, max_id + nrow(.)),
       comment_type = stringr::str_replace_all(.data$comment_type, 'question', 'comment')
     ) %>% 
-    # convert the category column to raw json before loading into the database
-    dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::toJSON))) %>%
-    dplyr::mutate(across(category, ~ purrr::map(.x, charToRaw)))
+    
+    # update the last upload date column with todays date
+    dplyr::mutate(last_upload_date = Sys.time()) %>% 
+    
+    #  assign the super categories
+    tidyr::unnest(category) %>% # Unnest the category column into rows and columns
+    dplyr::mutate(super_category = assign_highlevel_categories(category)) %>% # assign super categories
+    dplyr::group_by(comment_id, comment_type) %>%
+    dplyr::summarise(
+      across(-tidyselect::all_of(c('category', 'super_category')), unique),
+      # across(c(category, super_category), \(x) list(unique(x))),
+      across(c(category, super_category), list)
+    ) %>%
+    dplyr::ungroup() %>% #View()
+    
+    # convert the category and super category column to raw json before loading into the database
+    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) %>%
+    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, charToRaw))) 
+   
+  # throw error if comment_id is not unique
+  stopifnot("values in 'comment ID' should be unique" = final_df$comment_id %>% duplicated() %>% sum() == 0)
   
   # write the processed data to database
   print('Just started appending to database ...')
@@ -182,7 +200,6 @@ upload_data <- function(data, conn, trust_id){
     copy = TRUE,
     in_place = TRUE
   )
-  
   print('Done appending to database ...')
 }
 

@@ -37,7 +37,11 @@ mod_search_text_server <- function(id, filter_data){
       return_search_text(text_data = filter_data()$filter_data, 
                        filter_text = input$text_search, 
                        comment_type_filter = NULL, search_type='and') %>% 
-        memoised_comment_table(no_super_category=TRUE)
+        dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
+                      super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
+                      across(c(category, super_category), ~ purrr::map(.x, to_string))
+        ) %>% 
+        memoised_comment_table()
     })
   })
 }

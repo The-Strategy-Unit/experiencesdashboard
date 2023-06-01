@@ -256,10 +256,9 @@ app_server <- function(input, output, session) {
     # return the data in single labelled form 
     
     if (data_exists){
-      tidy_filter_data <- return_data %>%         
-        dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list 
-        tidyr::unnest(category) %>% # Unnest the category column into rows and columns
-        dplyr::mutate(super_category = assign_highlevel_categories(category)) # add the high-level category in line with framework v5 
+      tidy_filter_data <- return_data %>%   
+        dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list 
+        tidyr::unnest(cols = c(category, super_category)) # Unnest the category and super category columns into rows and columns
     } else {
       tidy_filter_data <- return_data
     }

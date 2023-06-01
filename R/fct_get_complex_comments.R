@@ -12,11 +12,14 @@
 #' @return a dataframe 
 #'
 #' @noRd
-get_complex_comments <- function(data, multilabel_column = 'labels', long_words = 50, many_labels = 5){
+get_complex_comments <- function(data, multilabel_column = 'category', long_words = 50, many_labels = 5){
   
-  data |> 
+  data %>% 
     dplyr::mutate(n_word = lengths(stringr::str_split(comment_txt, ' ')),
-                  n_label = lengths(stringr::str_split(.data[[multilabel_column]], ','))) |> 
+                  n_label = sapply(category, length, simplify = TRUE, USE.NAMES = F)) %>%  
     dplyr::filter(n_word > long_words | n_label > many_labels) %>% 
+    dplyr::mutate( 
+      across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
+    ) %>%
     dplyr::select(-n_word, -n_label)
 }
