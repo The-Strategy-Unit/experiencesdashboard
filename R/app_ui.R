@@ -14,7 +14,9 @@ app_ui <- function(request) {
     dashboardPage(
       dashboardHeader(
         title = "Patient experience - Qualitative Data Categorisation (QDC)",
-        titleWidth = 1000
+        titleWidth = 1000,
+        mod_header_message_ui("messageMenu"),
+        header_links()
       ),
       dashboardSidebar(
         width = 300,

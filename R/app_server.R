@@ -270,7 +270,10 @@ app_server <- function(input, output, session) {
       "demography_number" = no_responders
     ))
   })
-
+  
+  # information icon ----
+  mod_header_message_server('messageMenu', filter_data)
+  
   # combine UI server ----
 
   mod_patient_experience_server("patient_experience_ui_1")
