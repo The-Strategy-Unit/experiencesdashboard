@@ -500,10 +500,10 @@ one_hot_labels <- function(df, column) {
 #' Internal function for the comment datatable in format required by `single_to_multi_label()` function
 #'
 #' @param comment_data a dataframe
+#' @param tidy_format boolean if the data was in single labeled or multilabeled format
 #' @return a formatted datatable
-#'
 #' @noRd
-comment_table <- function(comment_data, tidy_format=TRUE) {
+prep_data_for_comment_table <- function(comment_data, tidy_format=TRUE) {
   
   data <- comment_data 
   
@@ -512,49 +512,41 @@ comment_table <- function(comment_data, tidy_format=TRUE) {
       single_to_multi_label() 
   }
   
-  # if(no_super_category){
-  #   data <- comment_data %>%
-  #     dplyr::select(date, comment_type, fft, comment_txt, category) %>% 
-  #     dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) %>%
-  #     dplyr::mutate(across(category, ~ purrr::map(.x, to_string)))
-  # }else{
-  #   data <- comment_data %>%
-  #     single_to_multi_label() %>% 
-  #     dplyr::select(date, comment_type, fft, comment_txt, category, super_category)
-  # }
-  
   data <- data %>% 
     dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
+    dplyr::mutate( 
+      across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
+    ) %>% 
     dplyr::mutate(
       comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
     ) %>%
     dplyr::arrange(date)
-
+  
   if (isTruthy(get_golem_config("comment_2"))) {
     data <- data %>%
       dplyr::mutate(
         comment_type = stringr::str_replace_all(comment_type, "comment_2", get_golem_config("comment_2"))
       )
   }
-
-  # # rename the columms to be more user friendly
-  # if (no_super_category){
-  #   colnames(data) <- c(
-  #     "Date", "FFT Question", "FFT Score",
-  #     "FFT Answer", "Sub-Category"
-  #   )
-  # } else{
-  #   colnames(data) <- c(
-  #     "Date", "FFT Question", "FFT Score",
-  #     "FFT Answer", "Sub-Category", "Category"
-  #   )
-  # }
-
+  
   colnames(data) <- c(
     "Date", "FFT Question", "FFT Score",
     "FFT Answer", "Sub-Category", "Category"
   )
   
+  print(nrow(data)) # for debugging
+  
+  return(data)
+}
+
+#' Internal function for the comment datatable in format required by `single_to_multi_label()` function
+#'
+#' @param data a dataframe
+#' @return a formatted datatable
+#'
+#' @noRd
+comment_table <- function(data) {
+
   # add NHS blue color to the table header
   initComplete <- DT::JS(
     "function(settings, json) {",
@@ -562,14 +554,12 @@ comment_table <- function(comment_data, tidy_format=TRUE) {
     "}"
   )
 
-  print(nrow(data)) # for debugging
-
   return(
     DT::datatable(
       data,
       extensions = "Buttons", # required to show the download buttons and groups
       options = list(
-        dom = "Bipt",
+        dom = "ipt",
         buttons = c("csv", "excel", "pdf"),
         # autoWidth = TRUE,            # required for width option for columns to  work
         # columnDefs = list(list(width = '500px', targets = c(3))),

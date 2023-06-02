@@ -21,5 +21,5 @@ get_complex_comments <- function(data, multilabel_column = 'category', long_word
     dplyr::mutate( 
       across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
     ) %>%
-    dplyr::select(-n_word, -n_label)
+    dplyr::select(-n_word, -n_label, -pt_id)
 }

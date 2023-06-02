@@ -46,12 +46,15 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL){
           shinycssloaders::withSpinner(),
         hr(),
         h5('Please select a Sub-category from the table above in other to drill down the table below'),
+        # add button for editing the table
+        downloadButton(ns("click_table_download_data"), "Download data",
+                       icon = icon("download")
+        ),
         DT::DTOutput(ns("comment_table"))
       )
     })
     
     calculatedTable <- reactive({
-      
       calculate_table(
         table_data = filter_data()$single_labeled_filter_data, 
         count_column = "category",
@@ -78,7 +81,7 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL){
                     ))
     }) 
     
-    output$comment_table <- DT::renderDT({
+    return_data <- reactive({
       
       data <- filter_data()$single_labeled_filter_data
       
@@ -90,8 +93,24 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL){
         data <- filter_data()$single_labeled_filter_data %>% 
           dplyr::filter(category == category_selected)
       }
-      memoised_comment_table(data)
+      
+      return(prep_data_for_comment_table(data))
+    })
+    
+    output$comment_table <- DT::renderDT({
+      memoised_comment_table(return_data())
     }) 
+    
+    # Download the data ####
+    output$click_table_download_data <- downloadHandler(
+      filename = paste0("sub-category-", Sys.Date(), ".xlsx"),
+      content = function(file) {
+        withProgress(message = "Downloading...", value = 0, {
+          writexl::write_xlsx(return_data(), file)
+          incProgress(1)
+        })
+      }
+    )
     
     reactive(
       input$table_rows_selected

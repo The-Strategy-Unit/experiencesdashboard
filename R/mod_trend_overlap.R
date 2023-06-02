@@ -37,9 +37,7 @@ mod_trend_overlap_server <- function(id, filter_data) {
     output$dynamic_trend_overlap <- renderUI({
       validate(
         need(
-          filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0,
+          nrow(filter_data()$filter_data) > 0,
           "Sub-category inter-relationship plots will appear here"
         )
       )
@@ -75,7 +73,9 @@ mod_trend_overlap_server <- function(id, filter_data) {
                 hr(),
                 uiOutput(ns("trendUI_2")),
                 hr(),
-                uiOutput(ns("dynamic_overlap_table"))
+                uiOutput(ns("dynamic_overlap_table")),
+                uiOutput(ns("trendUI_3")),
+                DT::DTOutput(ns("overlap_table"))
               )
             )
           )
@@ -144,6 +144,14 @@ mod_trend_overlap_server <- function(id, filter_data) {
         ),
       )
     })
+    
+    
+    output$trendUI_3 <- renderUI({
+      req(nrow(return_data()) > 0)
+      
+      downloadButton(ns("overlap_download_data"), "Download data",
+                       icon = icon("download"))
+    })
 
     # overlap tab UI ----
     output$dynamic_overlap_table <- renderUI({
@@ -165,8 +173,7 @@ mod_trend_overlap_server <- function(id, filter_data) {
       if (length(global$selected_cats) > 1) {
         tagList(
           paste(toupper(c(global$selected_cats)), collapse = " | "),
-          hr(),
-          DT::DTOutput(ns("overlap_table"))
+          hr()
         )
       }
     })
@@ -258,15 +265,34 @@ mod_trend_overlap_server <- function(id, filter_data) {
     )
 
     ## Verbatim text table ----
+    return_data <- reactive({
+      # only run when at least 2 categories are selected
+      req(length(global$selected_cats) > 1)
+      
+      data <- filter_data()$single_labeled_filter_data %>% 
+        relationship_table("category", na.omit(global$selected_cats))
+      
+      return(prep_data_for_comment_table(data))
+    })
     
     memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
     output$overlap_table <- DT::renderDT({
       # only run when at least 2 categories are selected
       req(length(global$selected_cats) > 1)
       
-      filter_data()$single_labeled_filter_data %>% 
-        relationship_table("category", na.omit(global$selected_cats)) %>% 
-        memoised_comment_table()
+      # filter_data()$single_labeled_filter_data %>% 
+      #   relationship_table("category", na.omit(global$selected_cats)) %>% 
+        memoised_comment_table(return_data())
     })
+    
+    # Download the data ####
+    output$overlap_download_data <- downloadHandler(
+      filename = paste0("sub-category relatioship-", Sys.Date(), ".xlsx"),
+      content = function(file) {
+        withProgress(message = "Downloading...", value = 0, {
+          writexl::write_xlsx(return_data(), file)
+          incProgress(1)
+        })
+      })
   })
 }

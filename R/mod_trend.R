@@ -53,6 +53,8 @@ mod_trend_server <- function(id, filter_data){
                    plotly::plotlyOutput(ns("super_category_trend_plot")) %>%
                      shinycssloaders::withSpinner(),
                    hr(),
+                   downloadButton(ns("super_category_download_data"), "Download data",
+                                       icon = icon("download")),
                    DT::DTOutput(ns("dynamic_super_category_table"))
           ),
           
@@ -64,6 +66,8 @@ mod_trend_server <- function(id, filter_data){
                             plotly::plotlyOutput(ns("sub_category_trend_plot")) %>%
                               shinycssloaders::withSpinner(),
                             hr(),
+                            downloadButton(ns("sub_category_download_data"), "Download data",
+                                           icon = icon("download")),
                             DT::DTOutput(ns("dynamic_sub_category_table"))
                      )
                    )
@@ -121,13 +125,13 @@ mod_trend_server <- function(id, filter_data){
                 input$select_super_category)
     
     ## the comments tables - super category ----
-    output$dynamic_super_category_table <- DT::renderDT({
-      
+    
+    return_data <- reactive({
       data <- filter_data()$single_labeled_filter_data
       
       if (isTruthy(plotly::event_data("plotly_click", source = super_plot_source, priority = 'input'))){
         d <- plotly::event_data("plotly_click", source = super_plot_source, priority = 'input')
-      
+        
         super_category_selected <- d$y
         selected_date <- d$x
         
@@ -137,14 +141,27 @@ mod_trend_server <- function(id, filter_data){
         data <- filter_data()$single_labeled_filter_data %>% 
           dplyr::filter(super_category == super_category_selected,
                         format(as.Date(date), "%Y-%m") == format(as.Date(selected_date), "%Y-%m")
-                        )
+          )
       }
-      memoised_comment_table(data)
+      return(prep_data_for_comment_table(data))
     })
     
-    ## the comments tables - sub category ----
-    output$dynamic_sub_category_table <- DT::renderDT({
-      
+    output$dynamic_super_category_table <- DT::renderDT({
+      memoised_comment_table(return_data())
+    })
+    
+    # Download the data ####
+    output$super_category_download_data <- downloadHandler(
+      filename = paste0("super_category-trend-", Sys.Date(), ".xlsx"),
+      content = function(file) {
+        withProgress(message = "Downloading...", value = 0, {
+          writexl::write_xlsx(return_data(), file)
+          incProgress(1)
+        })
+      }
+    )
+    
+    return_data2 <- reactive({
       data <- filter_data()$single_labeled_filter_data
       
       if (isTruthy(plotly::event_data("plotly_click", source = sub_plot_source, priority = 'input'))){
@@ -161,7 +178,23 @@ mod_trend_server <- function(id, filter_data){
                         format(as.Date(date), "%Y-%m") == format(as.Date(selected_date), "%Y-%m")
           )
       }
-      memoised_comment_table(data)
+      return(prep_data_for_comment_table(data))
     })
+    
+    ## the comments tables - sub category ----
+    output$dynamic_sub_category_table <- DT::renderDT({
+      memoised_comment_table(return_data2())
+    })
+    
+    # Download the data ####
+    output$sub_category_download_data <- downloadHandler(
+      filename = paste0("sub_category-trend-", Sys.Date(), ".xlsx"),
+      content = function(file) {
+        withProgress(message = "Downloading...", value = 0, {
+          writexl::write_xlsx(return_data2(), file)
+          incProgress(1)
+        })
+      }
+    )
   })
 }
