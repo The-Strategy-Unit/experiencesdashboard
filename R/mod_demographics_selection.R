@@ -24,14 +24,7 @@ mod_demographics_selection_server <- function(id, filter_data) {
     # the UI render
 
     output$dynamic_demographics_selection <- renderUI({
-      
-      req(
-        isolate(
-          data_exists <- filter_data()$unique_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0
-        )
-      )
+      req(nrow(filter_data()$unique_data ) > 0)
       
       # check which demographic variables are present before displaying its associated output
       tagList(
