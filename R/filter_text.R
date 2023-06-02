@@ -89,8 +89,20 @@ matched_comments <- function(lowered_comments, search_fn, search_strings) {
     unlist()
 }
 
+#' @description sanitise the input strings and add their stemmed words to the list of words to search
+#' @param filter_text comma separated string with search terms in
+#' @noRd
+sanitized_search_strings <- function(filter_text){
+  
+  sanitized_input <- input_sanitizer(filter_text) 
+  stemmed_input = tm::stemDocument(sanitized_input)
+  search_strings <- union(sanitized_input, stemmed_input)
+  
+  return(search_strings)
+  cat("search strings: ") # for logging
+}
+
 #' Return text from a freetext search
-#'
 #' @description combine search terms with OR and AND then return text from a specific
 #' question
 #'
@@ -98,12 +110,9 @@ matched_comments <- function(lowered_comments, search_fn, search_strings) {
 #' @param filter_text comma separated string with search terms in
 #' @param comment_type_filter which comment to return- 1 or 2
 #' @param search_type type of search ('and', 'or')
-#'
 #' @export
-#'
 #' @return string vector of search terms, separated by <p>, </p> for
 #' display as raw HTML by Shiny
-#'
 #' @example
 #' return_search_text(
 #' text_data = data.frame(comment_txt = c("tricky times, I recommend quick appraisals ",
@@ -120,12 +129,9 @@ return_search_text <- function(text_data, filter_text, comment_type_filter = NUL
     "or" = any,
     "and" = all
   )
-
-  # sanitise the input strings and add their stemmed words to the list of words to search
   
-  sanitized_input <- input_sanitizer(filter_text) 
-  stemmed_input = tm::stemDocument(sanitized_input)
-  search_strings <- union(sanitized_input, stemmed_input)
+  # sanitise the input strings and add their stemmed words to the list of words to search
+  search_strings <- sanitized_search_strings(filter_text)
   cat("search strings: ") # for logging
   print(search_strings) # for logging
 
