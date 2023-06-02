@@ -14,21 +14,24 @@ mod_header_message_ui <- function(id) {
 #' header_message Server Functions
 #'
 #' @noRd
-mod_header_message_server <- function(id, filter_data) {
+mod_header_message_server <- function(id, db_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     output$dynamic_messageMenu <- renderMenu({
-      req(nrow(filter_data()$filter_data) > 0)
+      req(db_data %>%
+            dplyr::tally() %>%
+            dplyr::pull(n) > 0)
 
       isolate({
-        last_upload_date <- unique(filter_data()$filter_data$last_upload_date) %>% na.omit()
+        last_upload_date <- unique(dplyr::pull(db_data,last_upload_date)) %>% na.omit()
         last_upload_date <- if (length(last_upload_date) < 1) "No edit yet" else strptime(max(last_upload_date), format = "%Y-%m-%d %H:%M")
-
-        last_date_edit <- unique(filter_data()$filter_data$last_edit_date) %>% na.omit()
+       
+        last_date_edit <- unique(dplyr::pull(db_data,last_edit_date)) %>% na.omit()
         last_date_edit <- if (length(last_date_edit) < 1) "No edit yet" else strptime(max(last_date_edit), format = "%Y-%m-%d %H:%M")
 
-        total_users <- filter_data()$unique_data$pt_id %>%
+        total_users <- db_data %>% 
+          dplyr::pull(pt_id) %>%
           unique() %>%
           length()
       })

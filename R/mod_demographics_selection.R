@@ -17,14 +17,13 @@ mod_demographics_selection_ui <- function(id) {
 #' demographics_selection Server Functions
 #'
 #' @noRd
-mod_demographics_selection_server <- function(id, filter_data) {
+mod_demographics_selection_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
     # the UI render
-
     output$dynamic_demographics_selection <- renderUI({
-      req(nrow(filter_data()$unique_data ) > 0)
+      req(data_exists)    # only run if data exist in the database
       
       # check which demographic variables are present before displaying its associated output
       tagList(

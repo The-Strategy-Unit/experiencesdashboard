@@ -36,7 +36,7 @@ app_server <- function(input, output, session) {
   
   if (!data_exists){
     showModal(modalDialog(
-      title = strong("NO DATA!"),
+      title = strong("WELCOME!!!"),
       HTML(paste(
         h2(strong("Welcome to the Patient Experience Qualitative Data Categorisation Dashboard."),
            style="text-align:center"),
@@ -163,7 +163,7 @@ app_server <- function(input, output, session) {
   })
 
   demographic_filters <- mod_demographics_selection_server("demographics_selection_1",
-    filter_data = filter_data
+    filter_data = filter_data, data_exists = data_exists
   )
 
   # filter 1: by selected dates ----
@@ -253,14 +253,12 @@ app_server <- function(input, output, session) {
     }
 
     # get the number of patients in data filtered by demographics
-
     no_responders <- demography_data %>%
       dplyr::distinct(pt_id) %>%
       dplyr::tally() %>%
       dplyr::pull(n)
-
+    
     # only return demography filtered data if the number of responders is more than 20
-
     if (no_responders < 20 & data_exists) {
       return_data <- return_data %>%
         dplyr::collect() %>%
@@ -268,7 +266,6 @@ app_server <- function(input, output, session) {
 
       # add a pop up warning whenever any of the demographic filter is selected and
       # there are less than 20 responders in the data
-
       if ((isTruthy(demographic_filters()$select_demography_1)) |
         (isTruthy(demographic_filters()$select_demography_2)) |
         (isTruthy(demographic_filters()$select_demography_3))
@@ -312,7 +309,7 @@ app_server <- function(input, output, session) {
   
   # modules----
   ## add information to dashboard header ----
-  mod_header_message_server('messageMenu', filter_data)
+  mod_header_message_server('messageMenu', db_data)
   
   ## combine ALL sub-modules----
   mod_patient_experience_server("patient_experience_ui_1")
