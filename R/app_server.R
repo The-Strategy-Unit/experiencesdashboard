@@ -170,11 +170,39 @@ app_server <- function(input, output, session) {
 
   date_filter <- reactive({
     req(input$date_range) # ensure input$date_range is available before attempting to run this chunk
-    db_data %>%
-      dplyr::filter(
-        date >= !!input$date_range[1],
-        date <= !!input$date_range[2]
+    
+    
+    start = min(dplyr::pull(db_data, date) %>% na.omit())
+    end = max(dplyr::pull(db_data, date) %>% na.omit())
+    
+    # ensure start date is less than end date
+    if(input$date_range[1] > input$date_range[2]){
+      showModal(modalDialog(
+        title = strong("Error!"),
+        HTML(paste(p("Start date can't be after end date"),
+                   p("data has default to ", strong(start), " -:- ", strong(end))))
+      ))
+      
+      db_data 
+    } else if (input$date_range[1] < start |
+               input$date_range[2] > end) {
+      showModal(modalDialog(
+        title = strong("Error!"),
+        HTML(paste(p("START date can't be before : ", start),
+                   p("and"),
+             p("END date can't be after : ", end),
+             p("DATE filter has default to ", strong(start), " -:- ", strong(end))))
+      ))
+      
+      db_data
+      
+    } else{
+      db_data %>%
+        dplyr::filter(
+          date >= !!input$date_range[1],
+          date <= !!input$date_range[2]
       )
+    }
   })
   
   filter_data <- reactive({
