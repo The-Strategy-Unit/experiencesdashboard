@@ -60,6 +60,16 @@ app_server <- function(input, output, session) {
       ))) %>%
       dplyr::collect()
   }
+  
+  # add date filter derived from the db data
+  output$date_filter_ui <- renderUI({
+    dateRangeInput(
+      "date_range",
+      label = h5(strong("Select date range:")),
+      start = min(dplyr::pull(db_data, date) %>% na.omit()),
+      end = max(dplyr::pull(db_data, date) %>% na.omit())
+    )
+  })
 
   # render UI---
 
@@ -159,10 +169,11 @@ app_server <- function(input, output, session) {
   # filter 1: by selected dates ----
 
   date_filter <- reactive({
+    req(input$date_range) # ensure input$date_range is available before attempting to run this chunk
     db_data %>%
       dplyr::filter(
-        date > !!input$date_range[1],
-        date < !!input$date_range[2]
+        date >= !!input$date_range[1],
+        date <= !!input$date_range[2]
       )
   })
   
@@ -174,10 +185,10 @@ app_server <- function(input, output, session) {
         "demography_number" = NULL
       ))
     }
-
+    
     return_data <- date_filter()
-
-    # filter 2: locations
+    
+    # filter 2: by selected Locations ----
 
     if (isTruthy(input$select_location_1)) {
       return_data <- return_data %>%
@@ -193,8 +204,8 @@ app_server <- function(input, output, session) {
       return_data <- return_data %>%
         dplyr::filter(location_3 %in% !!input$select_location_3)
     }
-
-    # filter 3: demographics
+    
+    # filter 2: by selected demographics ----
 
     demography_data <- return_data 
 
@@ -271,14 +282,14 @@ app_server <- function(input, output, session) {
     ))
   })
   
-  # information icon ----
+  # modules----
+  ## add information to dashboard header ----
   mod_header_message_server('messageMenu', filter_data)
   
-  # combine UI server ----
-
+  ## combine ALL sub-modules----
   mod_patient_experience_server("patient_experience_ui_1")
-
-  # modules----
+  
+  ## sub-modules
   
   mod_documentation_page_server("documentation_page")
   
@@ -304,18 +315,6 @@ app_server <- function(input, output, session) {
   mod_click_tables_server("click_tables_ui",
     filter_data = filter_data
   )
-
-  # mod_click_plot_server("click_plot_ui_1",
-  #   filter_data = filter_data,
-  #   comment_type = "comment_1",
-  #   event_id = "click_plot_event_1"
-  # )
-  # 
-  # mod_click_plot_server("click_plot_ui_2",
-  #   filter_data = filter_data,
-  #   comment_type = "comment_2",
-  #   event_id = "click_plot_event_2"
-  # )
 
   mod_search_text_server("search_text_ui_1",
     filter_data = filter_data
