@@ -1,0 +1,32 @@
+name: "Dev Publish (dev)"
+on:
+  push:
+    branches: [development]
+
+jobs:
+  connect-publish-dev:
+    name: "Dev Publish (dev)"
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-renv@v2
+
+      - name: Generate manifest.json
+        run: Rscript dev/generate_manifest.R
+
+      - name: Publish Connect content
+        uses: rstudio/actions/connect-publish@main
+        with:
+          url: ${{ secrets.RSCONNECT_URL }}
+          api-key: ${{ secrets.RSCONNECT_API_KEY }}
+          access-type: acl
+          force: true
+          dir: .:qdc_phase2
