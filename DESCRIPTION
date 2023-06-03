@@ -51,7 +51,8 @@ Imports:
     ComplexUpset,
     tm,
     writexl,
-    memoise
+    memoise,
+    data.validator
 Remotes: 
     nhs-r-community/NHSRtheme
 Encoding: UTF-8

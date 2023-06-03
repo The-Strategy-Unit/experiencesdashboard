@@ -53,6 +53,7 @@ usethis::use_package( "NHSRplotthedots" )
 usethis::use_package( "fresh" )
 usethis::use_package( "writexl" )
 usethis::use_package( "memoise" )
+usethis::use_package( "data.validator" )
 
 ## Add one line by package you want to add as dependency - Non-CRAN e.g. GitHub
 usethis::use_dev_package( "NHSRtheme" )
