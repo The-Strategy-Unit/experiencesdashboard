@@ -29,3 +29,13 @@ display as raw HTML by Shiny
 combine search terms with OR and AND then return text from a specific
 question
 }
+\examples{
+return_search_text(
+ text_data = data.frame(comment_txt = c("tricky times, I recommend quick appraisals ",
+ "time of my situation.", ">quick response time, competent appraisal of my situation"),
+ comment_type = c('comment_1', 'comment_1', 'comment_1')),
+ filter_text = 'Uick, time, appraisal$, &!',
+ comment_type_filter='comment_1', search_type = "and",
+ return_dataframe = FALSE
+)
+}
