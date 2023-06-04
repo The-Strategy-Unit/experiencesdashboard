@@ -1,34 +1,14 @@
-library(dplyr)
 
 test_that("Global Databse Data pass all checks", {
   report <- data_validation_report()
 
-  pool <- odbc::dbConnect(
-    drv = odbc::odbc(),
-    driver = Sys.getenv("odbc_driver"),
-    server = Sys.getenv("HOST_NAME"),
-    UID = Sys.getenv("DB_USER"),
-    PWD = Sys.getenv("MYSQL_PASSWORD"),
-    database = "TEXT_MINING",
-    Port = 3306
-  )
-
-  db_data <- dplyr::tbl(
-    pool,
-    dbplyr::in_schema(
-      "TEXT_MINING",
-      get_golem_config("trust_name")
-    )
-  ) %>%
-    head() %>%
-    tidy_all_trusts() %>%
-    collect() %>%
+  db_data <- db_data %>%
     dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) # unserialise the category data from json into list
 
   # data base data
   db_data %>%
-    validate(name = "Verifying filter_data") %>%
-    data.validator::validate_if(has_all_names(
+    data.validator::validate(name = "Verifying filter_data") %>%
+    validate_if(has_all_names(
       "date", "location_1",
       "comment_type", "comment_txt", "fft",
       "category"
@@ -47,7 +27,7 @@ test_that("Global Databse Data pass all checks", {
   db_data %>%
     tidyr::unnest(category) %>% # Unnest the category column into rows and columns
     dplyr::mutate(super_category = assign_highlevel_categories(category)) %>%
-    validate(name = "Verifying Single row filter_data") %>%
+    data.validator::validate(name = "Verifying Single row filter_data") %>%
     data.validator::validate_if(has_all_names(
       "date", "location_1",
       "comment_type", "comment_txt", "fft",
