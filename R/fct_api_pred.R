@@ -48,26 +48,15 @@ batch_predict <- function(df){
   return(preds)
 }
 
-# test code 
-
-# library(tidyverse)
-
-# # convert data to json for API as specified in the API doc
-# df <- readr::read_csv("data/phase_2/p2_db_sample.csv",
-#                       show_col_types = FALSE) |> slice_sample(n = 50, replace = T) %>% 
-#   rename(comment_id = row_id, 
-#          comment_text= comment_txt,
-#          question_type = comment_type) %>% 
-#   dplyr::select(comment_id, comment_text, question_type) 
-# 
-# json_data <- df |>
-#   jsonlite::toJSON()
-# 
-# preds <-  api_pred(json_data) %>% 
-#   dplyr::mutate(comment_id = as.integer(comment_id))
-# 
-# df %>% dplyr::left_join(preds, by = c('comment_id', 'comment_text')) %>% 
-#   dplyr::rename(category = labels,
-#                 comment_txt = comment_text, 
-#                 comment_type = question_type
-#   ) %>% View()
+#' Match config questions to api code
+#'
+#' @param value get_golem_config('comment_2')
+#' @noRd
+#' @examples api_question_code(get_golem_config("comment_1"))
+api_question_code <- function(value) {
+  dplyr::case_when(
+    value == "What did we do well" ~ "what_good",
+    value == "What could be improved" ~ "could_improve",
+    TRUE ~ "nonspecific"
+  )
+}
