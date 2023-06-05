@@ -1,4 +1,3 @@
-
 test_that("Global Databse Data pass all checks", {
   report <- data_validation_report()
 

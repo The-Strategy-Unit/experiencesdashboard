@@ -31,11 +31,15 @@ question
 }
 \examples{
 return_search_text(
- text_data = data.frame(comment_txt = c("tricky times, I recommend quick appraisals ",
- "time of my situation.", ">quick response time, competent appraisal of my situation"),
- comment_type = c('comment_1', 'comment_1', 'comment_1')),
- filter_text = 'Uick, time, appraisal$, &!',
- comment_type_filter='comment_1', search_type = "and",
- return_dataframe = FALSE
+  text_data = data.frame(
+    comment_txt = c(
+      "tricky times, I recommend quick appraisals ",
+      "time of my situation.", ">quick response time, competent appraisal of my situation"
+    ),
+    comment_type = c("comment_1", "comment_1", "comment_1")
+  ),
+  filter_text = "Uick, time, appraisal$, &!",
+  comment_type_filter = "comment_1", search_type = "and",
+  return_dataframe = FALSE
 )
 }

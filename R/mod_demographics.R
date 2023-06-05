@@ -23,7 +23,6 @@ mod_demographics_server <- function(id, filter_data) {
     # the UI render
 
     output$dynamic_demo_UI <- renderUI({
-      
       validate(
         need(
           filter_data()$filter_data %>%
@@ -32,12 +31,12 @@ mod_demographics_server <- function(id, filter_data) {
           "Demography plots will appear here"
         )
       )
-      
+
       # check which demographic variables are present
       isolate({
-        has_demography_1 <- isTruthy(get_golem_config("demography_1")) 
-        has_demography_2 <- isTruthy(get_golem_config("demography_2")) 
-        has_demography_3 <- isTruthy(get_golem_config("demography_3")) 
+        has_demography_1 <- isTruthy(get_golem_config("demography_1"))
+        has_demography_2 <- isTruthy(get_golem_config("demography_2"))
+        has_demography_3 <- isTruthy(get_golem_config("demography_3"))
       })
 
       # determine the column width base on the number of demographic variables present
@@ -105,11 +104,11 @@ mod_demographics_server <- function(id, filter_data) {
     # distribution----
 
     output$demography_1_graph <- renderPlot({
-      
       demo_data <- filter_data()$unique_data %>%
-        dplyr::arrange(get_golem_config("demography_1")) 
-      demo_data[,get_golem_config("demography_1")] = demo_data[,get_golem_config("demography_1")] %>%
-        unlist(use.names=F) %>% factor()
+        dplyr::arrange(get_golem_config("demography_1"))
+      demo_data[, get_golem_config("demography_1")] <- demo_data[, get_golem_config("demography_1")] %>%
+        unlist(use.names = F) %>%
+        factor()
       demo_data %>%
         demographic_distribution(variable = get_golem_config("demography_1"))
     })

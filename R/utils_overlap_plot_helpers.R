@@ -2,13 +2,13 @@
 #' @param x a vector e.g. c("a", "b", "aaa")
 #' @return A character vector of length 1
 #' @noRd
-to_string <- function(x){
+to_string <- function(x) {
   (\(.x) paste0('"', .x, '"', collapse = ", "))(x)
 }
 
 #' multilabeled_to_singlelabel
 #'
-#' @description internal function to Convert a single-label data 
+#' @description internal function to Convert a single-label data
 #' into a multi-labeled format with a unique comment per row
 #'
 #' @param sl_data A dataframe with a unique row per category per comment type per comment ID
@@ -18,15 +18,16 @@ to_string <- function(x){
 #' @return A dataframe with a row per comment per comment type
 #' @noRd
 single_to_multi_label <- function(sl_data) {
-  mt_data <- sl_data %>% 
+  mt_data <- sl_data %>%
     dplyr::group_by(comment_id, comment_type) %>%
-    dplyr::summarise(across(c(date, comment_txt, fft), unique),
-                     across(c(category, super_category), \(x) list(unique(x))), # remove duplicated
-                     ) %>% 
-    dplyr::ungroup()  %>% 
-    dplyr::arrange(date) %>% 
-    dplyr::mutate(across(c(category, super_category), ~lapply(.x, to_string))) # for user friendly print
-  
+    dplyr::summarise(
+      across(c(date, comment_txt, fft), unique),
+      across(c(category, super_category), \(x) list(unique(x))), # remove duplicated
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(date) %>%
+    dplyr::mutate(across(c(category, super_category), ~ lapply(.x, to_string))) # for user friendly print
+
   stopifnot("values in 'comment ID' should be unique" = mt_data$comment_id %>% duplicated() %>% sum() == 0)
 
   return(mt_data)
@@ -203,39 +204,38 @@ one_hot_labels <- function(df, column) {
 #' @param tidy_format boolean if the data was in single labeled or multilabeled format
 #' @return a formatted datatable
 #' @noRd
-prep_data_for_comment_table <- function(comment_data, tidy_format=TRUE) {
-  
-  data <- comment_data 
-  
-  if(tidy_format){
+prep_data_for_comment_table <- function(comment_data, tidy_format = TRUE) {
+  data <- comment_data
+
+  if (tidy_format) {
     data <- data %>%
-      single_to_multi_label() 
+      single_to_multi_label()
   }
-  
-  data <- data %>% 
+
+  data <- data %>%
     dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
-    dplyr::mutate( 
+    dplyr::mutate(
       across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
-    ) %>% 
+    ) %>%
     dplyr::mutate(
       comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
     ) %>%
     dplyr::arrange(date)
-  
+
   if (isTruthy(get_golem_config("comment_2"))) {
     data <- data %>%
       dplyr::mutate(
         comment_type = stringr::str_replace_all(comment_type, "comment_2", get_golem_config("comment_2"))
       )
   }
-  
+
   colnames(data) <- c(
     "Date", "FFT Question", "FFT Score",
     "FFT Answer", "Sub-Category", "Category"
   )
-  
+
   print(nrow(data)) # for debugging
-  
+
   return(data)
 }
 
@@ -246,7 +246,6 @@ prep_data_for_comment_table <- function(comment_data, tidy_format=TRUE) {
 #'
 #' @noRd
 comment_table <- function(data) {
-
   # add NHS blue color to the table header
   initComplete <- DT::JS(
     "function(settings, json) {",

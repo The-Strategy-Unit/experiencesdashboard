@@ -112,7 +112,7 @@ mod_trend_overlap_server <- function(id, filter_data) {
           )
         )
       }
-    }) %>% 
+    }) %>%
       bindCache(filter_data()$single_labeled_filter_data$super_category)
 
     output$trendUI_2 <- renderUI({
@@ -144,13 +144,14 @@ mod_trend_overlap_server <- function(id, filter_data) {
         ),
       )
     })
-    
-    
+
+
     output$trendUI_3 <- renderUI({
       req(nrow(return_data()) > 0)
-      
+
       downloadButton(ns("overlap_download_data"), "Download data",
-                       icon = icon("download"))
+        icon = icon("download")
+      )
     })
 
     # overlap tab UI ----
@@ -189,22 +190,28 @@ mod_trend_overlap_server <- function(id, filter_data) {
 
     ## the upset plot ----
     memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache) # create a session-level cacheable version of upset_plot()
-    output$category_upset <- renderImage({
-      
+    output$category_upset <- renderImage(
+      {
         req(!is.null(input$select_super_category))
-        
+
         pixelratio <- session$clientData$pixelratio
         width <- session$clientData$`output_trend_overlap_ui-category_upset_width`
         height <- session$clientData$`output_trend_overlap_ui-category_upset_height`
-        
-        all_categories <- filter_data()$single_labeled_filter_data %>% 
-          dplyr::pull(category) %>% unique() %>% na.omit() %>% sort()
 
-        filtered_categories <- filter_data()$single_labeled_filter_data %>% 
-          dplyr::filter(super_category == input$select_super_category) %>% 
-          dplyr::pull(category) %>% unique() %>% na.omit() %>% sort()
-        
-        
+        all_categories <- filter_data()$single_labeled_filter_data %>%
+          dplyr::pull(category) %>%
+          unique() %>%
+          na.omit() %>%
+          sort()
+
+        filtered_categories <- filter_data()$single_labeled_filter_data %>%
+          dplyr::filter(super_category == input$select_super_category) %>%
+          dplyr::pull(category) %>%
+          unique() %>%
+          na.omit() %>%
+          sort()
+
+
         min_size <- if (is.numeric(input$min_size)) input$min_size else 1
 
         # A temp file to save the output. This file will be removed later by renderImage
@@ -216,39 +223,45 @@ mod_trend_overlap_server <- function(id, filter_data) {
           res = 120 * pixelratio
         )
 
-        tryCatch({
-          tryCatch({
-              memoised_upset_plot(upset_data(),
-                intersect = filtered_categories,
-                min_size = as.integer(min_size),
-                title = paste("Upset plot showing relationship between", 
-                              input$select_super_category, " - Sub categories")
-              ) %>%
-                print()
-            },
-            error = function(e) {
-              print(e)
-              memoised_upset_plot(upset_data(),
+        tryCatch(
+          {
+            tryCatch(
+              {
+                memoised_upset_plot(upset_data(),
+                  intersect = filtered_categories,
+                  min_size = as.integer(min_size),
+                  title = paste(
+                    "Upset plot showing relationship between",
+                    input$select_super_category, " - Sub categories"
+                  )
+                ) %>%
+                  print()
+              },
+              error = function(e) {
+                print(e)
+                memoised_upset_plot(upset_data(),
                   intersect = all_categories,
                   min_size = 2,
-                  title = "Upset plot showing relationship between All Sub-categories") %>%
-                print()
-              
-              showModal(modalDialog(
-                title = "Error!",
-                HTML(paste0(p('There is no relationship in this selection'),
-                            strong("Default back to  All sub-categories with '2' Minimum Number of comments"))
-                ),
-                easyClose = TRUE
-              ))
-            })
-        },
+                  title = "Upset plot showing relationship between All Sub-categories"
+                ) %>%
+                  print()
+
+                showModal(modalDialog(
+                  title = "Error!",
+                  HTML(paste0(
+                    p("There is no relationship in this selection"),
+                    strong("Default back to  All sub-categories with '2' Minimum Number of comments")
+                  )),
+                  easyClose = TRUE
+                ))
+              }
+            )
+          },
           error = function(e) {
             print(e)
             showModal(modalDialog(
               title = "Error!",
-              HTML(paste0(p("Sorry, this plot can't be plotted"))
-              ),
+              HTML(paste0(p("Sorry, this plot can't be plotted"))),
               easyClose = TRUE
             ))
           }
@@ -268,23 +281,23 @@ mod_trend_overlap_server <- function(id, filter_data) {
     return_data <- reactive({
       # only run when at least 2 categories are selected
       req(length(global$selected_cats) > 1)
-      
-      data <- filter_data()$single_labeled_filter_data %>% 
+
+      data <- filter_data()$single_labeled_filter_data %>%
         relationship_table("category", na.omit(global$selected_cats))
-      
+
       return(prep_data_for_comment_table(data))
     })
-    
+
     memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
     output$overlap_table <- DT::renderDT({
       # only run when at least 2 categories are selected
       req(length(global$selected_cats) > 1)
-      
-      # filter_data()$single_labeled_filter_data %>% 
-      #   relationship_table("category", na.omit(global$selected_cats)) %>% 
-        memoised_comment_table(return_data())
+
+      # filter_data()$single_labeled_filter_data %>%
+      #   relationship_table("category", na.omit(global$selected_cats)) %>%
+      memoised_comment_table(return_data())
     })
-    
+
     # Download the data ####
     output$overlap_download_data <- downloadHandler(
       filename = paste0("sub-category relatioship-", Sys.Date(), ".xlsx"),
@@ -293,6 +306,7 @@ mod_trend_overlap_server <- function(id, filter_data) {
           writexl::write_xlsx(return_data(), file)
           incProgress(1)
         })
-      })
+      }
+    )
   })
 }

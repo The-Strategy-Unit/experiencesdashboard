@@ -1,15 +1,16 @@
 library(data.validator)
 library(assertr)
 library(dplyr)
-load(here::here('data/framework.rda'))
+load(here::here("data/framework.rda"))
 
-test <- readr::read_csv(here::here('tests/test_data.csv'),
-                        show_col_types = FALSE)
+test <- readr::read_csv(here::here("tests/test_data.csv"),
+  show_col_types = FALSE
+)
 
-tidy_trust_data <-  test %>% 
-    tidy_all_trusts()
+tidy_trust_data <- test %>%
+  tidy_all_trusts()
 
-#data base data
+# data base data
 pool <- odbc::dbConnect(
   drv = odbc::odbc(),
   driver = Sys.getenv("odbc_driver"),
@@ -24,7 +25,7 @@ db_data <- dplyr::tbl(
   pool,
   dbplyr::in_schema(
     "TEXT_MINING",
-    'phase_2_demo'
+    "phase_2_demo"
   )
 ) %>%
   tidy_all_trusts() %>%

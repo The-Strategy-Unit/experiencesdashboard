@@ -33,16 +33,17 @@ app_server <- function(input, output, session) {
   data_exists <- db_data %>%
     dplyr::tally() %>%
     dplyr::pull(n) > 0
-  
-  if (!data_exists){
+
+  if (!data_exists) {
     showModal(modalDialog(
       title = strong("WELCOME!!!"),
       HTML(paste(
         h2(strong("Welcome to the Patient Experience Qualitative Data Categorisation Dashboard."),
-           style="text-align:center"),
-        h4("To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can 
+          style = "text-align:center"
+        ),
+        h4("To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can
           refresh your browser to start exploring your data."),
-        h4(HTML(paste0('To get started, Please go to the', strong(em(("'Data Management'"))), 'tab to upload your data')))
+        h4(HTML(paste0("To get started, Please go to the", strong(em(("'Data Management'"))), "tab to upload your data")))
       ))
     ))
   }
@@ -60,7 +61,7 @@ app_server <- function(input, output, session) {
       ))) %>%
       dplyr::collect()
   }
-  
+
   # add date filter derived from the db data
   output$date_filter_ui <- renderUI({
     dateRangeInput(
@@ -170,52 +171,55 @@ app_server <- function(input, output, session) {
 
   date_filter <- reactive({
     req(input$date_range) # ensure input$date_range is available before attempting to run this chunk
-    
-    
-    start = min(dplyr::pull(db_data, date) %>% na.omit())
-    end = max(dplyr::pull(db_data, date) %>% na.omit())
-    
+
+
+    start <- min(dplyr::pull(db_data, date) %>% na.omit())
+    end <- max(dplyr::pull(db_data, date) %>% na.omit())
+
     # ensure start date is less than end date
-    if(input$date_range[1] > input$date_range[2]){
+    if (input$date_range[1] > input$date_range[2]) {
       showModal(modalDialog(
         title = strong("Error!"),
-        HTML(paste(p("Start date can't be after end date"),
-                   p("data has default to ", strong(start), " -:- ", strong(end))))
+        HTML(paste(
+          p("Start date can't be after end date"),
+          p("data has default to ", strong(start), " -:- ", strong(end))
+        ))
       ))
-      
-      db_data 
-    } else if (input$date_range[1] < start |
-               input$date_range[2] > end) {
-      showModal(modalDialog(
-        title = strong("Error!"),
-        HTML(paste(p("START date can't be before : ", start),
-                   p("and"),
-             p("END date can't be after : ", end),
-             p("DATE filter has default to ", strong(start), " -:- ", strong(end))))
-      ))
-      
+
       db_data
-      
-    } else{
+    } else if (input$date_range[1] < start |
+      input$date_range[2] > end) {
+      showModal(modalDialog(
+        title = strong("Error!"),
+        HTML(paste(
+          p("START date can't be before : ", start),
+          p("and"),
+          p("END date can't be after : ", end),
+          p("DATE filter has default to ", strong(start), " -:- ", strong(end))
+        ))
+      ))
+
+      db_data
+    } else {
       db_data %>%
         dplyr::filter(
           date >= !!input$date_range[1],
           date <= !!input$date_range[2]
-      )
+        )
     }
   })
-  
+
   filter_data <- reactive({
     if (get_golem_config("trust_name") == "demo_trust") {
       return(list(
-        "filter_data" = db_data %>% 
+        "filter_data" = db_data %>%
           dplyr::collect(),
         "demography_number" = NULL
       ))
     }
-    
+
     return_data <- date_filter()
-    
+
     # filter 2: by selected Locations ----
 
     if (isTruthy(input$select_location_1)) {
@@ -232,10 +236,10 @@ app_server <- function(input, output, session) {
       return_data <- return_data %>%
         dplyr::filter(location_3 %in% !!input$select_location_3)
     }
-    
+
     # filter 2: by selected demographics ----
 
-    demography_data <- return_data 
+    demography_data <- return_data
 
     if (isTruthy(demographic_filters()$select_demography_1)) {
       demography_data <- demography_data %>%
@@ -257,7 +261,7 @@ app_server <- function(input, output, session) {
       dplyr::distinct(pt_id) %>%
       dplyr::tally() %>%
       dplyr::pull(n)
-    
+
     # only return demography filtered data if the number of responders is more than 20
     if (no_responders < 20 & data_exists) {
       return_data <- return_data %>%
@@ -288,12 +292,12 @@ app_server <- function(input, output, session) {
 
     unique_data <- return_data %>%
       dplyr::distinct(pt_id, .keep_all = TRUE)
-    
-    # return the data in single labelled form 
-    
-    if (data_exists){
-      tidy_filter_data <- return_data %>%   
-        dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list 
+
+    # return the data in single labelled form
+
+    if (data_exists) {
+      tidy_filter_data <- return_data %>%
+        dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list
         tidyr::unnest(cols = c(category, super_category)) # Unnest the category and super category columns into rows and columns
     } else {
       tidy_filter_data <- return_data
@@ -306,20 +310,20 @@ app_server <- function(input, output, session) {
       "demography_number" = no_responders
     ))
   })
-  
+
   # modules----
   ## add information to dashboard header ----
-  mod_header_message_server('messageMenu', db_data)
-  
+  mod_header_message_server("messageMenu", db_data)
+
   ## combine ALL sub-modules----
   mod_patient_experience_server("patient_experience_ui_1")
-  
+
   ## sub-modules
-  
+
   mod_documentation_page_server("documentation_page")
-  
+
   mod_trend_server("trend_ui_1", filter_data)
-  
+
   mod_summary_server("summary_ui_1")
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)
@@ -347,7 +351,7 @@ app_server <- function(input, output, session) {
 
   mod_trend_overlap_server("trend_overlap_ui",
     filter_data = filter_data
-    )
+  )
 
   mod_demographics_server("demographics_ui_1",
     filter_data = filter_data

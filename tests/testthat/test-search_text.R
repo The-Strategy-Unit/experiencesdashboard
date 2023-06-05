@@ -1,5 +1,4 @@
 test_that("Searching text works", {
-  
   checks <- matched_comments(
     lowered_comments = c(
       "tricky times, I recommend quick appraisals ",
