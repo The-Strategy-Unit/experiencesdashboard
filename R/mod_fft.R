@@ -25,7 +25,7 @@ mod_fft_server <- function(id, filter_data) {
     output$dynamic_fft <- renderUI({
       tryCatch(
         {
-          if (no_group() < 9) {
+          if (no_group() <= 9) {
             fluidRow(
               tags$br(),
               column(12, tags$strong("There are not enough stable SPC points to plot.
