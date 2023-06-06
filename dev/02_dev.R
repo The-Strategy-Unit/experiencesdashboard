@@ -86,8 +86,8 @@ golem::add_module( name = "header_message" ) # Name of the module
 golem::add_fct( "helpers" ) 
 golem::add_utils( "helpers" )
 golem::add_utils( "overlap_plot_helpers" )
-golem::add_fct( "api_pred" )
-golem::add_fct( "get_complex_comments" )
+golem::add_fct( "api_pred" , with_test = TRUE)
+golem::add_fct( "get_complex_comments", with_test = TRUE )
 golem::add_fct( "nhs_shiny_theme" )
 
 ## External resources
@@ -103,6 +103,15 @@ usethis::use_data_raw( name = "my_dataset", open = FALSE )
 usethis::use_data_raw( name = "framework", open = FALSE ) 
 
 ## Tests ----
+# Adding the correct code coverage 
+# infrastructure in your application
+usethis::use_coverage()
+
+# Compute the code coverage of your application
+covr::package_coverage() # this work too devtools:::test_coverage()
+# identify files with zero code coverage
+covr::zero_coverage(covr::package_coverage())
+
 ## Add one line by test you want to create
 usethis::use_test( "fft" )
 usethis::use_test( "sentiment_tidy" )

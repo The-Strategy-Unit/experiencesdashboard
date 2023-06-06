@@ -13,6 +13,9 @@
 #'
 #' @noRd
 get_complex_comments <- function(data, multilabel_column = "category", long_words = 50, many_labels = 5) {
+  
+  if(!multilabel_column %in% names(data)) stop(paste0("'", multilabel_column, "' not in data"), call. = FALSE)
+  
   data %>%
     dplyr::mutate(
       n_word = lengths(stringr::str_split(comment_txt, " ")),

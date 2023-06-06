@@ -1,7 +1,7 @@
 library(data.validator)
 library(assertr)
 library(dplyr)
-load(here::here("data/framework.rda"))
+load(here::here("tests/framework.rda"))
 
 test <- readr::read_csv(here::here("tests/test_data.csv"),
   show_col_types = FALSE

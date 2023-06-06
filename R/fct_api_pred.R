@@ -16,7 +16,6 @@ api_pred <- function(json) {
   # throw an error when the API call result in an error
   if (r$status_code != 200) {
     print(httr::http_status(r)$message) # for debugging
-
     stop(httr::http_status(r)$message, call. = FALSE)
   }
 
@@ -41,7 +40,7 @@ batch_predict <- function(df) {
     d <- df[f[i]:l[i], ]
     cat(paste0("Making predictions for batch ", i, "/", length(f)), " \n")
     p <- d |>
-      jsonlite::toJSON() |>
+      # jsonlite::toJSON() |>
       api_pred()
     preds <- dplyr::bind_rows(preds, p)
   }
