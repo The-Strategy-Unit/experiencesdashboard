@@ -113,7 +113,7 @@ usethis::use_test( "tidy_data" )
 usethis::use_test( "report_functions" )
 usethis::use_test( "tidy_upload" )
 usethis::use_test( "database-data" )
-usethis::use_test( "api" )
+usethis::use_test( "fct_api_pred" )
 
 # Documentation
 
