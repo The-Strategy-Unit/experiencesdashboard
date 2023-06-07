@@ -27,7 +27,7 @@ test_that("API prediction function is working...", {
 
   expect_error(api_pred(text_data |>
     select(-question_type)))
-  
+
   expect_no_error(api_pred(text_data))
 
   preds <- text_data |>

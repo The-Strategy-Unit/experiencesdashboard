@@ -74,7 +74,7 @@ golem::add_module( name = "text_reactable" ) # Name of the module
 golem::add_module( name = "demographics" ) # Name of the module
 golem::add_module( name = "summary" ) # Name of the module
 golem::add_module( name = "trend_overlap" ) # Name of the module
-golem::add_module( name = "data_management" ) # Name of the module
+golem::add_module( name = "data_management", fct = 'helper' ) # Name of the module
 golem::add_module( name = "summary_record" ) # Name of the module
 golem::add_module( name = "demographics_selection" ) # Name of the module
 golem::add_module( name = "documentation_page" ) # Name of the module

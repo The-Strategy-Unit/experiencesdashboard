@@ -21,11 +21,10 @@ mod_summary_server <- function(id, data_exists) {
     ns <- session$ns
 
     output$dynamic_summary <- renderUI({
-      
       validate(
         need(data_exists, "Selection/filter summary will appear here. Also you will be able to download report here")
       )
-      
+
       tagList(
         br(),
         mod_summary_record_ui("summary_record_1"),
