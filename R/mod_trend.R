@@ -19,7 +19,7 @@ mod_trend_ui <- function(id) {
 #' trend Server Functions
 #'
 #' @noRd
-mod_trend_server <- function(id, filter_data) {
+mod_trend_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -29,12 +29,7 @@ mod_trend_server <- function(id, filter_data) {
     output$dynamic_trendUI <- renderUI({
       # Only show module contents if the data from the database is not empty
       validate(
-        need(
-          filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0,
-          "Category Trends plots will appear here"
-        )
+          need(data_exists, "Category Trends plots will appear here")
       )
 
       fluidPage(

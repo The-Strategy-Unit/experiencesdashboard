@@ -16,11 +16,16 @@ mod_summary_ui <- function(id) {
 #' summary Server Functions
 #'
 #' @noRd
-mod_summary_server <- function(id) {
+mod_summary_server <- function(id, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     output$dynamic_summary <- renderUI({
+      
+      validate(
+        need(data_exists, "Selection/filter summary will appear here. Also you will be able to download report here")
+      )
+      
       tagList(
         br(),
         mod_summary_record_ui("summary_record_1"),

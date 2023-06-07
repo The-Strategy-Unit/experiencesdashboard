@@ -18,7 +18,7 @@ mod_trend_overlap_ui <- function(id) {
 #' trend_overlap Server Functions
 #'
 #' @noRd
-mod_trend_overlap_server <- function(id, filter_data) {
+mod_trend_overlap_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -36,10 +36,7 @@ mod_trend_overlap_server <- function(id, filter_data) {
     # Super UI ----
     output$dynamic_trend_overlap <- renderUI({
       validate(
-        need(
-          nrow(filter_data()$filter_data) > 0,
-          "Sub-category inter-relationship plots will appear here"
-        )
+        need(data_exists, "Sub-category inter-relationship plots will appear here")
       )
 
       fluidPage(

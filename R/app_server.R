@@ -322,13 +322,13 @@ app_server <- function(input, output, session) {
 
   mod_documentation_page_server("documentation_page")
 
-  mod_trend_server("trend_ui_1", filter_data)
+  mod_trend_server("trend_ui_1", filter_data, data_exists)
 
-  mod_summary_server("summary_ui_1")
+  mod_summary_server("summary_ui_1", data_exists)
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)
 
-  mod_data_management_server("data_management_1", db_conn = pool, filter_data)
+  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists)
 
   filter_category <- mod_category_criticality_server("category_criticality_ui_1",
     filter_data = filter_data
@@ -349,11 +349,9 @@ app_server <- function(input, output, session) {
     filter_data = filter_data
   )
 
-  mod_trend_overlap_server("trend_overlap_ui",
-    filter_data = filter_data
-  )
+  mod_trend_overlap_server("trend_overlap_ui", filter_data, data_exists)
 
   mod_demographics_server("demographics_ui_1",
-    filter_data = filter_data
+    filter_data, data_exists
   )
 }

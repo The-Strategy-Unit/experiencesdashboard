@@ -16,7 +16,7 @@ mod_demographics_ui <- function(id) {
 #' demographics Server Functions
 #'
 #' @noRd
-mod_demographics_server <- function(id, filter_data) {
+mod_demographics_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -24,12 +24,7 @@ mod_demographics_server <- function(id, filter_data) {
 
     output$dynamic_demo_UI <- renderUI({
       validate(
-        need(
-          filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0,
-          "Demography plots will appear here"
-        )
+        need(data_exists, "Demography plots will appear here")
       )
 
       # check which demographic variables are present
