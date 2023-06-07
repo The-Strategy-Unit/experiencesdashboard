@@ -32,6 +32,7 @@ mod_search_text_server <- function(id, filter_data) {
 
     output$dynamic_comment_ui <- renderUI({
       req(input$text_search)
+      req(return_data())
 
       tagList(
         downloadButton(ns("search_download_data"), "Download data",
