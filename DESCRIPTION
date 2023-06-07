@@ -42,7 +42,8 @@ Imports:
     tidyselect,
     tm,
     writexl,
-    xml2
+    xml2,
+    SnowballC
 Suggests: 
     assertr,
     data.validator,
