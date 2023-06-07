@@ -37,7 +37,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
-      column_names = c(
+      selected_columns = c(
         "comment_id", "date", "location_1", "location_2", "location_3",
         "comment_type", "comment_txt", "category", "super_category", "fft",
         "gender", "age", "ethnicity", "sexuality", "disability", "religion",
@@ -72,15 +72,14 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     # dynamic UI ----
 
     output$data_management_UI <- renderUI({
-      
       validate(
         need(data_exists, "Data Table will appear here")
       )
-      
+
       isolate({
         dt_out$data <- dm_data(
           filter_data()$filter_data,
-          column_names = dt_out$column_names,
+          column_names = dt_out$selected_columns,
           comment_1 = get_golem_config("comment_1"),
           comment_2 = get_golem_config("comment_2")
         )
@@ -116,32 +115,35 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         fluidRow(
           column(12, uiOutput(ns("dynamic_complex_ui")))
         ),
+        p(strong("To delete row(s): "), "Select the row(s) and click the delete button"),
         # p(strong("To edit any row:"), "Double click the row, edit its value and press CTRL+ENTER to confirm"),
 
         # display the table
-
         fluidRow(
           column(
             width = 12,
             title = "Patient experience table",
-            DT::DTOutput(ns("pat_table")) %>% 
+            DT::DTOutput(ns("pat_table")) %>%
               shinycssloaders::withSpinner()
           )
         )
       )
     })
-    
+
     # render the data table ####
     output$pat_table <- DT::renderDT({
-      
       DT::datatable(
         dt_out$data,
         selection = "multiple",
         rownames = FALSE,
         # editable = list(
         #   "target" = "row",
-        #   disable = list(columns = c(0,5,length(names(dt_out$data))-1)) # disable editing of comment_id (0), comment_type(5), n pat_id (last column) cols
-        #   ),
+        #   disable = list(columns = c(
+        #     match("comment_id", names(dt_out$data)) - 1,
+        #     match("comment_type", names(dt_out$data)) - 1,
+        #     match("pt_id", names(dt_out$data)) - 1
+        #   )) # disable editing of comment_id (0), comment_type(5), n pat_id (last column) cols
+        # ),
         filter = "top",
         class = "display cell-border compact",
         colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE),
@@ -154,7 +156,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         )
       )
     })
-    
+
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy(ns("pat_table"))
 
@@ -171,27 +173,22 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
           dt_out$data <- DT::editData(dt_out$data, info, rownames = FALSE)
 
           # Data Validation
-
           check_list <- list()
-          #  column index of columns to check (all columns aside "comment_id" = 1,
-          # "date" = 2, "comment_type" = 6, "comment_txt" = 7, "pt_id" = last column index)
-          # column mapping can be gotten from global variable {dt_out$column_names}
-          len_col <- 1:(length(names(dt_out$data)) - 1)
-          column_to_check <- setdiff(len_col, c(1, 2, 6, 7))
+          dont_check_columns <- c("comment_id", "date", "comment_type", "comment_txt", "pt_id")
+          column_to_check <- setdiff(names(dt_out$data), dont_check_columns)
 
           # check if the value entered for each column in column_to_check is part of the existing unique values
           # of that column  or empty string
           for (i in column_to_check) {
-            check <- info$value[i] %in% c(unique(old_dt[[dt_out$column_names[i]]]), "")
+            index <- match(i, names(dt_out$data))
+            check <- info$value[index] %in% c(unique(dplyr::pull(db_data, i)), "")
             check_list <- check_list %>% append(check)
           }
 
           check_list <- unlist(check_list)
-          error_columns <- dt_out$column_names[column_to_check[!check_list]]
-          # cat('columns to check: ', dt_out$column_names[column_to_check], ' \n') # for debugging
+          error_columns <- column_to_check[!check_list]
 
           # Ignore changes if enter value in some columns are not part of the  existing unique values in its column
-
           if (!all(check_list)) {
             cat("columns with error in edited row: ", error_columns, " \n") # for debugging
 
@@ -205,7 +202,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
           }
 
           # if any allowed changes was made to the data then update the UI data
-          cat("is UI and server data identical?", identical(old_dt, dt_out$data), "\n")
+          cat("\n is UI and server data identical?", identical(old_dt, dt_out$data), "\n")
 
           if (!identical(old_dt, dt_out$data)) {
             DT::replaceData(proxy, dt_out$data, rownames = FALSE, resetPaging = FALSE)
@@ -356,10 +353,9 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     # complex comments ----
 
     output$dynamic_complex_ui <- renderUI({
-      
       # complex comments ----
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
-      
+
       if ((nrow(dt_out$complex_comments) > 1)) {
         n_complex_comments <- dt_out$complex_comments |>
           dplyr::pull(comment_txt) |>
