@@ -351,7 +351,8 @@ app_server <- function(input, output, session) {
 
   mod_trend_overlap_server("trend_overlap_ui", filter_data, data_exists)
 
-  mod_demographics_server("demographics_ui_1",
+  mod_demographics_server(
+    "demographics_ui_1",
     filter_data, data_exists
   )
 }

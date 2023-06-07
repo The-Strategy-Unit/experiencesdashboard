@@ -5,8 +5,7 @@
 #' @param comment_2 comment_2 value from config file ex. get_golem_config("comment_2")
 #' @return dataframe
 #' @noRd
-dm_data <- function(data, column_names, comment_1, comment_2 = NULL){
-    
+dm_data <- function(data, column_names, comment_1, comment_2 = NULL) {
   if (isTruthy(comment_2)) {
     return_data <- data %>%
       dplyr::filter(hidden == 0) %>%
@@ -20,8 +19,8 @@ dm_data <- function(data, column_names, comment_1, comment_2 = NULL){
       dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>% # delete all empty columns
       dplyr::mutate(date = as.Date(date)) %>%
       dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
-                    super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
-                    across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
+        super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
+        across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
       )
   } else {
     return_data <- data %>%
@@ -35,6 +34,6 @@ dm_data <- function(data, column_names, comment_1, comment_2 = NULL){
       dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>% # delete all empty columns
       dplyr::mutate(date = as.Date(date))
   }
-  
+
   return(return_data)
 }
