@@ -29,12 +29,11 @@ mod_data_management_ui <- function(id) {
 #' data_management Server Functions
 #'
 #' @noRd
-mod_data_management_server <- function(id, db_conn, filter_data) {
+mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # Create global variable ####
-
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
@@ -73,59 +72,30 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     # dynamic UI ----
 
     output$data_management_UI <- renderUI({
+      
       validate(
-        need(
-          filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0,
-          "Data Table will appear here"
-        )
+        need(data_exists, "Data Table will appear here")
       )
-
-      ## server data ----
-
-      if (isTruthy(get_golem_config("comment_2"))) {
-        dt_out$data <- filter_data()$filter_data %>%
-          dplyr::filter(hidden == 0) %>%
-          dplyr::select(-hidden) %>%
-          dplyr::select(dplyr::any_of(dt_out$column_names)) %>%
-          dplyr::mutate(
-            comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1")),
-            comment_type = stringr::str_replace_all(comment_type, "comment_2", get_golem_config("comment_2"))
-          ) %>%
-          dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
-          dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>% # delete all empty columns
-          dplyr::mutate(date = as.Date(date)) %>%
-          dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
-            super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
-            across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
-          )
-      } else {
-        dt_out$data <- filter_data()$filter_data %>%
-          dplyr::filter(hidden == 0) %>%
-          dplyr::select(-hidden) %>%
-          dplyr::select(dplyr::any_of(dt_out$column_names)) %>%
-          dplyr::mutate(
-            comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
-          ) %>%
-          dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
-          dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>% # delete all empty columns
-          dplyr::mutate(date = as.Date(date))
-      }
-
-      # complex comments ----
-      dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
+      
+      isolate({
+        dt_out$data <- dm_data(
+          filter_data()$filter_data,
+          column_names = dt_out$column_names,
+          comment_1 = get_golem_config("comment_1"),
+          comment_2 = get_golem_config("comment_2")
+        )
+      })
 
       # UI ----
       tagList(
         # add button for editing the table
         fluidRow(
-          # column(
-          #   width = 1,
-          #   actionButton(ns("del_pat"), "Delete",
-          #     icon = icon("trash-can")
-          #   ),
-          # ),
+          column(
+            width = 1,
+            actionButton(ns("del_pat"), "Delete",
+              icon = icon("trash-can")
+            ),
+          ),
           # column(
           #   width = 1,
           #   actionButton(ns("save_to_db"), "Save edit",
@@ -146,7 +116,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         fluidRow(
           column(12, uiOutput(ns("dynamic_complex_ui")))
         ),
-        p("To edit any row: Double click the row, edit its value and press CTRL+ENTER to confirm"),
+        # p(strong("To edit any row:"), "Double click the row, edit its value and press CTRL+ENTER to confirm"),
 
         # display the table
 
@@ -154,15 +124,16 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
           column(
             width = 12,
             title = "Patient experience table",
-            DT::DTOutput(ns("pat_table")) %>% shinycssloaders::withSpinner()
+            DT::DTOutput(ns("pat_table")) %>% 
+              shinycssloaders::withSpinner()
           )
         )
       )
     })
-
+    
     # render the data table ####
-
     output$pat_table <- DT::renderDT({
+      
       DT::datatable(
         dt_out$data,
         selection = "multiple",
@@ -183,7 +154,7 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
         )
       )
     })
-
+    
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy(ns("pat_table"))
 
@@ -385,6 +356,10 @@ mod_data_management_server <- function(id, db_conn, filter_data) {
     # complex comments ----
 
     output$dynamic_complex_ui <- renderUI({
+      
+      # complex comments ----
+      dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
+      
       if ((nrow(dt_out$complex_comments) > 1)) {
         n_complex_comments <- dt_out$complex_comments |>
           dplyr::pull(comment_txt) |>
