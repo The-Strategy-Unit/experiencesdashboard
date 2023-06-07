@@ -86,6 +86,17 @@ phase_2_trust:
   demography_1: age
   demography_2: sex
   demography_3: disability
+phase_2_demo:
+  trust_name: phase_2_demo
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Specialty
+  location_3: Team
+  demography_1: age
+  demography_2: sex
+  demography_3: ethnicity
 trust_NUH:
   trust_name: trust_NUH
   comment_1: Why give this answer and What could be improved?

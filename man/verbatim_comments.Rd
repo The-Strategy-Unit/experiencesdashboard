@@ -2,7 +2,7 @@
 % Please edit documentation in R/report_functions.R
 \name{verbatim_comments}
 \alias{verbatim_comments}
-\title{produce a summary of the comments from comment 1 OR 2 and paste the 
+\title{produce a summary of the comments from comment 1 OR 2 and paste the
 location after the comment}
 \usage{
 verbatim_comments(data, comment_selection)
@@ -17,6 +17,6 @@ string. A massive string with line returns suitable for inclusion
 in RMarkdown report
 }
 \description{
-produce a summary of the comments from comment 1 OR 2 and paste the 
+produce a summary of the comments from comment 1 OR 2 and paste the
 location after the comment
 }

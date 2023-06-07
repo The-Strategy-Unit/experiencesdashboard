@@ -23,7 +23,8 @@ compare_demographics <- function(pass_data, variable) {
     ggplot2::ylim(0, 100) +
     ggplot2::coord_flip() +
     ggplot2::theme(
-      legend.position = "none") 
+      legend.position = "none"
+    )
 
   p %>%
     plotly::ggplotly(tooltip = c(variable, "value")) %>%
@@ -52,5 +53,5 @@ demographic_distribution <- function(pass_data, variable) {
       legend.position = "none",
       axis.title = ggplot2::element_text(size = 12),
       axis.text = ggplot2::element_text(size = 11),
-      )
+    )
 }

@@ -15,7 +15,7 @@ clean_dataframe(data, comment_column)
 dataframe with cleaned text
 }
 \description{
-uploaded data will often have garbage in the comments 
-box such as "NULL", "NA", "N/A", etc. Clean these comments and drop all 
+uploaded data will often have garbage in the comments
+box such as "NULL", "NA", "N/A", etc. Clean these comments and drop all
 rows without comment before they go to the pipeline
 }

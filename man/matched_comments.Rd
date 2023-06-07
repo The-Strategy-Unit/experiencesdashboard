@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_text.R
 \name{matched_comments}
 \alias{matched_comments}
-\title{Find index in a list of string where search word(s) exist}
+\title{Find comment in list of comments where all/any of search strings exist}
 \usage{
 matched_comments(lowered_comments, search_fn, search_strings)
 }
@@ -17,13 +17,13 @@ matched_comments(lowered_comments, search_fn, search_strings)
 list of logical values
 }
 \description{
-Find index in a list of string where search word(s) exist
+Find comment in list of comments where all/any of search strings exist
 }
 \examples{
 matched_comments(
   lowered_comments = c(
     "tricky times, I recommend quick appraisals ",
-    "time of my situation.",
+    "time of my situation is quick",
     ">quick response time, competent appraisal of my situation"
   ),
   search_fn = all, search_strings = c("quick", "time", "appraisal")

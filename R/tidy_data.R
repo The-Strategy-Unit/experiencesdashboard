@@ -1,8 +1,6 @@
 #' Tidy patient experience data
 #'
 #' @param data dataframe or SQL object, that you can make with get_px_exp()
-#'
-#' @return
 #' @export
 tidy_all_trusts <- function(data) {
   # this line only works if there is data in the table
@@ -14,8 +12,8 @@ tidy_all_trusts <- function(data) {
       dplyr::filter(
         !is.na(comment_txt),
         !is.null(comment_txt),
-        comment_txt != 'NA',
-        comment_txt != 'NULL',
+        comment_txt != "NA",
+        comment_txt != "NULL",
         hidden == 0
       )
   } else {
