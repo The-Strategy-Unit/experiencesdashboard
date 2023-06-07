@@ -5,10 +5,10 @@ account: oluwasegun.apejoye
 server: connect.strategyunitwm.nhs.uk
 hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
 appId: 92
-bundleId: 480
-url: https://connect.strategyunitwm.nhs.uk/content/26a01775-5fe6-44a6-9d75-590d00c9fbfd/
-when: 1685717074.74352
-lastSyncTime: 1685717074.74353
+bundleId: 483
+url: https://connect.strategyunitwm.nhs.uk/qdc_demo/
+when: 1686151597.71964
+lastSyncTime: 1686151597.71969
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|secret-data|trial_scripts
+ignoredFiles: .RData|.Rprofile|dev|man|secret-data|tests|trial_scripts
