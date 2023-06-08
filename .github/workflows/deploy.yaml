@@ -17,19 +17,28 @@ jobs:
         with:
           use-public-rspm: true
       
-      - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install dependencies # install dependency from DESCRIPTION file and some extra dependencies required to lunch to rsconnect
+        uses: r-lib/actions/setup-r-dependencies@v2 
+        with:
+          extra-packages: |
+            any::rsconnect
+            any::BH
+            any::cpp11
+            any::prettyunits
+            any::progress 
+            
+      - name: Update MASS
+        shell: Rscript {0}
+        run: pak::pkg_install("MASS@7.3-60")
 
-      # - uses: r-lib/actions/setup-renv@v2
-
-      - name: Generate manifest.json
+      - name: Generate manifest.json # file required by Connect for deploying content programmatically.
         run: Rscript dev/generate_manifest.R
 
       - name: Publish Connect content
         uses: rstudio/actions/connect-publish@main
         with:
-          url: ${{ secrets.RSCONNECT_URL }}
-          api-key: ${{ secrets.RSCONNECT_API_KEY }}
-          access-type: acl
+          url: ${{ secrets.RSCONNECT_URL }}   # URL of the Connect server
+          api-key: ${{ secrets.RSCONNECT_API_KEY }}   # Connect API key, which can be acquired from your Connect profile
+          access-type: acl    # accessible to specific users and groups managed within Connect
           force: true
-          dir: .:qdc_phase2
+          dir: .:/experiencesdashboard  # the second part specifies the URL of the deployed app 
