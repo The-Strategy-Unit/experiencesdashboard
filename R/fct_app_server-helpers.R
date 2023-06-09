@@ -8,15 +8,19 @@ set_trust_config <- function(groups = NULL, trust_name = NULL) {
   }
   
   dashboard_groups <- groups |>
-    stringr::str_subset("^experiencedashboard-(?!admins)")
+    stringr::str_subset("^experiencedashboard-(?!admins)") %>% 
+    stringr::str_remove("^experiencedashboard-") 
+  
   # should we be killing the session if for some reason the user is a member of
   # multiple groups?
   stopifnot("member of multiple groups" = length(dashboard_groups) <= 1)
   
-  if (length(dashboard_groups) > 0) {
-    stringr::str_remove(dashboard_groups, "^experiencedashboard-")
-  } else {
+  if (dashboard_groups == 'developers'){
     Sys.getenv("DEFAULT_TRUST")
+  } else if(length(dashboard_groups) > 0){
+    dashboard_groups
+  } else {
+    stop("Not a member of a group")
   }
 }
 
