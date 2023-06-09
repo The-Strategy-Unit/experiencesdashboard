@@ -7,7 +7,9 @@
 app_server <- function(input, output, session) {
   
   # decide which golem active config to use
+  cat('session group', session$groups, ' \n')
   Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups, trust_name = 'trust_NUH'))
+  cat('trust name', get_golem_config("trust_name"), ' \n')
   
   # Initialize the database connection
   pool <- odbc::dbConnect(
