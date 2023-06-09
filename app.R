@@ -2,7 +2,7 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
-Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_demo")
+# Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_demo")
 # Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_trust")
 # Sys.setenv("R_CONFIG_ACTIVE" = "trust_NUH")
 # Sys.setenv("R_CONFIG_ACTIVE" = "trust_LPT")
