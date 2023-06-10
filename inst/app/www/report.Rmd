@@ -96,11 +96,11 @@ if("verbatim_comments" %in% params$options){
   
   cat("###", params$comment_1,  ": Comments  \n")
   
-  verbatim_comments(params$data, 'comment_1')
+  verbatim_comments(params$single_label_data, 'comment_1')
   
   cat("###", params$comment_2,  ": Comments  \n")
   
-  verbatim_comments(params$data, "comment_2")
+  verbatim_comments(params$single_label_data, "comment_2")
 
 }
 ```
