@@ -1,6 +1,5 @@
-compare_demographics <- function(pass_data, variable) {
-  questions <- purrr::map(paste0("question_", 1:6), ~ get_golem_config(.x))
-
+compare_demographics <- function(pass_data, variable,
+                                 questions = purrr::map(paste0("question_", 1:6), ~ get_golem_config(.x))) {
   questions <- unlist(questions[!vapply(questions, is.null, TRUE)])
 
   p <- pass_data %>%

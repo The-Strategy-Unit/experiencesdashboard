@@ -65,6 +65,7 @@ check_match <- function(string, search_strings, search_fn) {
 #' @param search_strings list of strings with search terms in it
 #'
 #' @return list of logical values
+#' @export
 #'
 #' @examples
 #' matched_comments(

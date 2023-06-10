@@ -4,14 +4,16 @@
 \alias{upload_data}
 \title{Tidy data upload from users}
 \usage{
-upload_data(data, conn, trust_id)
+upload_data(data, conn, trust_id, write_db = TRUE)
 }
 \arguments{
 \item{data}{dataframe, loaded within Shiny application}
 
-\item{conn}{connection, from existing {pool}}
+\item{conn}{connection, from existing {pool}. Can be `NULL` if `write_db = FALSE`}
 
-\item{trust_id}{string. Which trust are you tidying data for?}
+\item{trust_id}{string. Which trust are you uploading data for?}
+
+\item{write_db}{logical should the final data be written to the database or returned as a dataframe?}
 }
 \value{
 boolean, indicating success or failure in upload

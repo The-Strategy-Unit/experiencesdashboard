@@ -43,4 +43,10 @@ test_that("text cleaning works", {
 
   expect_equal(test_template$comment_text, "Service too slow")
   expect_equal(nrow(test_template), 1)
+
+  test_upload <- upload_data(head(phase_2_upload_data, 50), conn = NULL, trust_id = "trust_NUH", write_db = F)
+
+  expect_true(inherits(test_upload, "data.frame"))
+  expect_true(inherits(test_upload$super_category, "list"))
+  expect_true(inherits(test_upload$category, "list"))
 })

@@ -1,7 +1,7 @@
 test_that("Global Databse Data pass all checks", {
   report <- data_validation_report()
 
-  db_data <- db_data %>%
+  db_data <- phase_2_db_data %>%
     dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) # unserialise the category data from json into list
 
   # data base data
