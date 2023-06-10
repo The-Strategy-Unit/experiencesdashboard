@@ -54,7 +54,7 @@ mod_search_text_server <- function(id, filter_data) {
           super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
           across(c(category, super_category), ~ purrr::map(.x, to_string))
         ) %>%
-        prep_data_for_comment_table(tidy_format = FALSE)
+        prep_data_for_comment_table(in_tidy_format = FALSE)
     })
 
     output$comment_output <- DT::renderDT({

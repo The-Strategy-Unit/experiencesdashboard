@@ -130,6 +130,8 @@ usethis::use_test( "spc_functions" )
 usethis::use_test( "server-modules" )
 usethis::use_test( "demographic_graphs" )
 usethis::use_test( "fct_nhs_shiny_theme" )
+usethis::use_test( "fct_app_server-helpers" )
+usethis::use_test( "general_helpers" )
 
 # Documentation
 

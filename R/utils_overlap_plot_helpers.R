@@ -198,19 +198,21 @@ one_hot_labels <- function(df, column) {
     )
 }
 
-#' Internal function for the comment datatable in format required by `single_to_multi_label()` function
+#' Internal function for preparing data for the `comment_table()`function
 #'
 #' @param comment_data a dataframe
-#' @param tidy_format boolean if the data was in single labeled or multilabeled format
+#' @param in_tidy_format boolean if the data was in single labeled (or multilabeled format)
 #' @return a formatted datatable
 #' @noRd
-prep_data_for_comment_table <- function(comment_data, tidy_format = TRUE) {
+prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   data <- comment_data
 
-  if (tidy_format) {
+  if (in_tidy_format) {
     data <- data %>%
       single_to_multi_label()
   }
+
+  stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = data$comment_id %>% duplicated() %>% sum() == 0)
 
   data <- data %>%
     dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
@@ -239,7 +241,7 @@ prep_data_for_comment_table <- function(comment_data, tidy_format = TRUE) {
   return(data)
 }
 
-#' Internal function for the comment datatable in format required by `single_to_multi_label()` function
+#' Internal function for the comment datatable
 #'
 #' @param data a dataframe
 #' @return a formatted datatable
@@ -284,9 +286,6 @@ comment_table <- function(data) {
 #' @return list of same length as sub_cats
 #' @noRd
 assign_highlevel_categories <- function(sub_cats) {
-  # framework <- readxl::read_excel(here::here(app_sys(), "app/www", "FFT-QDC Framework v5 - 20230428.xlsx"), sheet = 2) %>%
-  #   dplyr::select(Category, `Sub-category`)
-
   sapply(sub_cats, function(v) {
     hl_cat <- framework %>%
       dplyr::filter(`Sub-category` == v) %>% # View()
