@@ -132,6 +132,7 @@ usethis::use_test( "demographic_graphs" )
 usethis::use_test( "fct_nhs_shiny_theme" )
 usethis::use_test( "fct_app_server-helpers" )
 usethis::use_test( "general_helpers" )
+usethis::use_test( "mod_data_management_fct_helper" )
 
 # Documentation
 

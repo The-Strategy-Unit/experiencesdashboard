@@ -199,7 +199,7 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
     dplyr::group_by(comment_id, comment_type) %>%
     dplyr::summarise(
       across(-tidyselect::all_of(c("category", "super_category")), unique),
-      across(c(category, super_category), list)
+      across(c(category, super_category), list) # duplicate super category value is preserved. This will allow easy manipulation later. for ex. see get_tidy_filter_data()
     ) %>%
     dplyr::ungroup() %>%
     # convert the category and super category column to raw json before loading into the database
