@@ -8,7 +8,7 @@ app_server <- function(input, output, session) {
   # decide which golem active config to use
   # get value from session data if it hasn't been set before calling run app()
   cat("Session group:", session$groups, " \n")
-  if (Sys.getenv("R_CONFIG_ACTIVE") == "") {
+  if (Sys.getenv("R_CONFIG_ACTIVE") == "rsconnect") {
     Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups))
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
