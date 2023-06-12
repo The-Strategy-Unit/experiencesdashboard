@@ -43,7 +43,8 @@ Imports:
     tm,
     writexl,
     xml2,
-    SnowballC
+    SnowballC,
+    pander
 Suggests: 
     assertr,
     data.validator,
