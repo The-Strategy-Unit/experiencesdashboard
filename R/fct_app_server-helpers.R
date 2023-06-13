@@ -72,3 +72,28 @@ get_tidy_filter_data <- function(return_data, data_exists = FALSE) {
 
   return(return_data)
 }
+
+#' create the database connection
+get_pool <- function(){
+  pool <- odbc::dbConnect(
+    drv = odbc::odbc(),
+    driver = Sys.getenv("odbc_driver"),
+    server = Sys.getenv("HOST_NAME"),
+    UID = Sys.getenv("DB_USER"),
+    PWD = Sys.getenv("MYSQL_PASSWORD"),
+    database = "TEXT_MINING",
+    Port = 3306
+  )
+}
+
+#' get the database data
+get_db_data <- function(pool, trust_name){
+  dplyr::tbl(
+    pool,
+    dbplyr::in_schema(
+      "TEXT_MINING",
+      trust_name
+    )
+  ) %>%
+    tidy_all_trusts()
+}

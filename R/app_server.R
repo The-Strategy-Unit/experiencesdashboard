@@ -14,29 +14,12 @@ app_server <- function(input, output, session) {
   cat("Trust name:", get_golem_config("trust_name"), " \n")
 
   # Initialize the database connection
-  pool <- odbc::dbConnect(
-    drv = odbc::odbc(),
-    driver = Sys.getenv("odbc_driver"),
-    server = Sys.getenv("HOST_NAME"),
-    UID = Sys.getenv("DB_USER"),
-    PWD = Sys.getenv("MYSQL_PASSWORD"),
-    database = "TEXT_MINING",
-    Port = 3306
-  )
+  pool <- get_pool()
 
   # fetch  the data
-
-  db_data <- dplyr::tbl(
-    pool,
-    dbplyr::in_schema(
-      "TEXT_MINING",
-      get_golem_config("trust_name")
-    )
-  ) %>%
-    tidy_all_trusts()
+  db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
   # find out if there is data in the table
-
   data_exists <- db_data %>%
     dplyr::tally() %>%
     dplyr::pull(n) > 0
