@@ -52,7 +52,9 @@ Suggests:
     readr,
     spelling,
     testthat (>= 3.0.0),
-    tibble
+    tibble,
+    mockery, 
+    withr
 VignetteBuilder: 
     knitr
 Remotes: 
