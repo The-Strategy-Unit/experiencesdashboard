@@ -1,3 +1,13 @@
+test_that("db connect can be created", {
+  expect_no_error(get_pool())
+})
+
+test_that("db data can be accessed", {
+  expect_no_error(get_db_data(get_pool(), 'trust_NUH'))
+  expect_error(get_db_data(get_pool(), 'random_config'))
+})
+
+
 test_that("get_tidy_filter_data works", {
   test1 <- get_tidy_filter_data(phase_2_db_data, TRUE)
   expect_false(identical(test1, phase_2_db_data))
@@ -56,7 +66,7 @@ test_that("get_location_data works", {
 })
 
 test_that("get_demography_data works", {
-  Sys.setenv("R_CONFIG_ACTIVE" = "trust_LPT")
+  withr::local_envvar("R_CONFIG_ACTIVE" = "trust_LPT")
   # > get_golem_config("demography_2")
   # [1] "age"
   # > get_golem_config("demography_1")

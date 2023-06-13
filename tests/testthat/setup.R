@@ -1,11 +1,11 @@
 library(data.validator)
 library(assertr)
 library(dplyr)
-
+library(mockery)
 
 tidy_trust_data <- readr::read_csv(here::here("tests/test_data.csv"),
-                             show_col_types = FALSE
-  ) %>%
+  show_col_types = FALSE
+) %>%
   tidy_all_trusts()
 
 # read data that mimic the data template Trusts will use to upload their data

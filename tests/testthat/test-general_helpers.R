@@ -1,5 +1,5 @@
 test_that("prep_data_for_comment_table works", {
-  Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_demo")
+  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   test <- prep_data_for_comment_table(phase_2_db_data, in_tidy_format = FALSE)
 
   expect_true(inherits(test$`Sub-Category`, "character"))
@@ -22,7 +22,6 @@ test_that("prep_data_for_comment_table works", {
     get_tidy_filter_data(TRUE) %>%
     prep_data_for_comment_table(in_tidy_format = F))
 })
-
 
 test_that("single_to_multi_label works", {
   test <- single_to_multi_label(phase_2_db_data)

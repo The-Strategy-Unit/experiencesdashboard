@@ -74,6 +74,7 @@ get_tidy_filter_data <- function(return_data, data_exists = FALSE) {
 }
 
 #' create the database connection
+#' @noRd
 get_pool <- function(){
   pool <- odbc::dbConnect(
     drv = odbc::odbc(),
@@ -87,6 +88,7 @@ get_pool <- function(){
 }
 
 #' get the database data
+#' @noRd
 get_db_data <- function(pool, trust_name){
   dplyr::tbl(
     pool,

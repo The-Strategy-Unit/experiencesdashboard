@@ -78,6 +78,10 @@ clean_dataframe <- function(data, comment_column) {
 #'
 #' @return boolean, indicating success or failure in upload
 upload_data <- function(data, conn, trust_id, write_db = TRUE) {
+  
+  # throw error if for any reason the trust_id is not same a trust name
+  stopifnot('trust_id should be same as trust_name' = get_golem_config('trust_name') == trust_id)
+  
   if (trust_id == "demo_trust") {
     db_tidy <- data %>%
       dplyr::mutate(location_1 = sample(
