@@ -3,7 +3,6 @@
 #' @param table_data A dataframe
 #' @param count_column String with the name of the column to count in the joined table
 #' @param comment_type String with type of comment
-#' @param click_column A string with the name of the category that has been clicked, if any
 #' @return a dataframe with category name, n, and %
 #' @export
 calculate_table <- function(table_data, count_column,

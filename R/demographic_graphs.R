@@ -1,17 +1,25 @@
-compare_demographics <- function(pass_data, variable,
-                                 questions = purrr::map(paste0("question_", 1:6), ~ get_golem_config(.x))) {
-  questions <- unlist(questions[!vapply(questions, is.null, TRUE)])
+#' Compares the average scores between the groups in a demography feature
+#'
+#' @param pass_data dataframe
+#' @param variable name of the demography column
+#' @param score_column name of the score columns
+#'
+#' @return a plotly object
+#' @noRd
+compare_demographics <- function(pass_data, variable, score_column = list("fft")) {
+  
+  score_column <- unlist(score_column[!vapply(score_column, is.null, TRUE)])
 
   p <- pass_data %>%
     dplyr::filter(!is.na(.data[[variable]])) %>%
     dplyr::group_by(.data[[variable]]) %>%
-    dplyr::summarise(across(questions, ~ mean(.x, na.rm = TRUE)),
+    dplyr::summarise(across(all_of(score_column), ~ mean(.x, na.rm = TRUE)),
       n = dplyr::n()
     ) %>%
     dplyr::filter(n > 10) %>%
     dplyr::mutate(dplyr::across(where(is.numeric), ~ round(. * 20, 1))) %>%
     dplyr::select(-n) %>%
-    tidyr::pivot_longer(-.data[[variable]]) %>%
+    tidyr::pivot_longer(-all_of(variable)) %>%
     ggplot2::ggplot(ggplot2::aes(
       x = .data[[variable]], y = value,
       group = name, fill = name
@@ -36,7 +44,6 @@ compare_demographics <- function(pass_data, variable,
 #'
 #' @return a ggplot2 graph
 #' @export
-
 demographic_distribution <- function(pass_data, variable) {
   pass_data %>%
     dplyr::count(.data[[variable]]) %>%

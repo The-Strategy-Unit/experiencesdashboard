@@ -12,8 +12,6 @@ calculate_table(table_data, count_column, comment_type = NULL)
 \item{count_column}{String with the name of the column to count in the joined table}
 
 \item{comment_type}{String with type of comment}
-
-\item{click_column}{A string with the name of the category that has been clicked, if any}
 }
 \value{
 a dataframe with category name, n, and %
