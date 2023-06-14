@@ -779,7 +779,7 @@ test_that("loads mod_demographics_server correctly", {
   })
 })
 
-test_that("loads mod_demographics_server correctly", {
+test_that("database data is returned as a lazy tibble", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   ## add information to dashboard header ----
@@ -812,8 +812,8 @@ test_that("loads mod_demographics_server correctly", {
   
   stub(app_server, "mod_demographics_server", "mod_demographics_server")
   
+  skip_on_ci()
   testServer(app_server, {
-    skip_on_ci()
     # test that the database data is returned as a lazy tibble
     inherits(db_data, "tbl_sql") |> expect_true()
     
