@@ -1,12 +1,17 @@
 test_that("db connect can be created", {
+  skip_on_ci()
   expect_no_error(get_pool())
 })
 
 test_that("db data can be accessed", {
-  expect_no_error(get_db_data(get_pool(), 'trust_NUH'))
-  expect_error(get_db_data(get_pool(), 'random_config'))
+  skip_on_ci()
+  expect_error(get_db_data(get_pool(), "random_config") %>% 
+                 head(1) %>% 
+                 collect())
+  expect_no_error(get_db_data(get_pool(), "trust_NUH") %>% 
+                    head(1) %>% 
+                    collect())
 })
-
 
 test_that("get_tidy_filter_data works", {
   test1 <- get_tidy_filter_data(phase_2_db_data, TRUE)

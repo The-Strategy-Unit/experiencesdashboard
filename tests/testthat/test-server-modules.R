@@ -76,7 +76,7 @@ test_that("it checks the number of rows", {
 })
 
 
-test_that("it validates the plot data", {
+test_that("it doesn't validates the plot data when group is less than 10", {
   # arrange
   graph_data_expected <- tibble(
     date = c("2020-12-01", "2021-01-01", "2021-02-01",
@@ -94,15 +94,12 @@ test_that("it validates the plot data", {
   
   testServer(mod_fft_server, args = list(reactiveVal()), {
     
-    print(no_group())
     expect_error(output$spc_plot)
-    # expect_condition(output$spc_plot, 'There are not enough stable SPC points to plot. Please expand your selection')
-    
+    expect_called(m, 0)
   })
 })
 
-
-test_that("it validates the plot data", {
+test_that("it validates the plot data when group is at least 10", {
   # arrange
   graph_data_expected <- tibble(
     date = c("2020-04-01", "2020-05-01", "2020-08-01", 
@@ -124,17 +121,12 @@ test_that("it validates the plot data", {
       )
     )
     
-    print(no_group())
-    print(graph_data())
-    
-    skip('Skip for now')
-    output$spc_plot
     # act/assert
-    # expect_snapshot(output$spc_plot)
-    # expect_no_warning(output$spc_plot)
-    # 
-    # expect_called(m, 1)
-    # expect_args(m, 1, graph_data_expected)
+    expect_snapshot(output$spc_plot)
+    expect_no_warning(output$spc_plot)
+    
+    expect_called(m, 1)
+    expect_args(m, 1, graph_data_expected)
   })
 })
 

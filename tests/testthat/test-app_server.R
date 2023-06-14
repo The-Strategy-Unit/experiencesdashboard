@@ -114,7 +114,7 @@ test_that("all_inputs returns correct value", {
   })
 })
 
-test_that("loads mod_header_message_server correctlly", {
+test_that("loads mod_header_message_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -165,7 +165,7 @@ test_that("loads mod_header_message_server correctlly", {
 })
 
 
-test_that("loads mod_documentation_page_server correctlly", {
+test_that("loads mod_documentation_page_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -215,7 +215,7 @@ test_that("loads mod_documentation_page_server correctlly", {
   })
 })
 
-test_that("loads mod_patient_experience_server correctlly", {
+test_that("loads mod_patient_experience_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -262,7 +262,7 @@ test_that("loads mod_patient_experience_server correctlly", {
   })
 })
 
-test_that("loads mod_trend_server correctlly", {
+test_that("loads mod_trend_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -309,7 +309,7 @@ test_that("loads mod_trend_server correctlly", {
   })
 })
 
-test_that("loads mod_summary_server correctlly", {
+test_that("loads mod_summary_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -356,7 +356,7 @@ test_that("loads mod_summary_server correctlly", {
   })
 })
 
-test_that("loads mod_summary_record_server correctlly", {
+test_that("loads mod_summary_record_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -403,7 +403,7 @@ test_that("loads mod_summary_record_server correctlly", {
   })
 })
 
-test_that("loads mod_data_management_server correctlly", {
+test_that("loads mod_data_management_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -450,7 +450,7 @@ test_that("loads mod_data_management_server correctlly", {
   })
 })
 
-test_that("loads mod_category_criticality_server correctlly", {
+test_that("loads mod_category_criticality_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -497,7 +497,7 @@ test_that("loads mod_category_criticality_server correctlly", {
   })
 })
 
-test_that("loads mod_fft_server correctlly", {
+test_that("loads mod_fft_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -544,7 +544,7 @@ test_that("loads mod_fft_server correctlly", {
   })
 })
 
-test_that("loads mod_report_builder_server correctlly", {
+test_that("loads mod_report_builder_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -591,7 +591,7 @@ test_that("loads mod_report_builder_server correctlly", {
   })
 })
 
-test_that("loads mod_click_tables_server correctlly", {
+test_that("loads mod_click_tables_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -638,7 +638,7 @@ test_that("loads mod_click_tables_server correctlly", {
   })
 })
 
-test_that("loads mod_search_text_server correctlly", {
+test_that("loads mod_search_text_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -685,7 +685,7 @@ test_that("loads mod_search_text_server correctlly", {
   })
 })
 
-test_that("loads mod_trend_overlap_server correctlly", {
+test_that("loads mod_trend_overlap_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -732,7 +732,7 @@ test_that("loads mod_trend_overlap_server correctlly", {
   })
 })
 
-test_that("loads mod_demographics_server correctlly", {
+test_that("loads mod_demographics_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   
   m <- mock()
@@ -779,16 +779,8 @@ test_that("loads mod_demographics_server correctlly", {
   })
 })
 
-test_that("loads mod_demographics_server correctlly", {
+test_that("loads mod_demographics_server correctly", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-  
-  # m <- mock(phase_2_db_data)
-  #
-  # stub(app_server, "get_pool", 'get_pool')
-  #
-  # stub(app_server, "dplyr::collect", identity)
-  #
-  # stub(app_server, "get_db_data", m)
   
   ## add information to dashboard header ----
   stub(app_server, "mod_header_message_server", "mod_header_message_server")
@@ -821,6 +813,7 @@ test_that("loads mod_demographics_server correctlly", {
   stub(app_server, "mod_demographics_server", "mod_demographics_server")
   
   testServer(app_server, {
+    skip_on_ci()
     # test that the database data is returned as a lazy tibble
     inherits(db_data, "tbl_sql") |> expect_true()
     
