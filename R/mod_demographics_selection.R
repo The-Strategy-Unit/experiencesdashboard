@@ -43,16 +43,8 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
 
     output$demography_1_UI <- renderUI({
       isolate(
-        choices <- filter_data()$unique_data %>%
-          dplyr::filter(
-            !is.na(get_golem_config("demography_1")),
-            get_golem_config("demography_1") != "",
-            get_golem_config("demography_1") != "NA",
-            get_golem_config("demography_1") != "NULL"
-          ) %>%
-          dplyr::pull(get_golem_config("demography_1")) %>%
-          unique() %>%
-          sort()
+        choices <- get_demographic_choices(filter_data()$unique_data, 
+                                          get_golem_config("demography_1"))
       )
 
       selectInput(session$ns("select_demography_1"),
@@ -64,16 +56,8 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
 
     output$demography_2_UI <- renderUI({
       isolate(
-        choices <- filter_data()$unique_data %>%
-          dplyr::filter(
-            !is.na(get_golem_config("demography_2")),
-            get_golem_config("demography_2") != "",
-            get_golem_config("demography_2") != "NA",
-            get_golem_config("demography_2") != "NULL"
-          ) %>%
-          dplyr::pull(get_golem_config("demography_2")) %>%
-          unique() %>%
-          sort()
+        choices <- get_demographic_choices(filter_data()$unique_data, 
+                                          get_golem_config("demography_2"))
       )
 
       selectInput(session$ns("select_demography_2"),
@@ -85,16 +69,8 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
 
     output$demography_3_UI <- renderUI({
       isolate(
-        choices <- filter_data()$unique_data %>%
-          dplyr::filter(
-            !is.na(get_golem_config("demography_3")),
-            get_golem_config("demography_3") != "",
-            get_golem_config("demography_3") != "NA",
-            get_golem_config("demography_3") != "NULL"
-          ) %>%
-          dplyr::pull(get_golem_config("demography_3")) %>%
-          unique() %>%
-          sort()
+        choices <- get_demographic_choices(filter_data()$unique_data, 
+                                          get_golem_config("demography_3"))
       )
 
       selectInput(session$ns("select_demography_3"),

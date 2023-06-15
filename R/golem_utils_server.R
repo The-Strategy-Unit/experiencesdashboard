@@ -90,3 +90,23 @@ header_links <- function() {
     class = "dropdown"
   )
 }
+
+#' get demographic choices
+#'
+#' @param unique_data dataframe
+#' @param demographic_feature string, column name of the demographic feature
+#'
+#' @return list, unique values in the demographic feature
+#' @noRd
+get_demographic_choices <- function(unique_data, demographic_feature){
+  unique_data %>%
+    dplyr::filter(
+      !is.na(demographic_feature),
+      demographic_feature != "",
+      demographic_feature != "NA",
+      demographic_feature != "NULL"
+    ) %>%
+    dplyr::pull(demographic_feature) %>%
+    unique() %>%
+    sort()
+}
