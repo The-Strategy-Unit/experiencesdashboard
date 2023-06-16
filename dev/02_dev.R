@@ -134,6 +134,7 @@ usethis::use_test( "fct_app_server-helpers" )
 usethis::use_test( "general_helpers" )
 usethis::use_test( "mod_data_management_fct_helper" )
 usethis::use_test( "app_server" )
+usethis::use_test( "app_ui" )
 
 # Documentation
 
