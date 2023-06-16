@@ -5,12 +5,12 @@ test_that("db connect can be created", {
 
 test_that("db data can be accessed", {
   skip_on_ci()
-  expect_error(get_db_data(get_pool(), "random_config") %>% 
-                 head(1) %>% 
-                 collect())
-  expect_no_error(get_db_data(get_pool(), "trust_NUH") %>% 
-                    head(1) %>% 
-                    collect())
+  expect_error(get_db_data(get_pool(), "random_config") %>%
+    head(1) %>%
+    collect())
+  expect_no_error(get_db_data(get_pool(), "trust_NUH") %>%
+    head(1) %>%
+    collect())
 })
 
 test_that("get_tidy_filter_data works", {
@@ -96,8 +96,20 @@ test_that("get_demography_data works", {
   expect_identical(test2, phase_2_db_data)
 })
 
-
 test_that("set_trust_config works", {
-  expect_error(set_trust_config("group"))
-  expect_error(set_trust_config("trust_NUH"))
+  # no group
+  expect_error(set_trust_config("group"), 'Not a member of any group')
+  expect_error(set_trust_config("trust_NUH"), 'Not a member of any group')
+  expect_error(set_trust_config("otherdashboard-developers"), "Not a member of any group")
+  expect_error(set_trust_config("experiencedashboard-admins"), "Not a member of any group")
+  
+  # multiple groups
+  expect_error(
+    set_trust_config(c("experiencedashboard-admins", "experiencedashboard-developers", "experiencedashboard-developer-2")),
+    "member of multiple groups"
+  )
+  
+  # one group
+  expect_equal(set_trust_config(c("experiencedashboard-admins", "experiencedashboard-developers")), "")
+  expect_equal(set_trust_config("experiencedashboard-developers"), "")
 })

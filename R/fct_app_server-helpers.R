@@ -11,6 +11,7 @@ set_trust_config <- function(groups) {
   # should we be killing the session if for some reason the user is a member of
   # multiple groups?
   stopifnot("member of multiple groups" = length(dashboard_groups) <= 1)
+  stopifnot("Not a member of any group" = isTruthy(dashboard_groups))
 
   if (dashboard_groups == "developers") {
     Sys.getenv("DEFAULT_TRUST")
