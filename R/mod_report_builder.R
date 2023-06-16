@@ -18,19 +18,13 @@ mod_report_builder_ui <- function(id) {
 #'
 #' @noRd
 mod_report_builder_server <- function(id, filter_data,
-                                      all_inputs) {
+                                      all_inputs, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
 
     output$dynamic_report_UI <- renderUI({
-      req(
-        isolate(
-          data_exists <- filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0
-        )
-      )
+      req(data_exists)
 
       fluidRow(
         column(

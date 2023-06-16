@@ -14,14 +14,12 @@ mod_header_message_ui <- function(id) {
 #' header_message Server Functions
 #'
 #' @noRd
-mod_header_message_server <- function(id, db_data) {
+mod_header_message_server <- function(id, db_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     output$dynamic_messageMenu <- renderMenu({
-      req(db_data %>%
-        dplyr::tally() %>%
-        dplyr::pull(n) > 0)
+      req(data_exists)
 
       isolate({
         last_upload_date <- unique(dplyr::pull(db_data, last_upload_date)) %>% na.omit()

@@ -278,7 +278,7 @@ app_server <- function(input, output, session) {
 
   # modules----
   ## add information to dashboard header ----
-  mod_header_message_server("messageMenu", db_data)
+  mod_header_message_server("messageMenu", db_data, data_exists)
 
   ## combine ALL sub-modules----
   mod_patient_experience_server("patient_experience_ui_1")
@@ -303,7 +303,8 @@ app_server <- function(input, output, session) {
 
   mod_report_builder_server("report_builder_ui_1",
     filter_data = filter_data,
-    all_inputs = all_inputs
+    all_inputs = all_inputs,
+    data_exists = data_exists
   )
 
   mod_click_tables_server("click_tables_ui",
