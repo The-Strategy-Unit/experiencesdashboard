@@ -72,11 +72,16 @@ clean_dataframe <- function(data, comment_column) {
 #' Tidy data upload from users
 #'
 #' @param data dataframe, loaded within Shiny application
-#' @param conn connection, from existing {pool}
-#' @param trust_id string. Which trust are you tidying data for?
+#' @param conn connection, from existing {pool}. Can be `NULL` if `write_db = FALSE`
+#' @param trust_id string. Which trust are you uploading data for?
+#' @param write_db logical should the final data be written to the database or returned as a dataframe?
 #'
 #' @return boolean, indicating success or failure in upload
-upload_data <- function(data, conn, trust_id) {
+upload_data <- function(data, conn, trust_id, write_db = TRUE) {
+  
+  # throw error if for any reason the trust_id is not same a trust name
+  stopifnot('trust_id should be same as trust_name' = get_golem_config('trust_name') == trust_id)
+  
   if (trust_id == "demo_trust") {
     db_tidy <- data %>%
       dplyr::mutate(location_1 = sample(
@@ -109,9 +114,19 @@ upload_data <- function(data, conn, trust_id) {
     "extra_variable_1", "extra_variable_2", "extra_variable_3"
   )
 
-  # get the current maximum pt_id value in the database table
-  max_ptid <- DBI::dbGetQuery(conn, paste0("SELECT MAX(pt_id) FROM ", trust_id))$`MAX(pt_id)`
-  max_ptid <- if (!is.na(max_ptid)) max_ptid else 0 # when there is no data in the database
+  # get the Maximum ids from the database table if data needs to be written to database
+  if (write_db) {
+    # get the current maximum pt_id value in the database table
+    max_ptid <- DBI::dbGetQuery(conn, paste0("SELECT MAX(pt_id) FROM ", trust_id))$`MAX(pt_id)`
+    max_ptid <- if (!is.na(max_ptid)) max_ptid else 0 # when there is no data in the database
+
+    # get the current maximum comment_id value in the database table
+    max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(comment_id) FROM ", trust_id))$`MAX(comment_id)`
+    max_id <- if (!is.na(max_id)) max_id else 0 # when there is no data in the database
+  } else {
+    max_ptid <- 0
+    max_id <- 0
+  }
 
   db_tidy <- data %>%
     dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>%
@@ -172,10 +187,6 @@ upload_data <- function(data, conn, trust_id) {
     )
 
   print("Doing final data tidy")
-  # get the current maximum comment_id value in the database table
-  max_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(comment_id) FROM ", trust_id))$`MAX(comment_id)`
-  max_id <- if (!is.na(max_id)) max_id else 0 # when there is no data in the database
-
   # set the starting value for the auto-incremented comment_id
   # This will ensure that when we append the new data,
   # the comment_id values will be sequential and there will be no gaps.
@@ -192,11 +203,9 @@ upload_data <- function(data, conn, trust_id) {
     dplyr::group_by(comment_id, comment_type) %>%
     dplyr::summarise(
       across(-tidyselect::all_of(c("category", "super_category")), unique),
-      # across(c(category, super_category), \(x) list(unique(x))),
-      across(c(category, super_category), list)
+      across(c(category, super_category), list) # duplicate super category value is preserved. This will allow easy manipulation later. for ex. see get_tidy_filter_data()
     ) %>%
-    dplyr::ungroup() %>% # View()
-
+    dplyr::ungroup() %>%
     # convert the category and super category column to raw json before loading into the database
     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) %>%
     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, charToRaw)))
@@ -204,39 +213,19 @@ upload_data <- function(data, conn, trust_id) {
   # throw error if comment_id is not unique
   stopifnot("values in 'comment ID' should be unique" = final_df$comment_id %>% duplicated() %>% sum() == 0)
 
-  # write the processed data to database
-  cat("Just started appending ", nrow(final_df), " rows of data into database ... \n")
-  # DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
-  # this throw error when data can't be appended e.g when data column can't be coerce into the db table datatype
-  dplyr::rows_append(
-    dplyr::tbl(conn, trust_id),
-    final_df,
-    copy = TRUE,
-    in_place = TRUE
-  )
-  print("Done appending to database ...")
+  if (write_db) {
+    # write the processed data to database
+    cat("Just started appending ", nrow(final_df), " rows of data into database ... \n")
+    # DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
+    # this throw error when data can't be appended e.g when data column can't be coerce into the db table datatype
+    dplyr::rows_append(
+      dplyr::tbl(conn, trust_id),
+      final_df,
+      copy = TRUE,
+      in_place = TRUE
+    )
+    print("Done appending to database ...")
+  } else {
+    return(final_df)
+  }
 }
-
-# # test code
-#
-# library(tidyverse)
-#
-# pool <- odbc::dbConnect(
-#   drv = odbc::odbc(),
-#   driver = Sys.getenv("odbc_driver"),
-#   server = Sys.getenv("HOST_NAME"),
-#   UID = Sys.getenv("DB_USER"),
-#   PWD = Sys.getenv("MYSQL_PASSWORD"),
-#   database = "TEXT_MINING",
-#   Port = 3306
-# )
-#
-# DBI::dbReadTable(pool, 'trust_a_bk') %>% arrange(desc(comment_id)) %>% View('db b4')
-#
-# # load sample upload data
-#
-# df <- readr::read_csv("secret-data/p1_data_for_upload.csv",
-#                       show_col_types = FALSE) %>% head(15)
-#
-# # test the upload function
-# upload_data(data = df, conn = pool, trust_id = "trust_a_bk")

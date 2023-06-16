@@ -39,7 +39,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
       index = list(),
       selected_columns = c(
         "comment_id", "date", "location_1", "location_2", "location_3",
-        "comment_type", "comment_txt", "category", "super_category", "fft",
+        "comment_type", "comment_txt", "category", "super_category", "fft", "sex",
         "gender", "age", "ethnicity", "sexuality", "disability", "religion",
         "extra_variable_1", "extra_variable_2", "extra_variable_3",
         "pt_id"
@@ -56,6 +56,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         "category" = "Sub-Category",
         "super_category" = "Category",
         "fft" = "FFT Score",
+        "sex" = "Sex",
         "gender" = "Gender",
         "age" = "Age Group",
         "ethnicity" = "Ethnicity",
@@ -344,7 +345,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
       filename = paste0("pat_data-", Sys.Date(), ".xlsx"),
       content = function(file) {
         withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(dt_out$data, file)
+          writexl::write_xlsx(prepare_data_for_download(dt_out$data), file)
           incProgress(1)
         })
       }

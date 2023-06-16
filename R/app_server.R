@@ -5,36 +5,21 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  
   # decide which golem active config to use
-  cat('session group', session$groups, ' \n')
-  Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups, trust_name = 'trust_NUH'))
-  cat('trust name', get_golem_config("trust_name"), ' \n')
-  
+  # get value from session data if it hasn't been set before calling run app()
+  cat("Session group:", session$groups, " \n")
+  if (Sys.getenv("R_CONFIG_ACTIVE") == "rsconnect") {
+    Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups))
+  }
+  cat("Trust name:", get_golem_config("trust_name"), " \n")
+
   # Initialize the database connection
-  pool <- odbc::dbConnect(
-    drv = odbc::odbc(),
-    driver = Sys.getenv("odbc_driver"),
-    server = Sys.getenv("HOST_NAME"),
-    UID = Sys.getenv("DB_USER"),
-    PWD = Sys.getenv("MYSQL_PASSWORD"),
-    database = "TEXT_MINING",
-    Port = 3306
-  )
+  pool <- get_pool()
 
   # fetch  the data
-
-  db_data <- dplyr::tbl(
-    pool,
-    dbplyr::in_schema(
-      "TEXT_MINING",
-      get_golem_config("trust_name")
-    )
-  ) %>%
-    tidy_all_trusts()
+  db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
   # find out if there is data in the table
-
   data_exists <- db_data %>%
     dplyr::tally() %>%
     dplyr::pull(n) > 0
@@ -223,56 +208,25 @@ app_server <- function(input, output, session) {
       ))
     }
 
-    
+
 
     # filter 2: by selected Locations ----
-    
+
     return_data <- get_location_data(
       date_filter = date_filter(),
-      select_location_1 = input$select_location_1, 
-      select_location_2 = input$select_location_2, 
-      select_location_3 = input$select_location_3)
-    
-    # return_data <- date_filter()
-    # 
-    # if (isTruthy(input$select_location_1)) {
-    #   return_data <- return_data %>%
-    #     dplyr::filter(location_1 %in% !!input$select_location_1)
-    # }
-    # 
-    # if (isTruthy(input$select_location_2)) {
-    #   return_data <- return_data %>%
-    #     dplyr::filter(location_2 %in% !!input$select_location_2)
-    # }
-    # 
-    # if (isTruthy(input$select_location_3)) {
-    #   return_data <- return_data %>%
-    #     dplyr::filter(location_3 %in% !!input$select_location_3)
-    # }
+      select_location_1 = input$select_location_1,
+      select_location_2 = input$select_location_2,
+      select_location_3 = input$select_location_3
+    )
 
     # filter 2: by selected demographics ----
-    
-    demography_data <- get_demography_data(return_data = return_data, 
-                    select_demography_1 = demographic_filters()$select_demography_1,
-                    select_demography_2 = demographic_filters()$select_demography_2,
-                    select_demography_3 = demographic_filters()$select_demography_3)
-    
-    # demography_data <- return_data
-    # 
-    # if (isTruthy(demographic_filters()$select_demography_1)) {
-    #   demography_data <- demography_data %>%
-    #     dplyr::filter(!!rlang::sym(get_golem_config("demography_1")) %in% !!demographic_filters()$select_demography_1)
-    # }
-    # 
-    # if (isTruthy(demographic_filters()$select_demography_2)) {
-    #   demography_data <- demography_data %>%
-    #     dplyr::filter(!!rlang::sym(get_golem_config("demography_2")) %in% !!demographic_filters()$select_demography_2)
-    # }
-    # 
-    # if (isTruthy(demographic_filters()$select_demography_3)) {
-    #   demography_data <- demography_data %>%
-    #     dplyr::filter(!!rlang::sym(get_golem_config("demography_3")) %in% !!demographic_filters()$select_demography_3)
-    # }
+
+    demography_data <- get_demography_data(
+      return_data = return_data,
+      select_demography_1 = demographic_filters()$select_demography_1,
+      select_demography_2 = demographic_filters()$select_demography_2,
+      select_demography_3 = demographic_filters()$select_demography_3
+    )
 
     # get the number of patients in data filtered by demographics
     no_responders <- demography_data %>%
@@ -313,14 +267,6 @@ app_server <- function(input, output, session) {
 
     # return the data in single labelled form
     tidy_filter_data <- get_tidy_filter_data(return_data, data_exists)
-      
-    # if (data_exists) {
-    #   tidy_filter_data <- return_data %>%
-    #     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list
-    #     tidyr::unnest(cols = c(category, super_category)) # Unnest the category and super category columns into rows and columns
-    # } else {
-    #   tidy_filter_data <- return_data
-    # }
 
     return(list(
       "filter_data" = return_data,
@@ -332,7 +278,7 @@ app_server <- function(input, output, session) {
 
   # modules----
   ## add information to dashboard header ----
-  mod_header_message_server("messageMenu", db_data)
+  mod_header_message_server("messageMenu", db_data, data_exists)
 
   ## combine ALL sub-modules----
   mod_patient_experience_server("patient_experience_ui_1")
@@ -357,7 +303,8 @@ app_server <- function(input, output, session) {
 
   mod_report_builder_server("report_builder_ui_1",
     filter_data = filter_data,
-    all_inputs = all_inputs
+    all_inputs = all_inputs,
+    data_exists = data_exists
   )
 
   mod_click_tables_server("click_tables_ui",

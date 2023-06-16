@@ -7,7 +7,7 @@
 tidy_all_trusts(data)
 }
 \arguments{
-\item{data}{dataframe or SQL object, that you can make with get_px_exp()}
+\item{data}{dataframe or SQL object with comment column, comment_txt}
 }
 \description{
 Tidy patient experience data

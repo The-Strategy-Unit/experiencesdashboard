@@ -20,10 +20,12 @@ return_search_text(
 \item{comment_type_filter}{which comment to return- 1 or 2}
 
 \item{search_type}{type of search ('and', 'or')}
+
+\item{return_dataframe}{should the output be a dataframe or an html string}
 }
 \value{
 string vector of search terms, separated by <p>, </p> for
-display as raw HTML by Shiny
+display as raw HTML by Shiny or a dataframe
 }
 \description{
 combine search terms with OR and AND then return text from a specific

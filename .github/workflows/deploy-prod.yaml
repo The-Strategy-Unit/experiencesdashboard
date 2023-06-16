@@ -1,11 +1,11 @@
-name: "Dev Publish (dev)"
+name: "Connect Publish (prod)"
 on:
-  push:
-    branches: [development]
+  release:
+    types: [published]
 
 jobs:
-  connect-publish-dev:
-    name: "Dev Publish (dev)"
+  connect-publish-prod:
+    name: "Connect Publish (prod)"
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -17,6 +17,7 @@ jobs:
         with:
           use-public-rspm: true
       
+      # install dependency from DESCRIPTION file and some extra dependencies required to lunch to rsconnect
       - name: Install dependencies # install dependency from DESCRIPTION file and some extra dependencies required to lunch to rsconnect
         uses: r-lib/actions/setup-r-dependencies@v2 
         with:
@@ -30,7 +31,8 @@ jobs:
       - name: Update MASS
         shell: Rscript {0}
         run: pak::pkg_install("MASS@7.3-60")
-
+        
+        # file required by Connect for deploying content programmatically.
       - name: Generate manifest.json # file required by Connect for deploying content programmatically.
         run: Rscript dev/generate_manifest.R
 

@@ -65,6 +65,7 @@ check_match <- function(string, search_strings, search_fn) {
 #' @param search_strings list of strings with search terms in it
 #'
 #' @return list of logical values
+#' @export
 #'
 #' @examples
 #' matched_comments(
@@ -101,9 +102,10 @@ sanitized_search_strings <- function(filter_text) {
 #' @param filter_text comma separated string with search terms in
 #' @param comment_type_filter which comment to return- 1 or 2
 #' @param search_type type of search ('and', 'or')
-#' @export
+#' @param return_dataframe should the output be a dataframe or an html string
+#' 
 #' @return string vector of search terms, separated by <p>, </p> for
-#' display as raw HTML by Shiny
+#' display as raw HTML by Shiny or a dataframe
 #' @examples
 #' return_search_text(
 #'   text_data = data.frame(
@@ -117,6 +119,7 @@ sanitized_search_strings <- function(filter_text) {
 #'   comment_type_filter = "comment_1", search_type = "and",
 #'   return_dataframe = FALSE
 #' )
+#' @export
 return_search_text <- function(text_data, filter_text, comment_type_filter = NULL,
                                search_type = c("or", "and"), return_dataframe = TRUE) {
   # check argument is valid and choose the correct logical predicate

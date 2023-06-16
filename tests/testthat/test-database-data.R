@@ -1,11 +1,8 @@
 test_that("Global Databse Data pass all checks", {
   report <- data_validation_report()
 
-  db_data <- db_data %>%
-    dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) # unserialise the category data from json into list
-
   # data base data
-  db_data %>%
+  phase_2_db_data %>%
     data.validator::validate(name = "Verifying filter_data") %>%
     validate_if(has_all_names(
       "date", "location_1",
@@ -23,9 +20,8 @@ test_that("Global Databse Data pass all checks", {
     add_results(report)
 
   # the single row per category data
-  db_data %>%
-    tidyr::unnest(category) %>% # Unnest the category column into rows and columns
-    dplyr::mutate(super_category = assign_highlevel_categories(category)) %>%
+  phase_2_db_data %>%
+    get_tidy_filter_data(TRUE) %>%
     data.validator::validate(name = "Verifying Single row filter_data") %>%
     data.validator::validate_if(has_all_names(
       "date", "location_1",

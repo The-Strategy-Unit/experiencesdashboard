@@ -89,6 +89,7 @@ golem::add_utils( "overlap_plot_helpers" )
 golem::add_fct( "api_pred" , with_test = TRUE)
 golem::add_fct( "get_complex_comments", with_test = TRUE )
 golem::add_fct( "nhs_shiny_theme" )
+golem::add_fct( "app_server-helpers" ) 
 
 ## External resources
 ## Creates .js and .css files at inst/app/www
@@ -123,6 +124,17 @@ usethis::use_test( "report_functions" )
 usethis::use_test( "tidy_upload" )
 usethis::use_test( "database-data" )
 usethis::use_test( "fct_api_pred" )
+usethis::use_test( "app_config" )
+usethis::use_test( "filter_text" )
+usethis::use_test( "spc_functions" )
+usethis::use_test( "server-modules" )
+usethis::use_test( "demographic_graphs" )
+usethis::use_test( "fct_nhs_shiny_theme" )
+usethis::use_test( "fct_app_server-helpers" )
+usethis::use_test( "general_helpers" )
+usethis::use_test( "mod_data_management_fct_helper" )
+usethis::use_test( "app_server" )
+usethis::use_test( "app_ui" )
 
 # Documentation
 
