@@ -82,9 +82,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
 
     # dynamic ui part ----
     output$trendUI <- renderUI({
-      choices <- filter_data()$single_labeled_filter_data$super_category %>%
-        unique() %>%
-        na.omit()
+      choices <- get_unique_value(filter_data()$single_labeled_filter_data, "super_category")
 
       fluidRow(
         column(
@@ -101,7 +99,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
           6,
           numericInput(
             ns("min_size"),
-            label = h5(strong("Select Minimum Number of 
+            label = h5(strong("Select Minimum Number of
                               comments in Groups (defaults to 2):")),
             value = 2,
             min = 1,
@@ -115,9 +113,10 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
       )
 
     output$trendUI_2 <- renderUI({
-      # req(input$tabset_overlap == "overlap_comments")
-
-      choices <- c("", filter_data()$single_labeled_filter_data$category %>% unique() %>% na.omit() %>% sort())
+      choices <- c(
+        "",
+        get_unique_value(filter_data()$single_labeled_filter_data, "category")
+      )
 
       fluidRow(
         column(4, selectInput(
@@ -156,7 +155,12 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
     output$dynamic_overlap_table <- renderUI({
       validate(
         need(
-          check_cat_selection(c(input$select_category1, input$select_category2, input$select_category3)),
+          check_cat_selection(
+            c(
+              input$select_category1,
+              input$select_category2, input$select_category3
+            )
+          ),
           "Please select at least two distinct sub-categories to view comments"
         )
       )
@@ -190,32 +194,19 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
       get_unique_value("category"))
 
     filtered_categories <- reactive({
-      print(input$select_super_category)
-
       filter_data()$single_labeled_filter_data %>%
         dplyr::filter(super_category == input$select_super_category) %>%
         get_unique_value("category")
     })
 
     ## the upset plot ----
-    memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache) # create a session-level cacheable version of upset_plot()
-    output$category_upset <- renderImage(
+    # create a session-level cacheable version of upset_plot()
+    memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache)
+    output$category_upset <- renderPlot(
       {
         req(!is.null(input$select_super_category))
 
-        pixelratio <- session$clientData$pixelratio
-        width <- session$clientData$`output_trend_overlap_ui-category_upset_width`
-        height <- session$clientData$`output_trend_overlap_ui-category_upset_height`
-
         min_size <- if (is.numeric(input$min_size)) as.integer(input$min_size) else 1
-
-        # A temp file to save the output. This file will be removed later by renderImage
-        outfile <- tempfile(fileext = ".png")
-
-        png(outfile,
-          width = width * pixelratio, height = height * pixelratio,
-          res = 120 * pixelratio
-        )
 
         tryCatch(
           {
@@ -228,8 +219,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
                     "Upset plot showing relationship between",
                     input$select_super_category, " - Sub categories"
                   )
-                ) %>%
-                  print()
+                )
               },
               error = function(e) {
                 print(e)
@@ -244,7 +234,8 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
                   title = "Error!",
                   HTML(paste0(
                     p("There is no relationship in this selection"),
-                    strong("Default back to  All sub-categories with '2' Minimum Number of comments")
+                    strong("Default back to  All sub-categories
+                           with '2' Minimum Number of comments")
                   )),
                   easyClose = TRUE
                 ))
@@ -256,15 +247,11 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
             paste(p("Sorry, upset plot can't be shown"))
           }
         )
-        dev.off()
-        # Return a list containing the filename
-        list(
-          src = outfile,
-          contentType = "image/png",
-          alt = "Upset plot showing relationship between sub-categories" # This is alternate text
-        )
       },
-      deleteFile = TRUE
+      height = function() {
+        session$clientData$`output_trend_overlap_ui-category_upset_height` * session$clientData$pixelratio * 1.01
+      },
+      res = 100
     )
 
     ## Verbatim text table ----
@@ -278,11 +265,11 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
       return(prep_data_for_comment_table(data))
     })
 
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
+    # create a session-level cacheable version of comment_table()
+    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache)
     output$overlap_table <- DT::renderDT({
       # only run when at least 2 categories are selected
       req(length(global$selected_cats) > 1)
-
       memoised_comment_table(return_data())
     })
 
