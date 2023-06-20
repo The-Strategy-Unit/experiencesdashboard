@@ -1,6 +1,6 @@
 # select Trust
 Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_demo")
-# Sys.setenv("R_CONFIG_ACTIVE" = "trust_LPT")
+# Sys.setenv("R_CONFIG_ACTIVE" = "trust_NTH")
 
 # Set options here
 options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
