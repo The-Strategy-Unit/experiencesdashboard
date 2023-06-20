@@ -73,7 +73,7 @@ test_that("mod_data_management_server work correctly", {
     # act/assert
     expect_error(output$data_management_UI)
   })
-  
+
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   testServer(mod_data_management_server, args = list('db_conn',reactiveVal(), TRUE), {
     filter_data(
@@ -81,7 +81,7 @@ test_that("mod_data_management_server work correctly", {
         filter_data = phase_2_db_data |> head(100)
       )
     )
-    
+
     # act/assert
     expect_no_error(output$data_management_UI)
     expect_equal(nrow(dt_out$data), 100)
@@ -207,7 +207,7 @@ test_that("mod_demographics_server work correctly", {
 # mod_documentation_page_server ----
 test_that("mod_documentation_page_server work correctly", {
   # no data in the database
-  
+
   testServer(mod_documentation_page_server, {
     # act/assert
     expect_no_error(output$framework_table)
@@ -543,7 +543,7 @@ test_that("mod_search_text_server work correctly", {
     expect_error(output$comment_output)
     # expect_no_error(output$search_download_data)
   })
-  
+
   # arrange
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   testServer(mod_search_text_server, args = list(reactiveVal()), {
@@ -553,7 +553,7 @@ test_that("mod_search_text_server work correctly", {
       )
     )
     session$setInputs(text_search = 'good')
-    
+
     # act/assert
     expect_no_error(return_data())
     expect_no_error(output$comment_output)
@@ -568,7 +568,7 @@ test_that("mod_summary_server work correctly", {
     # act/assert
     expect_error(output$dynamic_summary)
   })
-  
+
   testServer(mod_summary_server, args = list(TRUE), {
     # act/assert
     expect_no_error(output$dynamic_summary)
@@ -592,5 +592,110 @@ test_that("mod_trend_server work correctly", {
     
     # act/assert
     expect_no_error(output$dynamic_trendUI)
+  })
+})
+
+# mod_trend_overlap_server ----
+test_that("mod_trend_overlap_server work correctly", {
+  # no data in the database
+  testServer(mod_trend_overlap_server, args = list(reactiveVal(), FALSE), {
+    # act/assert
+    expect_error(output$dynamic_trend_overlap)
+  })
+  
+  # data exist in the database
+  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
+    # act/assert
+    expect_no_error(output$dynamic_trend_overlap)
+    expect_no_error(output$dynamic_trend_overlap)
+  })
+})
+
+test_that("mod_trend_overlap_server work correctly: get_unique_value()", {
+  # arrange
+  m <- mock(c('a', 'b', 'c'))
+  stub(mod_trend_overlap_server, "get_unique_value", m)
+  
+  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
+    filter_data(
+      list(
+        single_labeled_filter_data = phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE)
+      )
+    )
+    
+    session$setInputs(select_super_category = NULL)
+    # act/assert
+    expect_called(m, 2)
+    
+    expect_args(m, 1, phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE), "super_category")
+    expect_args(m, 2, phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE), "category")
+  })
+  
+  # arrange
+  m2 <- mock(c('a', 'b', 'c'))
+  stub(mod_trend_overlap_server, "get_unique_value", m2)
+  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
+    filter_data(
+      list(
+        single_labeled_filter_data = phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE)
+      )
+    )
+
+    session$setInputs(select_super_category = 'Staff')
+    # act/assert
+    expect_called(m2, 4)
+  })
+})
+
+test_that("mod_trend_overlap_server initialise top level selectors correctly", {
+  
+  m <- mock(c('a', 'b', 'c'))
+  stub(mod_trend_overlap_server, "get_unique_value", m)
+  
+  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
+    expect_no_error(output$trendUI)
+  })
+})
+
+test_that("mod_trend_overlap_server works correctly when given some inputs", {
+  
+  # m <- mock(c('a', 'b', 'c'))
+  # stub(mod_trend_overlap_server, "get_unique_value", m)
+  
+  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
+  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
+    filter_data(
+      list(
+        single_labeled_filter_data = phase_2_db_data |> head(100) |> 
+          get_tidy_filter_data(TRUE)
+      )
+    )
+    
+    session$setInputs(
+      select_super_category = 'General'
+    )
+    
+    session$setInputs(
+      select_category1 = NULL,
+      select_category2 = 'Parking',
+      select_category3 = "Admission",
+      min_size = 1
+    )
+    
+    expect_no_error(output$dynamic_select_category_ui)
+    expect_no_error(output$trendUI_2)
+    
+    # the upset plot contents are working
+    expect_equal(nrow(upset_data()), 120)
+    expect_equal(length(all_categories()), 26)
+    expect_equal(length(filtered_categories()), 3)
+    expect_no_error(output$category_upset)
+    
+    # the comment table content works well
+    expect_no_error(output$category_upset)
+    expect_equal(nrow(return_data()),0)
+    expect_error(output$download_data_ui)
+    expect_no_error(output$overlap_table)
+    expect_no_error(output$overlap_download_data)
   })
 })

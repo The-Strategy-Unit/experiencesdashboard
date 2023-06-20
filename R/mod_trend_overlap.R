@@ -70,7 +70,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
                 hr(),
                 uiOutput(ns("trendUI_2")),
                 hr(),
-                uiOutput(ns("dynamic_overlap_table")),
+                uiOutput(ns("dynamic_select_category_ui")),
                 uiOutput(ns("download_data_ui")),
                 DT::DTOutput(ns("overlap_table"))
               )
@@ -152,13 +152,14 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
     })
 
     # overlap tab UI ----
-    output$dynamic_overlap_table <- renderUI({
+    output$dynamic_select_category_ui <- renderUI({
       validate(
         need(
           check_cat_selection(
             c(
               input$select_category1,
-              input$select_category2, input$select_category3
+              input$select_category2, 
+              input$select_category3
             )
           ),
           "Please select at least two distinct sub-categories to view comments"
@@ -198,7 +199,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
         dplyr::filter(super_category == input$select_super_category) %>%
         get_unique_value("category")
     })
-
+    
     ## the upset plot ----
     # create a session-level cacheable version of upset_plot()
     memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache)
