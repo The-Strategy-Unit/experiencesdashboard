@@ -66,7 +66,7 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
       calculated_table <- calculatedTable()
 
       DT::datatable(calculated_table,
-        colnames = c("Super Category", "No. of comments", "% contribution"),
+        colnames = c("Sub Category", "No. of comments", "% contribution"),
         selection = "single",
         rownames = FALSE,
         extensions = "Buttons",
