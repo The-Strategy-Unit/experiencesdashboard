@@ -383,7 +383,7 @@ test_that("mod_patient_experience_server work correctly", {
     expect_called(m, 1)
     expect_called(m2, 1)
     expect_called(m3, 1)
-    expect_called(m4, 1)
+    expect_called(m4, 0)
     expect_called(m5, 1)
     expect_called(m6, 1)
     expect_called(m7, 1)

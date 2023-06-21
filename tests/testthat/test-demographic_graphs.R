@@ -1,7 +1,7 @@
 test_that("demographic_distribution functions works", {
   result <- unique_data %>%
     demographic_distribution(variable = "age")
-  expect_true(inherits(result, "ggplot"))
+  expect_true(inherits(result, "plotly"))
 })
 
 test_that("compare_demographics functions works", {
