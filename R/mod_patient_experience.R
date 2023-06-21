@@ -45,17 +45,17 @@ mod_patient_experience_server <- function(id) {
         )
       )
 
-      # Theme Trend and overlap tab
-
-      ui_list <- c(
-        ui_list,
-        list(
-          tabPanel(
-            "Inter-relationship between sub-categories",
-            mod_trend_overlap_ui("trend_overlap_ui")
-          )
-        )
-      )
+      # # Theme Trend and overlap tab
+      # 
+      # ui_list <- c(
+      #   ui_list,
+      #   list(
+      #     tabPanel(
+      #       "Inter-relationship between sub-categories",
+      #       mod_trend_overlap_ui("trend_overlap_ui")
+      #     )
+      #   )
+      # )
 
       # Theme categories
 
