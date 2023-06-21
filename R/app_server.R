@@ -5,9 +5,10 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  # decide which golem active config to use
-  # get value from session data if it hasn't been set before calling run app()
-  cat("Session group:", session$groups, " \n")
+  
+  # Get R_CONFIG_ACTIVE from session data of Connect environment
+  # if it hasn't been set before calling run_app()
+  cat("Session group on Connect:", session$groups, " \n")
   if (Sys.getenv("R_CONFIG_ACTIVE") == "rsconnect") {
     Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups))
   }

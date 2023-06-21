@@ -27,14 +27,14 @@ mod_patient_experience_server <- function(id) {
 
         # documentation tab
         tabPanel(
-          "Data Categorisation Framework",
+          "Data categorisation framework",
           mod_documentation_page_ui("documentation_page")
         ),
 
         # Data management tab
 
         tabPanel(
-          "Data Upload and Management",
+          "Data upload and management",
           mod_data_management_ui("data_management_1")
         ),
 
@@ -45,17 +45,17 @@ mod_patient_experience_server <- function(id) {
         )
       )
 
-      # Theme Trend and overlap tab
-
-      ui_list <- c(
-        ui_list,
-        list(
-          tabPanel(
-            "Inter-relationship between Sub-category ",
-            mod_trend_overlap_ui("trend_overlap_ui")
-          )
-        )
-      )
+      # # Theme Trend and overlap tab
+      # 
+      # ui_list <- c(
+      #   ui_list,
+      #   list(
+      #     tabPanel(
+      #       "Inter-relationship between sub-categories",
+      #       mod_trend_overlap_ui("trend_overlap_ui")
+      #     )
+      #   )
+      # )
 
       # Theme categories
 
@@ -103,7 +103,7 @@ mod_patient_experience_server <- function(id) {
         ui_list,
         list(
           tabPanel(
-            "Summary/Report Builder",
+            "Summary/Report builder",
             mod_summary_ui("summary_ui_1")
           )
         )

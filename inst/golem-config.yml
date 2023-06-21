@@ -132,3 +132,14 @@ trust_GOSH:
   demography_1: disability
   demography_2: religion
   demography_3: ethnicity
+trust_NTH:
+  trust_name: trust_NTH
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Directorate
+  location_3: Team
+  demography_1: age
+  demography_2: sex
+  demography_3: gender

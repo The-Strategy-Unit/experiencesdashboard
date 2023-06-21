@@ -98,7 +98,7 @@ header_links <- function() {
 #'
 #' @return list, unique values in the demographic feature
 #' @noRd
-get_demographic_choices <- function(unique_data, demographic_feature){
+get_demographic_choices <- function(unique_data, demographic_feature) {
   unique_data %>%
     dplyr::filter(
       !is.na(demographic_feature),
@@ -140,9 +140,9 @@ single_to_multi_label <- function(sl_data) {
     dplyr::ungroup() %>%
     dplyr::arrange(date) %>%
     dplyr::mutate(across(c(category, super_category), ~ lapply(.x, to_string))) # for user friendly print
-  
+
   stopifnot("values in 'comment ID' should be unique" = mt_data$comment_id %>% duplicated() %>% sum() == 0)
-  
+
   return(mt_data)
 }
 
@@ -160,12 +160,12 @@ add_theme_nhs <- function() {
       size = 14,
       margin = ggplot2::margin(9, 0, 9, 0)
     ),
-    
+
     # For facets, set the title to be larger than other text and left-justified
     # and the panel background to white
     strip.text = ggplot2::element_text(size = 16),
     strip.background = ggplot2::element_rect(fill = "white"),
-    
+
     # Set the legend to be aligned at the bottom with no title and background
     # Note: the legend may need manual tweaking based on plot coordinates
     # legend.title = ggplot2::element_blank(),
@@ -173,17 +173,17 @@ add_theme_nhs <- function() {
     legend.background = ggplot2::element_blank(),
     legend.key = ggplot2::element_blank(),
     legend.position = "bottom",
-    
-    
+
+
     # Remove all minor gridlines and add major y gridlines
     panel.grid.minor = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_line(color = "#E8EDEE"),
     panel.grid.major.x = ggplot2::element_blank(),
-    
+
     # Set the panel background to be blank
     panel.background = ggplot2::element_blank(),
-    
-    
+
+
     # Set the axis to have to have no lines or ticks with a small
     # margin on the x axis
     axis.ticks = ggplot2::element_blank(),
@@ -195,11 +195,26 @@ add_theme_nhs <- function() {
   )
 }
 
+#' find the unique (non-null) value from a dataframe column
+#'
+#' @param data Dataframe. The dataframe
+#' @param column String. The column name
+#' @return list 
+#' @noRd
+get_unique_value <- function(data, column) {
+  data[, column] %>%
+    unique() %>%
+    na.omit() %>%
+    dplyr::pull() %>%
+    sort()
+}
+
 #' Draw upset plot
 #'
-#' @param upset_data  a dataframe with each column representing a membership in the class. values are
-#'                    1 - if the row is a member of the class or 0 if otherwise
-#' @param intersect columns containing the classes i.e. names of the categories to show (Ex: c("staff manner", "staff attitude"))
+#' @param upset_data  a dataframe with each column representing a membership in the class. 
+#' values are 1 - if the row is a member of the class or 0 if otherwise
+#' @param intersect columns containing the classes i.e. names of the categories to show
+#' (Ex: c("staff manner", "staff attitude"))
 #' @param min_size minimal number of observations in an intersection for it to be included
 #' @param title title of the plot
 #' @param ...
@@ -207,90 +222,92 @@ add_theme_nhs <- function() {
 #' @return a plot of upset object (not a ggplot object)
 #' @noRd
 upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
-  label_size <- 8
-  group_text_size <- 7
-  
+  label_size <- 10
+  group_text_size <- 9
+
   ComplexUpset::upset(upset_data, intersect,
-                      min_size = min_size, # minimum number of observation in a group for the group to be shown (intersection size)
-                      width_ratio = 0.1,
-                      height_ratio = 1.6, # height of intersection matrix to the intersection plot
-                      min_degree = 2, # show intersections with at least 2 groups
-                      # n_intersections = 40, # the max number of the intersections (bars) to be displayed;
-                      name = "Groups",
-                      
-                      # Manipulate the set size plot
-                      
-                      set_sizes = (
-                        ComplexUpset::upset_set_size(
-                          geom = ggplot2::geom_bar(fill = "#005EB8"),
-                          position = "right",
-                          filter_intersections = TRUE
-                        ) +
-                          # display the count text
-                          # ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
-                          #                    hjust = -0.2, stat = "count"
-                          # ) +
-                          ggplot2::ylab("No. of comments") +
-                          ggplot2::theme(
-                            axis.text.x = ggplot2::element_text(angle = 0),
-                            text = ggplot2::element_text(size = label_size)
-                          )
-                      ),
-                      
-                      # set_sizes=FALSE,    # or hide the set size
-                      
-                      # Manipulate the intersection matrix color
-                      
-                      stripes = ComplexUpset::upset_stripes(
-                        geom = ggplot2::geom_segment(linewidth = 1.8),
-                        # color = "white"
-                      ),
-                      encode_sets = FALSE, # for annotate() to select the set by name disable encoding
-                      #
-                      matrix = (
-                        ComplexUpset::intersection_matrix(
-                          geom = ggplot2::geom_point(size = 1.6),
-                          outline_color = list(active = "#000000", inactive = "grey70")
-                        )
-                      ),
-                      
-                      # stripes='white',
-                      
-                      # Add plots (panels) to the upper part of the intersection matrix
-                      
-                      base_annotations = list(
-                        
-                        # Manipulate the set size plot
-                        "Intersection size" = ComplexUpset::intersection_size(
-                          # Any parameter supported by geom_text can be passed in text list
-                          text = list(vjust = -0.3, size = 2.3),
-                          fill = "#005EB8"
-                          # counts=FALSE, # uncheck to remove the count text
-                        ) +
-                          ggplot2::theme(
-                            panel.grid.minor = ggplot2::element_blank(),
-                            panel.grid.major.x = ggplot2::element_blank(),
-                            text = ggplot2::element_text(size = label_size)
-                          ) +
-                          ggplot2::ylab("No. of comments")
-                      ),
-                      themes = ComplexUpset::upset_modify_themes(
-                        list(
-                          "intersections_matrix" = ggplot2::theme(
-                            axis.text.y = ggplot2::element_text(size = group_text_size)
-                          )
-                        )
-                      ),
-                      wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
+    min_size = min_size, # minimum number of observation in a group for the group to be shown (intersection size)
+    width_ratio = 0.1,
+    height_ratio = 1.6, # height of intersection matrix to the intersection plot
+    min_degree = 2, # show intersections with at least 2 groups
+    # n_intersections = 30, # the exact number of the intersections (bars) to display;
+
+    name = "Groups",
+
+    # Manipulate the set size plot
+
+    set_sizes = (
+      ComplexUpset::upset_set_size(
+        geom = ggplot2::geom_bar(fill = "#005EB8"),
+        position = "right",
+        filter_intersections = TRUE
+      ) +
+        # display the count text
+        # ggplot2::geom_text(ggplot2::aes(label = ggplot2::after_stat(count)),
+        #                    hjust = -0.2, stat = "count"
+        # ) +
+        ggplot2::ylab("No. of comments") +
+        ggplot2::theme(
+          axis.text.x = ggplot2::element_text(angle = 0),
+          text = ggplot2::element_text(size = label_size)
+        )
+    ),
+
+    # set_sizes=FALSE,    # or hide the set size
+
+    # Manipulate the intersection matrix color
+
+    stripes = ComplexUpset::upset_stripes(
+      geom = ggplot2::geom_segment(linewidth = 1.5),
+      # color = "white"
+    ),
+    encode_sets = FALSE, # for annotate() to select the set by name disable encoding
+    #
+    matrix = (
+      ComplexUpset::intersection_matrix(
+        geom = ggplot2::geom_point(size = 2),
+        outline_color = list(active = "#000000", inactive = "grey70")
+      )
+    ),
+
+    # stripes='white',
+
+    # Add plots (panels) to the upper part of the intersection matrix
+
+    base_annotations = list(
+
+      # Manipulate the set size plot
+      "Intersection size" = ComplexUpset::intersection_size(
+        # Any parameter supported by geom_text can be passed in text list
+        text = list(vjust = -0.3, size = 3),
+        fill = "#005EB8"
+        # counts=FALSE, # uncheck to remove the count text
+      ) +
+        ggplot2::theme(
+          panel.grid.minor = ggplot2::element_blank(),
+          panel.grid.major.x = ggplot2::element_blank(),
+          text = ggplot2::element_text(size = label_size)
+        ) +
+        ggplot2::ylab("No. of comments")
+    ),
+    themes = ComplexUpset::upset_modify_themes(
+      list(
+        "intersections_matrix" = ggplot2::theme(
+          axis.text.y = ggplot2::element_text(size = group_text_size)
+        )
+      )
+    ),
+    wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
   ) +
     ggplot2::ggtitle(title) +
-    ggplot2::theme(text = ggplot2::element_text(size = 7))
+    ggplot2::theme(text = ggplot2::element_text(size = 9))
 }
 
 #' one hot encode a single column while still keeping other columns
 #'
 #' @param df dataframe to encode.
-#' @param column column of interests. Other columns combined must uniquely identify each row (best is unique row_id is present).
+#' @param column column of interests. Other columns combined must uniquely 
+#' identify each row (best is unique row_id is present).
 #'
 #' @return dataframe
 #' @noRd
@@ -319,38 +336,38 @@ one_hot_labels <- function(df, column) {
 #' @noRd
 prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   data <- comment_data
-  
+
   if (in_tidy_format) {
     data <- data %>%
       single_to_multi_label()
   }
-  
+
   stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = data$comment_id %>% duplicated() %>% sum() == 0)
-  
+
   data <- data %>%
     dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
     dplyr::mutate(
-      across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
+      dplyr::across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = FALSE))
     ) %>%
     dplyr::mutate(
       comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
     ) %>%
     dplyr::arrange(date)
-  
+
   if (isTruthy(get_golem_config("comment_2"))) {
     data <- data %>%
       dplyr::mutate(
         comment_type = stringr::str_replace_all(comment_type, "comment_2", get_golem_config("comment_2"))
       )
   }
-  
+
   colnames(data) <- c(
     "Date", "FFT Question", "FFT Score",
     "FFT Answer", "Sub-Category", "Category"
   )
-  
+
   print(nrow(data)) # for debugging
-  
+
   return(data)
 }
 
@@ -362,12 +379,12 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
 #' @noRd
 comment_table <- function(data) {
   # add NHS blue color to the table header
-  initComplete <- DT::JS(
+  initcomplete <- DT::JS(
     "function(settings, json) {",
     "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
     "}"
   )
-  
+
   return(
     DT::datatable(
       data,
@@ -377,7 +394,7 @@ comment_table <- function(data) {
         buttons = c("csv", "excel", "pdf"),
         # autoWidth = TRUE,            # required for width option for columns to  work
         # columnDefs = list(list(width = '500px', targets = c(3))),
-        initComplete = initComplete,
+        initComplete = initcomplete,
         pageLength = 50,
         scrollX = TRUE,
         selection = "single"
@@ -401,10 +418,10 @@ comment_table <- function(data) {
 assign_highlevel_categories <- function(sub_cats) {
   sapply(sub_cats, function(v) {
     hl_cat <- framework %>%
-      dplyr::filter(`Sub-category` == v) %>% # View()
+      dplyr::filter(`Sub-category` == v) %>%
       dplyr::pull(Category)
     return(if (length(hl_cat) != 0) hl_cat else "Other Category")
   },
-  simplify = TRUE, USE.NAMES = F
+  simplify = TRUE, USE.NAMES = FALSE
   )
 }

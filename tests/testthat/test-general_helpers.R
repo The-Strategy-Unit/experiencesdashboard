@@ -66,3 +66,8 @@ test_that("upset_plot works", {
   )
   expect_true(inherits(plot, "ggplot"))
 })
+
+test_that("get_unique_value works", {
+  phase_2_db_data %>%  head() %>% get_unique_value('sex') %>%  expect_no_error()
+  phase_2_db_data %>%  head() %>% get_unique_value('date') %>%  expect_no_error()
+})

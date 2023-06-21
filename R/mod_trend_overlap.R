@@ -22,17 +22,6 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    global <- reactiveValues(selected_cat1 = NULL, selected_cat2 = NULL, selected_cats = NULL)
-
-    # an internal function to check user selected categories
-
-    check_cat_selection <- function(selected_list) {
-      selected_list <- selected_list[selected_list != ""]
-      selected_list <- unique(selected_list)
-
-      return(length(selected_list) > 1)
-    }
-
     # Super UI ----
     output$dynamic_trend_overlap <- renderUI({
       validate(
@@ -42,39 +31,32 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
       fluidPage(
         fluidRow(
           uiOutput(ns("trendUI")),
+          column(
+            6,
+            numericInput(
+              ns("min_size"),
+              label = h5(strong("Select minimum number of
+                              comments in groups (defaults to 2):")),
+              value = 2,
+              min = 1,
+              max = 3000
+            )
+          ),
           br()
         ),
         tabsetPanel(
           id = ns("tabset_overlap"),
           type = "tabs",
 
-          # A upset plot tab UI ----
-
-          tabPanel("Visualise relationship between Sub-Categories",
-            value = "overlap_plot",
-            p("This plot is meant to aid users to explore the relationships between the sub-categories.
-              Please go to the 'Overlapping comments' tab to see the actual comments"),
-            br(),
-            plotOutput(ns("category_upset")) %>%
-              shinycssloaders::withSpinner()
+          # Within Categories UI ----
+          tabPanel("Within a category",
+            value = "tab_within_categories",
+            uiOutput(ns("within_categories_ui"))
           ),
-
-          # A comment table ui ----
-
-          tabPanel("Overlapping comments",
-            value = "overlap_comments",
-            br(),
-            fluidRow(
-              column(
-                12,
-                hr(),
-                uiOutput(ns("trendUI_2")),
-                hr(),
-                uiOutput(ns("dynamic_overlap_table")),
-                uiOutput(ns("trendUI_3")),
-                DT::DTOutput(ns("overlap_table"))
-              )
-            )
+          # Across Categories UI ----
+          tabPanel("Across all categories",
+            value = "tab_across_categories",
+            uiOutput(ns("across_categories_ui"))
           )
         )
       )
@@ -82,228 +64,52 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
 
     # dynamic ui part ----
     output$trendUI <- renderUI({
-      choices <- filter_data()$single_labeled_filter_data$super_category %>%
-        unique() %>%
-        na.omit()
+      req(input$tabset_overlap != "tab_across_categories")
 
-      if (input$tabset_overlap == "overlap_plot") {
-        fluidRow(
-          column(
-            6,
-            selectInput(
-              session$ns("select_super_category"),
-              label = h5(strong("Select a Category to see its Sub-categories relationships (defaults to first category):")),
-              choices = choices,
-              selected = choices[1]
-            )
-          ),
-          column(
-            6,
-            numericInput(
-              ns("min_size"),
-              label = h5(strong("Select Minimum Number of comments in Groups (defaults to 2):")),
-              value = 2,
-              min = 1,
-              max = 3000
-            )
-          )
-        )
-      }
-    }) %>%
-      bindCache(filter_data()$single_labeled_filter_data$super_category)
+      choices <- get_unique_value(filter_data()$single_labeled_filter_data, "super_category")
 
-    output$trendUI_2 <- renderUI({
-      req(input$tabset_overlap == "overlap_comments")
-
-      choices <- c("", filter_data()$single_labeled_filter_data$category %>% unique() %>% na.omit() %>% sort())
-
-      fluidRow(
-        column(4, selectInput(
-          session$ns("select_category1"),
-          label = h5(strong("Select Sub-category")),
+      column(
+        6,
+        selectInput(
+          session$ns("select_super_category"),
+          label = h5(strong("Select a Category to see its Sub-categories
+                              relationships (defaults to first category):")),
           choices = choices,
-        )),
-        column(
-          4,
-          selectInput(
-            session$ns("select_category2"),
-            label = h5(strong("Select Sub-category")),
-            choices = choices,
-          )
-        ),
-        column(
-          4,
-          selectInput(
-            session$ns("select_category3"),
-            label = h5(strong("Select Sub-category")),
-            choices = choices,
-          )
-        ),
-      )
-    })
-
-
-    output$trendUI_3 <- renderUI({
-      req(nrow(return_data()) > 0)
-
-      downloadButton(ns("overlap_download_data"), "Download data",
-        icon = icon("download")
-      )
-    })
-
-    # overlap tab UI ----
-    output$dynamic_overlap_table <- renderUI({
-      validate(
-        need(
-          check_cat_selection(c(input$select_category1, input$select_category2, input$select_category3)),
-          "Please select at least two distinct sub-categories to view comments"
+          selected = choices[1]
         )
       )
-
-      selected_cat1 <- input$select_category1
-      selected_cat2 <- input$select_category2
-      selected_cat3 <- input$select_category3
-
-      selected_cats <- unique(c(selected_cat1, selected_cat2, selected_cat3))
-
-      global$selected_cats <- selected_cats[selected_cats != ""]
-
-      if (length(global$selected_cats) > 1) {
-        tagList(
-          paste(toupper(c(global$selected_cats)), collapse = " | "),
-          hr()
-        )
-      }
-    })
-
-
-    # tab 2 server codes - the overlapping plot / upset plot ----
-    upset_data <- reactive({
-      filter_data()$single_labeled_filter_data %>%
-        dplyr::rename(value = category) %>%
-        one_hot_labels(column = "value") # apply one hot encoding to the single label column
     }) %>%
-      bindCache(filter_data()$single_labeled_filter_data)
+      bindCache(
+        filter_data()$single_labeled_filter_data$super_category,
+        input$tabset_overlap
+      )
 
-    ## the upset plot ----
-    memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache) # create a session-level cacheable version of upset_plot()
-    output$category_upset <- renderImage(
-      {
-        req(!is.null(input$select_super_category))
+    output$within_categories_ui <- renderUI({
+      input_select_super_category <- input$select_super_category
+      input_min_size <- input$min_size
 
-        pixelratio <- session$clientData$pixelratio
-        width <- session$clientData$`output_trend_overlap_ui-category_upset_width`
-        height <- session$clientData$`output_trend_overlap_ui-category_upset_height`
+      mod_overlap_1_server(
+        ns("overlap_UI"), filter_data,
+        input_select_super_category, input_min_size
+      )
+    }) %>%
+      bindCache(
+        filter_data()$single_labeled_filter_data,
+        input$select_super_category,
+        input$min_size
+      )
 
-        all_categories <- filter_data()$single_labeled_filter_data %>%
-          dplyr::pull(category) %>%
-          unique() %>%
-          na.omit() %>%
-          sort()
+    output$across_categories_ui <- renderUI({
+      input_min_size <- input$min_size
 
-        filtered_categories <- filter_data()$single_labeled_filter_data %>%
-          dplyr::filter(super_category == input$select_super_category) %>%
-          dplyr::pull(category) %>%
-          unique() %>%
-          na.omit() %>%
-          sort()
-
-
-        min_size <- if (is.numeric(input$min_size)) input$min_size else 1
-
-        # A temp file to save the output. This file will be removed later by renderImage
-        # outfile <- tempfile(tmpdir = here::here(app_sys(), "app/www"), fileext='.png')
-        outfile <- tempfile(fileext = ".png")
-
-        png(outfile,
-          width = width * pixelratio, height = height * pixelratio * 1.3,
-          res = 120 * pixelratio
-        )
-
-        tryCatch(
-          {
-            tryCatch(
-              {
-                memoised_upset_plot(upset_data(),
-                  intersect = filtered_categories,
-                  min_size = as.integer(min_size),
-                  title = paste(
-                    "Upset plot showing relationship between",
-                    input$select_super_category, " - Sub categories"
-                  )
-                ) %>%
-                  print()
-              },
-              error = function(e) {
-                print(e)
-                memoised_upset_plot(upset_data(),
-                  intersect = all_categories,
-                  min_size = 2,
-                  title = "Upset plot showing relationship between All Sub-categories"
-                ) %>%
-                  print()
-
-                showModal(modalDialog(
-                  title = "Error!",
-                  HTML(paste0(
-                    p("There is no relationship in this selection"),
-                    strong("Default back to  All sub-categories with '2' Minimum Number of comments")
-                  )),
-                  easyClose = TRUE
-                ))
-              }
-            )
-          },
-          error = function(e) {
-            print(e)
-            showModal(modalDialog(
-              title = "Error!",
-              HTML(paste0(p("Sorry, this plot can't be plotted"))),
-              easyClose = TRUE
-            ))
-          }
-        )
-        dev.off()
-        # Return a list containing the filename
-        list(
-          src = outfile,
-          contentType = "image/png",
-          alt = "Upset plot showing relationship between sub-categories" # This is alternate text
-        )
-      },
-      deleteFile = TRUE
-    )
-
-    ## Verbatim text table ----
-    return_data <- reactive({
-      # only run when at least 2 categories are selected
-      req(length(global$selected_cats) > 1)
-
-      data <- filter_data()$single_labeled_filter_data %>%
-        relationship_table("category", na.omit(global$selected_cats))
-
-      return(prep_data_for_comment_table(data))
-    })
-
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
-    output$overlap_table <- DT::renderDT({
-      # only run when at least 2 categories are selected
-      req(length(global$selected_cats) > 1)
-
-      # filter_data()$single_labeled_filter_data %>%
-      #   relationship_table("category", na.omit(global$selected_cats)) %>%
-      memoised_comment_table(return_data())
-    })
-
-    # Download the data ####
-    output$overlap_download_data <- downloadHandler(
-      filename = paste0("sub-category relatioship-", Sys.Date(), ".xlsx"),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data(), file)
-          incProgress(1)
-        })
-      }
-    )
+      mod_overlap_1_server(
+        ns("overlap_1_UI"), filter_data,
+        NULL, input_min_size
+      )
+    })  %>%
+      bindCache(
+        filter_data()$single_labeled_filter_data,
+        input$min_size
+      )
   })
 }

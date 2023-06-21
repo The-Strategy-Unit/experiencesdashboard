@@ -35,7 +35,13 @@ compare_demographics <- function(pass_data, variable, score_column = list("fft")
 
   p %>%
     plotly::ggplotly(tooltip = c(variable, "value")) %>%
-    plotly::config(displayModeBar = FALSE)
+    plotly::config(
+      displaylogo = FALSE,
+      modeBarButtons = list(list("toImage")),
+      toImageButtonOptions = list(
+        format = "png"
+      )
+    )
 }
 
 #' Draw the distribution of demographics in the sample
@@ -45,7 +51,7 @@ compare_demographics <- function(pass_data, variable, score_column = list("fft")
 #' @return a ggplot2 graph
 #' @export
 demographic_distribution <- function(pass_data, variable) {
-  pass_data %>%
+  p <- pass_data %>%
     dplyr::count(.data[[variable]]) %>%
     dplyr::mutate(across(
       all_of(variable),
@@ -59,5 +65,15 @@ demographic_distribution <- function(pass_data, variable) {
       legend.position = "none",
       axis.title = ggplot2::element_text(size = 12),
       axis.text = ggplot2::element_text(size = 11),
+    )
+  
+  p %>%
+    plotly::ggplotly(tooltip = c(variable, "n")) %>%
+    plotly::config(
+      displaylogo = FALSE,
+      modeBarButtons = list(list("toImage")),
+      toImageButtonOptions = list(
+        format = "png"
+      )
     )
 }

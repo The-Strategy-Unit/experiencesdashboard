@@ -80,6 +80,7 @@ golem::add_module( name = "demographics_selection" ) # Name of the module
 golem::add_module( name = "documentation_page" ) # Name of the module
 golem::add_module( name = "trend", utils = 'helper') # Name of the module
 golem::add_module( name = "header_message" ) # Name of the module
+golem::add_module( name = "overlap_1" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
