@@ -1,5 +1,5 @@
-# mod_click_tables_server ----
-## test 1 ----
+# mod_click_tables_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## test 1 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_click_tables_server set's up calculate_table_data correctly and empty filter data throw error", {
   # arrange
   m <- mock("calculate_table_data")
@@ -20,7 +20,7 @@ test_that("mod_click_tables_server set's up calculate_table_data correctly and e
   })
 })
 
-## test 2 ----
+## test 2 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_click_tables_server set's up sub-category datatable and dynamic_click_tableUI correctly", {
   # arrange
   m <- mock(phase_2_db_data)
@@ -41,7 +41,7 @@ test_that("mod_click_tables_server set's up sub-category datatable and dynamic_c
   })
 })
 
-## test 3 ----
+## test 3 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_click_tables_server works correctly", {
   # arrange
   m <- mock("prep_data_for_comment_table")
@@ -66,16 +66,16 @@ test_that("mod_click_tables_server works correctly", {
   })
 })
 
-# mod_data_management_server ----
+# mod_data_management_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_data_management_server work correctly", {
   # no data in the database
-  testServer(mod_data_management_server, args = list('db_conn', reactiveVal(), FALSE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), FALSE), {
     # act/assert
     expect_error(output$data_management_UI)
   })
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-  testServer(mod_data_management_server, args = list('db_conn',reactiveVal(), TRUE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), TRUE), {
     filter_data(
       list(
         filter_data = phase_2_db_data |> head(100)
@@ -86,15 +86,15 @@ test_that("mod_data_management_server work correctly", {
     expect_no_error(output$data_management_UI)
     expect_equal(nrow(dt_out$data), 100)
     expect_equal(ncol(dt_out$data), 18)
-    expect_equal(class(dt_out$data$category), 'list')
+    expect_equal(class(dt_out$data$category), "list")
     expect_snapshot(output$pat_table)
-    expect_equal(class(proxy), 'dataTableProxy')
-    expect_true(inherits(dt_out$complex_comments, 'data.frame'))
+    expect_equal(class(proxy), "dataTableProxy")
+    expect_true(inherits(dt_out$complex_comments, "data.frame"))
   })
 })
 
-# mod_demographics_selection_server ----
-## test 1 ----
+# mod_demographics_selection_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## test 1 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_demographics_selection_server work correctly: no data in database", {
   # arrange
   testServer(mod_demographics_selection_server, args = list(reactiveVal(), FALSE), {
@@ -104,7 +104,7 @@ test_that("mod_demographics_selection_server work correctly: no data in database
   })
 })
 
-## test 2 ----
+## test 2 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_demographics_selection_server work correctly: CONFIG with demographic feature", {
   # arrange
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
@@ -131,7 +131,7 @@ test_that("mod_demographics_selection_server work correctly: CONFIG with demogra
   })
 })
 
-## test 3 ----
+## test 3 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_demographics_selection_server work correctly: CONFIG with no demographic feature", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "random_config")
   m <- mock("get_demographic_choice")
@@ -158,8 +158,8 @@ test_that("mod_demographics_selection_server work correctly: CONFIG with no demo
 })
 
 
-# mod_demographics_server ----
-## test 1 ----
+# mod_demographics_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## test 1 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_demographics_server work correctly", {
   # no data in the database
   # arrange
@@ -178,7 +178,7 @@ test_that("mod_demographics_server work correctly", {
   })
 })
 
-## test 2 ----
+## test 2 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_demographics_server work correctly", {
   # no data in the database
   # arrange
@@ -204,7 +204,7 @@ test_that("mod_demographics_server work correctly", {
   })
 })
 
-# mod_documentation_page_server ----
+# mod_documentation_page_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_documentation_page_server work correctly", {
   # no data in the database
 
@@ -215,7 +215,7 @@ test_that("mod_documentation_page_server work correctly", {
   })
 })
 
-# mod_fft_server ----
+# mod_fft_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("it set's up graph data correctly", {
   # arrange
   m <- mock("spc_data")
@@ -319,7 +319,7 @@ test_that("it validates the plot data when group is at least 10", {
   })
 })
 
-# mod_header_message_server ----
+# mod_header_message_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_header_message_server work correctly", {
   # arrange
   data <- phase_2_db_data %>%
@@ -341,7 +341,7 @@ test_that("mod_header_message_server work correctly", {
   })
 })
 
-# mod_patient_experience_server ----
+# mod_patient_experience_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_patient_experience_server work correctly", {
   # arrange
   m <- mock()
@@ -394,8 +394,8 @@ test_that("mod_patient_experience_server work correctly", {
   })
 })
 
-# mod_summary_record_server ----
-## test1 ----
+# mod_summary_record_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## test1 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_summary_record_server works correctly", {
   testServer(mod_summary_record_server, args = list(phase_2_db_data, reactiveVal()), {
     filter_data(
@@ -425,7 +425,7 @@ test_that("mod_summary_record_server works correctly", {
   })
 })
 
-# mod_report_builder_server ----
+# mod_report_builder_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_report_builder_server work correctly: nothing is selected", {
   # no data in the database
   testServer(mod_report_builder_server, args = list(reactiveVal(), FALSE), {
@@ -534,7 +534,7 @@ test_that("mod_report_builder_server work correctly", {
   })
 })
 
-# mod_search_text_server ----
+# mod_search_text_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_search_text_server work correctly", {
   # no data in the database
   testServer(mod_search_text_server, args = list(reactiveVal()), {
@@ -552,7 +552,7 @@ test_that("mod_search_text_server work correctly", {
         filter_data = phase_2_db_data |> head(10)
       )
     )
-    session$setInputs(text_search = 'good')
+    session$setInputs(text_search = "good")
 
     # act/assert
     expect_no_error(return_data())
@@ -561,7 +561,7 @@ test_that("mod_search_text_server work correctly", {
   })
 })
 
-# mod_summary_server ----
+# mod_summary_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_summary_server work correctly", {
   # no data in the database
   testServer(mod_summary_server, args = list(FALSE), {
@@ -575,34 +575,34 @@ test_that("mod_summary_server work correctly", {
   })
 })
 
-# mod_trend_server ----
+# mod_trend_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_trend_server work correctly", {
   # no data in the database
   testServer(mod_trend_server, args = list(reactiveVal(), FALSE), {
     # act/assert
     expect_error(output$dynamic_trendUI)
   })
-  
+
   testServer(mod_trend_server, args = list(reactiveVal(), TRUE), {
     filter_data(
       list(
         single_labeled_filter_data = phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE)
       )
     )
-    
+
     # act/assert
     expect_no_error(output$dynamic_trendUI)
   })
 })
 
-# mod_trend_overlap_server ----
+# mod_trend_overlap_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_trend_overlap_server work correctly", {
   # no data in the database
   testServer(mod_trend_overlap_server, args = list(reactiveVal(), FALSE), {
     # act/assert
     expect_error(output$dynamic_trend_overlap)
   })
-  
+
   # data exist in the database
   testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
     # act/assert
@@ -611,89 +611,147 @@ test_that("mod_trend_overlap_server work correctly", {
   })
 })
 
-test_that("mod_trend_overlap_server work correctly: get_unique_value()", {
+test_that("mod_trend_overlap_server initialise top sub category selector correctly", {
   # arrange
-  m <- mock(c('a', 'b', 'c'))
+  m <- mock(c("a", "b", "c"))
   stub(mod_trend_overlap_server, "get_unique_value", m)
-  
-  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
-    filter_data(
-      list(
-        single_labeled_filter_data = phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE)
-      )
-    )
-    
-    session$setInputs(select_super_category = NULL)
-    # act/assert
-    expect_called(m, 2)
-    
-    expect_args(m, 1, phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE), "super_category")
-    expect_args(m, 2, phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE), "category")
-  })
-  
-  # arrange
-  m2 <- mock(c('a', 'b', 'c'))
-  stub(mod_trend_overlap_server, "get_unique_value", m2)
-  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
-    filter_data(
-      list(
-        single_labeled_filter_data = phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE)
-      )
-    )
 
-    session$setInputs(select_super_category = 'Staff')
-    # act/assert
-    expect_called(m2, 4)
-  })
-})
-
-test_that("mod_trend_overlap_server initialise top level selectors correctly", {
-  
-  m <- mock(c('a', 'b', 'c'))
-  stub(mod_trend_overlap_server, "get_unique_value", m)
-  
   testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
+    # doesn't show in tab_across_categories tab
+    session$setInputs(tabset_overlap = "tab_across_categories")
+    expect_error(output$trendUI)
+
+    # show in other tab
+    session$setInputs(tabset_overlap = "other tab")
     expect_no_error(output$trendUI)
+
+    # other outputs shows as expected
+    expect_no_error(output$within_categories_ui)
+    expect_no_error(output$across_categories_ui)
   })
 })
 
-test_that("mod_trend_overlap_server works correctly when given some inputs", {
-  
-  # m <- mock(c('a', 'b', 'c'))
-  # stub(mod_trend_overlap_server, "get_unique_value", m)
-  
-  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-  testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
+# mod_overlap_1_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_that("mod_overlap_1_server work correctly: get_unique_value()", {
+  # arrange
+  data <- phase_2_db_data |>
+    head(10) |>
+    get_tidy_filter_data(TRUE)
+
+  m <- mock(c("a", "b", "c"))
+
+  stub(mod_overlap_1_server, "get_unique_value", m)
+  testServer(mod_overlap_1_server, args = list(reactiveVal(), "string1", 2), {
     filter_data(
       list(
-        single_labeled_filter_data = phase_2_db_data |> head(100) |> 
-          get_tidy_filter_data(TRUE)
+        single_labeled_filter_data = data
       )
     )
-    
-    session$setInputs(
-      select_super_category = 'General'
+
+    # act
+    session$setInputs()
+
+    # assert
+    expect_called(m, 2)
+    expect_args(m, 1, data, "category")
+    expect_args(m, 2, data[0, ], "category")
+  })
+})
+
+test_that("mod_overlap_1_server: dynamic_select_category_ui work correctly", {
+  # arrange
+  data <- phase_2_db_data |>
+    head(10) |>
+    get_tidy_filter_data(TRUE)
+  m <- mock(c("a", "b", "c"))
+  # m = mock()
+  stub(mod_overlap_1_server, "get_unique_value", m)
+
+  testServer(mod_overlap_1_server, args = list(reactiveVal(), "string1", 2), {
+    filter_data(
+      list(
+        single_labeled_filter_data = data
+      )
     )
-    
+
     session$setInputs(
       select_category1 = NULL,
-      select_category2 = 'Parking',
+      select_category2 = "Admission",
       select_category3 = "Admission",
-      min_size = 1
+      # min_size = 1
     )
-    
-    expect_no_error(output$dynamic_select_category_ui)
+    expect_error(output$dynamic_select_category_ui)
+  })
+})
+
+test_that("mod_overlap_1_server: dynamic_select_category_ui work correctly", {
+  # arrange
+  data <- phase_2_db_data |>
+    head(10) |>
+    get_tidy_filter_data(TRUE)
+  m <- mock(c("a", "b", "c"))
+  # m = mock()
+  stub(mod_overlap_1_server, "get_unique_value", m)
+
+  testServer(mod_overlap_1_server, args = list(reactiveVal(), "string1", 2), {
+    filter_data(
+      list(
+        single_labeled_filter_data = data
+      )
+    )
+
     expect_no_error(output$trendUI_2)
-    
+
+    session$setInputs(
+      select_category1 = NULL,
+      select_category2 = "pack",
+      select_category3 = "Admission",
+      # min_size = 1
+    )
+    expect_no_error(output$dynamic_select_category_ui)
+  })
+})
+
+test_that("mod_overlap_1_server initialise top sub category selectors correctly", {
+  m <- mock(c("a", "b", "c"))
+  stub(mod_overlap_1_server, "get_unique_value", m)
+
+  testServer(mod_overlap_1_server, args = list(reactiveVal(), "General", 1), {
+    expect_no_error(output$trendUI_2)
+  })
+})
+
+test_that("mod_overlap_1_server works correctly when given some inputs", {
+  # Arrange
+  data <- phase_2_db_data |>
+    head(100) |>
+    get_tidy_filter_data(TRUE)
+
+  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
+  testServer(mod_overlap_1_server, args = list(reactiveVal(), "General", 1), {
+    filter_data(
+      list(
+        single_labeled_filter_data = data
+      )
+    )
+
+    session$setInputs(
+      select_category1 = NULL,
+      select_category2 = "Parking",
+      select_category3 = "Admission"
+    )
+
+    expect_no_error(output$dynamic_select_category_ui)
+
     # the upset plot contents are working
     expect_equal(nrow(upset_data()), 120)
     expect_equal(length(all_categories()), 26)
     expect_equal(length(filtered_categories()), 3)
     expect_no_error(output$category_upset)
-    
+
     # the comment table content works well
     expect_no_error(output$category_upset)
-    expect_equal(nrow(return_data()),0)
+    expect_equal(nrow(return_data()), 0)
     expect_error(output$download_data_ui)
     expect_no_error(output$overlap_table)
     expect_no_error(output$overlap_download_data)
