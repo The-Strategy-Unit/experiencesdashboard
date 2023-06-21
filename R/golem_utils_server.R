@@ -222,8 +222,8 @@ get_unique_value <- function(data, column) {
 #' @return a plot of upset object (not a ggplot object)
 #' @noRd
 upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
-  label_size <- 12
-  group_text_size <- 11
+  label_size <- 10
+  group_text_size <- 9
 
   ComplexUpset::upset(upset_data, intersect,
     min_size = min_size, # minimum number of observation in a group for the group to be shown (intersection size)
@@ -258,14 +258,14 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
     # Manipulate the intersection matrix color
 
     stripes = ComplexUpset::upset_stripes(
-      geom = ggplot2::geom_segment(linewidth = 2),
+      geom = ggplot2::geom_segment(linewidth = 1.5),
       # color = "white"
     ),
     encode_sets = FALSE, # for annotate() to select the set by name disable encoding
     #
     matrix = (
       ComplexUpset::intersection_matrix(
-        geom = ggplot2::geom_point(size = 2.5),
+        geom = ggplot2::geom_point(size = 2),
         outline_color = list(active = "#000000", inactive = "grey70")
       )
     ),
@@ -279,7 +279,7 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
       # Manipulate the set size plot
       "Intersection size" = ComplexUpset::intersection_size(
         # Any parameter supported by geom_text can be passed in text list
-        text = list(vjust = -0.3, size = 4),
+        text = list(vjust = -0.3, size = 3),
         fill = "#005EB8"
         # counts=FALSE, # uncheck to remove the count text
       ) +
@@ -300,7 +300,7 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
     wrap = TRUE # add it so the title applies to the entire plot instead of the intersection matrix only
   ) +
     ggplot2::ggtitle(title) +
-    ggplot2::theme(text = ggplot2::element_text(size = 14))
+    ggplot2::theme(text = ggplot2::element_text(size = 9))
 }
 
 #' one hot encode a single column while still keeping other columns
