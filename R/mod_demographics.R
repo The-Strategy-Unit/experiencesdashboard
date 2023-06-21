@@ -51,13 +51,13 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
         hr(),
         fluidRow(
           if (has_demography_1) {
-            column(width, plotOutput(ns("demography_1_graph")))
+            column(width, plotly::plotlyOutput(ns("demography_1_graph")))
           },
           if (has_demography_2) {
-            column(width, plotOutput(ns("demography_2_graph")))
+            column(width, plotly::plotlyOutput(ns("demography_2_graph")))
           },
           if (has_demography_3) {
-            column(width, plotOutput(ns("demography_3_graph")))
+            column(width, plotly::plotlyOutput(ns("demography_3_graph")))
           }
         ),
         hr(),
@@ -98,22 +98,23 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
 
     # distribution----
 
-    output$demography_1_graph <- renderPlot({
+    output$demography_1_graph <- plotly::renderPlotly({
       demo_data <- filter_data()$unique_data %>%
         dplyr::arrange(get_golem_config("demography_1"))
       demo_data[, get_golem_config("demography_1")] <- demo_data[, get_golem_config("demography_1")] %>%
         unlist(use.names = F) %>%
         factor()
+      
       demo_data %>%
         demographic_distribution(variable = get_golem_config("demography_1"))
     })
 
-    output$demography_2_graph <- renderPlot({
+    output$demography_2_graph <- plotly::renderPlotly({
       filter_data()$unique_data %>%
         demographic_distribution(variable = get_golem_config("demography_2"))
     })
 
-    output$demography_3_graph <- renderPlot({
+    output$demography_3_graph <- plotly::renderPlotly({
       filter_data()$unique_data %>%
         demographic_distribution(variable = get_golem_config("demography_3"))
     })
