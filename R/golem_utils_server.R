@@ -199,7 +199,7 @@ add_theme_nhs <- function() {
 #'
 #' @param data Dataframe. The dataframe
 #' @param column String. The column name
-#' @return list 
+#' @return list
 #' @noRd
 get_unique_value <- function(data, column) {
   data[, column] %>%
@@ -211,7 +211,7 @@ get_unique_value <- function(data, column) {
 
 #' Draw upset plot
 #'
-#' @param upset_data  a dataframe with each column representing a membership in the class. 
+#' @param upset_data  a dataframe with each column representing a membership in the class.
 #' values are 1 - if the row is a member of the class or 0 if otherwise
 #' @param intersect columns containing the classes i.e. names of the categories to show
 #' (Ex: c("staff manner", "staff attitude"))
@@ -306,7 +306,7 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
 #' one hot encode a single column while still keeping other columns
 #'
 #' @param df dataframe to encode.
-#' @param column column of interests. Other columns combined must uniquely 
+#' @param column column of interests. Other columns combined must uniquely
 #' identify each row (best is unique row_id is present).
 #'
 #' @return dataframe
@@ -366,7 +366,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
     "FFT Answer", "Sub-Category", "Category"
   )
 
-  print(nrow(data)) # for debugging
+  cat("Rows in comment table:", nrow(data), " \n") # for debugging
 
   return(data)
 }
