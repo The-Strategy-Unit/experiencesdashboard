@@ -166,6 +166,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
                 )
               },
               error = function(e) {
+                print("layer 1 error:")
                 print(e)
                 memoised_upset_plot(upset_data(),
                   intersect = all_categories(),
@@ -177,7 +178,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
                 showModal(modalDialog(
                   title = "Error!",
                   HTML(paste0(
-                    p("There is no relationship in this selection"),
+                    p(strong("There is no relationship in this selection")),
                     strong("Plot has default to  show all sub-categories
                            with '2' minimum number of comments")
                   )),
@@ -187,8 +188,15 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
             )
           },
           error = function(e) {
+            print("layer 2 error:")
             print(e)
-            paste(strong("Sorry, upset plot can't be shown"))
+            showModal(modalDialog(
+              title = "Error!",
+              HTML(paste0(
+                strong("Sorry, there is not enough data to draw the upset plot. Please expand your selection")
+              )),
+              easyClose = TRUE
+            ))
           }
         )
       },

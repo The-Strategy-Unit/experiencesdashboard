@@ -73,7 +73,7 @@ mod_summary_record_server <- function(id, db_data, filter_data) {
     output$individualBox <- renderValueBox({
       shinydashboard::valueBox(
         format(global$n_individuals, format = "d", big.mark = ","),
-        p("Individuals in Database", style = "font-size: 90%"),
+        p("Responders in Database", style = "font-size: 90%"),
         icon = icon("users"),
         color = "light-blue"
       )
@@ -89,7 +89,7 @@ mod_summary_record_server <- function(id, db_data, filter_data) {
     output$current_individualBox <- renderValueBox({
       shinydashboard::valueBox(
         format(global$current_individuals, format = "d", big.mark = ","),
-        p("Individuals in Current Selection", style = "font-size: 90%"),
+        p("Responders in Current Selection", style = "font-size: 90%"),
         icon = icon("users"),
         color = "light-blue"
       )

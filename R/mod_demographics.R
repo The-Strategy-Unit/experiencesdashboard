@@ -45,10 +45,7 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
       )
 
       tagList(
-        fluidRow(
-          column(12, h3(textOutput(ns("total_responses"))))
-        ),
-        hr(),
+        br(),
         fluidRow(
           if (has_demography_1) {
             column(width, plotly::plotlyOutput(ns("demography_1_graph")))
@@ -75,25 +72,6 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
           }
         )
       )
-    })
-
-    # top row (explore adding this as a pop-up warning)
-
-    output$total_responses <- renderText({
-      no_responders <- filter_data()$demography_number
-
-      if (no_responders < 20) {
-        return(paste0("There are only ", no_responders, " responders in your
-                      selection. Filtering below 20 responders with demographic
-                      selections is disabled for reasons of confidentiality.
-                      Please widen your selection by clinical area or
-                      demography"))
-      } else {
-        return(paste0(
-          "There is a total of ",
-          no_responders, " responders in your selection"
-        ))
-      }
     })
 
     # distribution----
