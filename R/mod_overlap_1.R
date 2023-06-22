@@ -60,10 +60,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
           )
         ),
       )
-    }) %>% 
-      bindCache(
-        filter_data()$single_labeled_filter_data
-      )
+    })
 
     output$download_data_ui <- renderUI({
       req(
@@ -122,8 +119,11 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       bindCache(filter_data()$single_labeled_filter_data)
 
 
-    all_categories <- reactive(filter_data()$single_labeled_filter_data %>%
-      get_unique_value("category"))
+    all_categories <- reactive(
+      filter_data()$single_labeled_filter_data %>%
+        get_unique_value("category")
+    ) %>%
+      bindCache(filter_data()$single_labeled_filter_data)
 
     filtered_categories <- reactive({
       req(!is.null(input_select_super_category))
@@ -131,7 +131,11 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       filter_data()$single_labeled_filter_data %>%
         dplyr::filter(super_category == input_select_super_category) %>%
         get_unique_value("category")
-    })
+    }) %>%
+      bindCache(
+        filter_data()$single_labeled_filter_data,
+        input_select_super_category
+      )
 
     ## the upset plot ----
     # create a session-level cacheable version of upset_plot()
@@ -184,7 +188,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
           },
           error = function(e) {
             print(e)
-            paste(p("Sorry, upset plot can't be shown"))
+            paste(strong("Sorry, upset plot can't be shown"))
           }
         )
       },
