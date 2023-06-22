@@ -177,10 +177,6 @@
       list()
       
 
-# mod_demographics_server work correctly
-
-    "There is a total of 20 responders in your selection"
-
 # mod_summary_record_server works correctly
 
     Code
@@ -251,7 +247,7 @@
         <div class="inner">
           <h3>1,000</h3>
           <p>
-            <p style="font-size: 90%">Individuals in Database</p>
+            <p style="font-size: 90%">Responders in Database</p>
           </p>
         </div>
         <div class="icon-large">
@@ -321,7 +317,7 @@
         <div class="inner">
           <h3>5</h3>
           <p>
-            <p style="font-size: 90%">Individuals in Current Selection</p>
+            <p style="font-size: 90%">Responders in Current Selection</p>
           </p>
         </div>
         <div class="icon-large">
