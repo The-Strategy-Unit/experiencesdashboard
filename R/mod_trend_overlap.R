@@ -78,11 +78,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
           selected = choices[1]
         )
       )
-    }) %>%
-      bindCache(
-        filter_data()$single_labeled_filter_data$super_category,
-        input$tabset_overlap
-      )
+    })
 
     output$within_categories_ui <- renderUI({
       input_select_super_category <- input$select_super_category
@@ -92,12 +88,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
         ns("overlap_UI"), filter_data,
         input_select_super_category, input_min_size
       )
-    }) %>%
-      bindCache(
-        filter_data()$single_labeled_filter_data,
-        input$select_super_category,
-        input$min_size
-      )
+    })
 
     output$across_categories_ui <- renderUI({
       input_min_size <- input$min_size
@@ -106,10 +97,6 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
         ns("overlap_1_UI"), filter_data,
         NULL, input_min_size
       )
-    })  %>%
-      bindCache(
-        filter_data()$single_labeled_filter_data,
-        input$min_size
-      )
+    })
   })
 }
