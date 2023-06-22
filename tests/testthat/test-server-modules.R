@@ -168,13 +168,11 @@ test_that("mod_demographics_server work correctly", {
   testServer(mod_demographics_server, args = list(reactiveVal(), FALSE), {
     filter_data(
       list(
-        filter_data = "data",
-        demography_number = 19
+        filter_data = "data"
       )
     )
     # act/assert
     expect_error(output$dynamic_demo_UI, "Demography plots will appear here")
-    expect_true(inherits(output$total_responses, "character"))
   })
 })
 
@@ -189,15 +187,11 @@ test_that("mod_demographics_server work correctly", {
   testServer(mod_demographics_server, args = list(reactiveVal(), TRUE), {
     filter_data(
       list(
-        unique_data = "data",
-        demography_number = 20
+        unique_data = "data"
       )
     )
     # act/assert
     expect_no_error(output$dynamic_demo_UI)
-
-    # output$total_responses is working as expected
-    expect_snapshot_value(output$total_responses)
 
     # compare_demographics is called 3 times
     expect_called(m, 3)
