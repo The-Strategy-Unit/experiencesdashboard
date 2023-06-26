@@ -1,0 +1,14 @@
+name: qdc_blank
+title: qdc_blank
+username: oluwasegun.apejoye
+account: oluwasegun.apejoye
+server: connect.strategyunitwm.nhs.uk
+hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
+appId: 105
+bundleId: 489
+url: https://connect.strategyunitwm.nhs.uk/content/fcde22d8-beba-484a-baba-23714477d8fc/
+when: 1686154869.87889
+lastSyncTime: 1686154869.8789
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|.Rprofile|dev|man|secret-data|tests|trial_scripts

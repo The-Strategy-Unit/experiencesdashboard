@@ -18,7 +18,7 @@ NULL
 #' @export
 #'
 #' @examples html_decoder("&amp; &gt;")
-html_decoder <- function(str){
+html_decoder <- function(str) {
   html <- paste0("<x>", str, "</x>")
   parsed <- xml2::xml_text(xml2::read_html(html))
 }

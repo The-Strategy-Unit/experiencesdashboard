@@ -1,0 +1,14 @@
+name: experiencesdashboard
+title: experiencesdashboard
+username: oluwasegun.apejoye
+account: oluwasegun.apejoye
+server: connect.strategyunitwm.nhs.uk
+hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
+appId: 92
+bundleId: 515
+url: https://connect.strategyunitwm.nhs.uk/qdc_demo/
+when: 1686582696.55677
+lastSyncTime: 1686582696.55679
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .github/workflows/deploy-dev.yaml|.github/workflows/deploy-prod.yaml|.github/workflows/R-CMD-check.yaml|.RData|.Rprofile|CODE_OF_CONDUCT.md|README.md|dev|secret-data|tests|trial_scripts

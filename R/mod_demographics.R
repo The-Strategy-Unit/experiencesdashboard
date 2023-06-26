@@ -16,28 +16,22 @@ mod_demographics_ui <- function(id) {
 #' demographics Server Functions
 #'
 #' @noRd
-mod_demographics_server <- function(id, filter_data) {
+mod_demographics_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # the UI render
 
     output$dynamic_demo_UI <- renderUI({
-      
       validate(
-        need(
-          data_exists <- filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0,
-          "Demography plots will appear here"
-        )
+        need(data_exists, "Demography plots will appear here")
       )
-      
+
       # check which demographic variables are present
       isolate({
-        has_demography_1 <- isTruthy(get_golem_config("demography_1")) 
-        has_demography_2 <- isTruthy(get_golem_config("demography_2")) 
-        has_demography_3 <- isTruthy(get_golem_config("demography_3")) 
+        has_demography_1 <- isTruthy(get_golem_config("demography_1"))
+        has_demography_2 <- isTruthy(get_golem_config("demography_2"))
+        has_demography_3 <- isTruthy(get_golem_config("demography_3"))
       })
 
       # determine the column width base on the number of demographic variables present
@@ -51,19 +45,16 @@ mod_demographics_server <- function(id, filter_data) {
       )
 
       tagList(
-        fluidRow(
-          column(12, h3(textOutput(ns("total_responses"))))
-        ),
-        hr(),
+        br(),
         fluidRow(
           if (has_demography_1) {
-            column(width, plotOutput(ns("demography_1_graph")))
+            column(width, plotly::plotlyOutput(ns("demography_1_graph")))
           },
           if (has_demography_2) {
-            column(width, plotOutput(ns("demography_2_graph")))
+            column(width, plotly::plotlyOutput(ns("demography_2_graph")))
           },
           if (has_demography_3) {
-            column(width, plotOutput(ns("demography_3_graph")))
+            column(width, plotly::plotlyOutput(ns("demography_3_graph")))
           }
         ),
         hr(),
@@ -83,43 +74,25 @@ mod_demographics_server <- function(id, filter_data) {
       )
     })
 
-    # top row (explore adding this as a pop-up warning)
-
-    output$total_responses <- renderText({
-      no_responders <- filter_data()$demography_number
-
-      if (no_responders < 20) {
-        return(paste0("There are only ", no_responders, " responders in your
-                      selection. Filtering below 20 responders with demographic
-                      selections is disabled for reasons of confidentiality.
-                      Please widen your selection by clinical area or
-                      demography"))
-      } else {
-        return(paste0(
-          "There is a total of ",
-          no_responders, " responders in your selection"
-        ))
-      }
-    })
-
     # distribution----
 
-    output$demography_1_graph <- renderPlot({
-      
+    output$demography_1_graph <- plotly::renderPlotly({
       demo_data <- filter_data()$unique_data %>%
-        dplyr::arrange(get_golem_config("demography_1")) 
-      demo_data[,get_golem_config("demography_1")] = demo_data[,get_golem_config("demography_1")] %>%
-        unlist(use.names=F) %>% factor()
+        dplyr::arrange(get_golem_config("demography_1"))
+      demo_data[, get_golem_config("demography_1")] <- demo_data[, get_golem_config("demography_1")] %>%
+        unlist(use.names = F) %>%
+        factor()
+      
       demo_data %>%
         demographic_distribution(variable = get_golem_config("demography_1"))
     })
 
-    output$demography_2_graph <- renderPlot({
+    output$demography_2_graph <- plotly::renderPlotly({
       filter_data()$unique_data %>%
         demographic_distribution(variable = get_golem_config("demography_2"))
     })
 
-    output$demography_3_graph <- renderPlot({
+    output$demography_3_graph <- plotly::renderPlotly({
       filter_data()$unique_data %>%
         demographic_distribution(variable = get_golem_config("demography_3"))
     })

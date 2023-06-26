@@ -14,8 +14,9 @@ split_data_spc(data, variable = "fft", chunks)
 \item{chunks}{either "monthly", which divides the data in months
 or the number of chunks to divide the data into (each chunk will have the
 same number of rows)}
-
-\item{return}{dataframe suitable for plotting with NHSRplotthedots::ptd_spc}
+}
+\value{
+dataframe suitable for plotting with NHSRplotthedots::ptd_spc
 }
 \description{
 Get data ready for SPC plotting

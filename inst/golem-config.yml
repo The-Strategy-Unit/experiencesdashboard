@@ -1,6 +1,6 @@
 default:
   golem_name: experiencesdashboard
-  golem_version: 0.4.2
+  golem_version: 0.7.0
   app_prod: no
   open: yes
 production:
@@ -18,9 +18,9 @@ trust_a:
   location_1: Division
   location_2: Directorate
   location_3: Team
-  gender: TRUE
-  age: TRUE
-  ethnicity: TRUE
+  gender: yes
+  age: yes
+  ethnicity: yes
 trust_b:
   trust_name: trust_b
   comment_1: Comments
@@ -36,9 +36,9 @@ trust_c:
   location_1: Location 1
   location_2: Location 2
   location_3: Location 3
-  gender: TRUE
-  age: TRUE
-  ethnicity: TRUE
+  gender: yes
+  age: yes
+  ethnicity: yes
 trust_d:
   trust_name: trust_d
   comment_1: Comment 1
@@ -54,9 +54,9 @@ trust_e:
   location_1: Location 1
   location_2: Location 2
   location_3: Location 3
-  gender: TRUE
-  age: TRUE
-  ethnicity: TRUE
+  gender: yes
+  age: yes
+  ethnicity: yes
 care_opinion:
   trust_name: care_opinion
   comment_1: Story
@@ -72,9 +72,9 @@ trust_a_bk:
   location_1: Division
   location_2: Directorate
   location_3: Team
-  gender: TRUE
-  age: TRUE
-  ethnicity: TRUE
+  gender: yes
+  age: yes
+  ethnicity: yes
 phase_2_trust:
   trust_name: phase_2_trust
   comment_1: What could be improved?
@@ -86,6 +86,17 @@ phase_2_trust:
   demography_1: age
   demography_2: sex
   demography_3: disability
+phase_2_demo:
+  trust_name: phase_2_demo
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Specialty
+  location_3: Team
+  demography_1: age
+  demography_2: sex
+  demography_3: ethnicity
 trust_NUH:
   trust_name: trust_NUH
   comment_1: Why give this answer and What could be improved?
@@ -121,3 +132,14 @@ trust_GOSH:
   demography_1: disability
   demography_2: religion
   demography_3: ethnicity
+trust_NTH:
+  trust_name: trust_NTH
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Directorate
+  location_3: Team
+  demography_1: age
+  demography_2: sex
+  demography_3: gender

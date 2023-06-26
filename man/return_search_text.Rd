@@ -7,8 +7,9 @@
 return_search_text(
   text_data,
   filter_text,
-  comment_type_filter,
-  search_type = c("or", "and")
+  comment_type_filter = NULL,
+  search_type = c("or", "and"),
+  return_dataframe = TRUE
 )
 }
 \arguments{
@@ -19,12 +20,28 @@ return_search_text(
 \item{comment_type_filter}{which comment to return- 1 or 2}
 
 \item{search_type}{type of search ('and', 'or')}
+
+\item{return_dataframe}{should the output be a dataframe or an html string}
 }
 \value{
 string vector of search terms, separated by <p>, </p> for
-display as raw HTML by Shiny
+display as raw HTML by Shiny or a dataframe
 }
 \description{
 combine search terms with OR and AND then return text from a specific
 question
+}
+\examples{
+return_search_text(
+  text_data = data.frame(
+    comment_txt = c(
+      "tricky times, I recommend quick appraisals ",
+      "time of my situation.", ">quick response time, competent appraisal of my situation"
+    ),
+    comment_type = c("comment_1", "comment_1", "comment_1")
+  ),
+  filter_text = "Uick, time, appraisal$, &!",
+  comment_type_filter = "comment_1", search_type = "and",
+  return_dataframe = FALSE
+)
 }

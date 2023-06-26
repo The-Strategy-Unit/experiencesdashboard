@@ -28,7 +28,6 @@ usethis::use_package( "stringr" )
 usethis::use_package( "forcats" )
 usethis::use_package( "reactable" )
 usethis::use_package( "tidytext" )
-usethis::use_package( "janitor" )
 usethis::use_package( "UpSetR" )
 usethis::use_package( "tibbletime" )
 usethis::use_package( "shinydashboard" )
@@ -53,6 +52,8 @@ usethis::use_package( "plotly" )
 usethis::use_package( "NHSRplotthedots" )
 usethis::use_package( "fresh" )
 usethis::use_package( "writexl" )
+usethis::use_package( "memoise" )
+usethis::use_package( "data.validator" )
 
 ## Add one line by package you want to add as dependency - Non-CRAN e.g. GitHub
 usethis::use_dev_package( "NHSRtheme" )
@@ -73,18 +74,23 @@ golem::add_module( name = "text_reactable" ) # Name of the module
 golem::add_module( name = "demographics" ) # Name of the module
 golem::add_module( name = "summary" ) # Name of the module
 golem::add_module( name = "trend_overlap" ) # Name of the module
-golem::add_module( name = "data_management" ) # Name of the module
+golem::add_module( name = "data_management", fct = 'helper' ) # Name of the module
 golem::add_module( name = "summary_record" ) # Name of the module
 golem::add_module( name = "demographics_selection" ) # Name of the module
+golem::add_module( name = "documentation_page" ) # Name of the module
+golem::add_module( name = "trend", utils = 'helper') # Name of the module
+golem::add_module( name = "header_message" ) # Name of the module
+golem::add_module( name = "overlap_1" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
 golem::add_fct( "helpers" ) 
 golem::add_utils( "helpers" )
 golem::add_utils( "overlap_plot_helpers" )
-golem::add_fct( "api_pred" )
-golem::add_fct( "get_complex_comments" )
+golem::add_fct( "api_pred" , with_test = TRUE)
+golem::add_fct( "get_complex_comments", with_test = TRUE )
 golem::add_fct( "nhs_shiny_theme" )
+golem::add_fct( "app_server-helpers" ) 
 
 ## External resources
 ## Creates .js and .css files at inst/app/www
@@ -96,8 +102,18 @@ golem::add_css_file( "button-style" )
 ## Add internal datasets ----
 ## If you have data in your package
 usethis::use_data_raw( name = "my_dataset", open = FALSE ) 
+usethis::use_data_raw( name = "framework", open = FALSE ) 
 
 ## Tests ----
+# Adding the correct code coverage 
+# infrastructure in your application
+usethis::use_coverage()
+
+# Compute the code coverage of your application
+covr::package_coverage() # this work too devtools:::test_coverage()
+# identify files with zero code coverage
+covr::zero_coverage(covr::package_coverage())
+
 ## Add one line by test you want to create
 usethis::use_test( "fft" )
 usethis::use_test( "sentiment_tidy" )
@@ -107,6 +123,19 @@ usethis::use_test( "calculate_table" )
 usethis::use_test( "tidy_data" )
 usethis::use_test( "report_functions" )
 usethis::use_test( "tidy_upload" )
+usethis::use_test( "database-data" )
+usethis::use_test( "fct_api_pred" )
+usethis::use_test( "app_config" )
+usethis::use_test( "filter_text" )
+usethis::use_test( "spc_functions" )
+usethis::use_test( "server-modules" )
+usethis::use_test( "demographic_graphs" )
+usethis::use_test( "fct_nhs_shiny_theme" )
+usethis::use_test( "fct_app_server-helpers" )
+usethis::use_test( "general_helpers" )
+usethis::use_test( "mod_data_management_fct_helper" )
+usethis::use_test( "app_server" )
+usethis::use_test( "app_ui" )
 
 # Documentation
 

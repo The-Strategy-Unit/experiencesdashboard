@@ -1,67 +1,67 @@
 Package: experiencesdashboard
 Title: Patient Experiences Dashboard
-Version: 0.4.0
-Authors@R: c(person('Milan', 'Wiedemann', email = 'milan.wiedemann@gmail.com', 
-    role = c('cre', 'aut')),
-    person('Chris', 'Beeley', email = 'chris.beeley@gmail.com', 
-    role = c('aut'))
-    )
+Version: 0.7.0
+Authors@R: c(
+    person("Milan", "Wiedemann", , "milan.wiedemann@gmail.com", role = c("cre", "aut")),
+    person("Chris", "Beeley", , "chris.beeley@gmail.com", role = "aut"),
+    person("Oluwasegun", "Apejoye", , "asegun20@gmail.com", role = "aut")
+  )
 Description: Patient Experiences Dashboard.
 License: MIT + file LICENSE
+Depends: 
+    R (>= 3.5.0)
 Imports: 
+    ComplexUpset,
     config,
-    golem,
-    shiny,
-    processx,
-    DT,
-    glue,
-    htmltools,
-    dplyr,
-    tibble,
-    ggplot2,
-    tidyr,
-    readr,
-    stringr,
-    purrr,
-    reactable,
-    shinydashboard,
-    shinyWidgets,
-    shinyjqui,
-    timevis,
-    magrittr,
-    pkgload,
-    janitor,
-    tibbletime,
-    tidytext,
-    rmarkdown,
-    pander,
-    pool,
-    odbc,
+    datamods,
     DBI,
     dbplyr,
-    datamods,
-    Rdpack,
-    textdata,
-    shinycssloaders,
-    here,
-    xml2,
-    plotly,
-    NHSRplotthedots,
-    reshape2,
-    NHSRtheme (>= 0.1.0),
+    dplyr,
+    DT,
     fresh,
-    ComplexUpset,
+    ggplot2,
+    glue,
+    golem,
+    here,
+    htmltools,
+    httr,
+    jsonlite,
+    lubridate,
+    magrittr,
+    memoise,
+    NHSRplotthedots,
+    odbc,
+    plotly,
+    purrr,
+    rlang,
+    rmarkdown,
+    shiny,
+    shinycssloaders,
+    shinydashboard,
+    stringr,
+    tidyr,
+    tidyselect,
     tm,
-    writexl
+    writexl,
+    xml2,
+    SnowballC,
+    pander
+Suggests: 
+    assertr,
+    data.validator,
+    knitr,
+    readr,
+    spelling,
+    testthat (>= 3.0.0),
+    tibble,
+    mockery, 
+    withr
+VignetteBuilder: 
+    knitr
 Remotes: 
     nhs-r-community/NHSRtheme
+Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
-Suggests: 
-    testthat (>= 3.0.0),
-    knitr
-Config/testthat/edition: 3
-VignetteBuilder: knitr
-Depends: 
-    R (>= 2.10)
+Language: en-gb

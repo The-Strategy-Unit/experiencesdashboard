@@ -5,9 +5,8 @@
 #' @param chunks either "monthly", which divides the data in months
 #' or the number of chunks to divide the data into (each chunk will have the
 #' same number of rows)
-#' @param return dataframe suitable for plotting with NHSRplotthedots::ptd_spc
+#' @return dataframe suitable for plotting with NHSRplotthedots::ptd_spc
 #'
-#' @return
 #' @export
 split_data_spc <- function(data, variable = "fft", chunks) {
   if (chunks == "monthly") {
@@ -37,9 +36,8 @@ split_data_spc <- function(data, variable = "fft", chunks) {
 #' Plot data
 #'
 #' @param data dataframe, that you probably made with the split_data_spc function
-#' @param return SPC plot
+#' @return SPC plot
 #'
-#' @return
 #' @export
 plot_fft_spc <- function(data) {
   data %>%

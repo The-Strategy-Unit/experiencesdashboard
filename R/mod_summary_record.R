@@ -53,10 +53,10 @@ mod_summary_record_server <- function(id, db_data, filter_data) {
 
       tagList(
         fluidRow(
-          column(width, valueBoxOutput (ns("commentBox"), width = NULL)),
-          column(width, valueBoxOutput (ns("individualBox"), width = NULL)),
-          column(width, valueBoxOutput (ns("current_commentBox"), width = NULL)),
-          column(width, valueBoxOutput (ns("current_individualBox"), width = NULL))
+          column(width, valueBoxOutput(ns("commentBox"), width = NULL)),
+          column(width, valueBoxOutput(ns("individualBox"), width = NULL)),
+          column(width, valueBoxOutput(ns("current_commentBox"), width = NULL)),
+          column(width, valueBoxOutput(ns("current_individualBox"), width = NULL))
         )
       )
     })
@@ -66,15 +66,15 @@ mod_summary_record_server <- function(id, db_data, filter_data) {
       shinydashboard::valueBox(
         format(global$n_responses, format = "d", big.mark = ","),
         p("Comments in Database", style = "font-size: 90%"),
-        icon = icon("comment"), 
+        icon = icon("comment"),
         color = "light-blue"
       )
     })
     output$individualBox <- renderValueBox({
       shinydashboard::valueBox(
         format(global$n_individuals, format = "d", big.mark = ","),
-        p("Individuals in Database", style = "font-size: 90%"),
-        icon = icon("users"), 
+        p("Responders in Database", style = "font-size: 90%"),
+        icon = icon("users"),
         color = "light-blue"
       )
     })
@@ -82,15 +82,15 @@ mod_summary_record_server <- function(id, db_data, filter_data) {
       shinydashboard::valueBox(
         format(global$current_responses, format = "d", big.mark = ","),
         p("Comments in Current Selection", style = "font-size: 90%"),
-        icon = icon("comment-dots"), 
+        icon = icon("comment-dots"),
         color = "light-blue"
       )
     })
     output$current_individualBox <- renderValueBox({
       shinydashboard::valueBox(
         format(global$current_individuals, format = "d", big.mark = ","),
-        p("Individuals in Current Selection", style = "font-size: 90%"),
-        icon = icon("users"), 
+        p("Responders in Current Selection", style = "font-size: 90%"),
+        icon = icon("users"),
         color = "light-blue"
       )
     })

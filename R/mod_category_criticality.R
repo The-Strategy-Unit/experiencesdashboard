@@ -4,32 +4,21 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd 
+#' @noRd
 #'
-#' @importFrom shiny NS tagList 
-mod_category_criticality_ui <- function(id){
+#' @importFrom shiny NS tagList
+mod_category_criticality_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    
     fluidPage(
-      
+
       # Add css file for table ----
-      includeCSS(system.file("app/www/", "crit-table.css", 
-                             package = "experiencesdashboard")),
-      
+      includeCSS(system.file("app/www/", "crit-table.css",
+        package = "experiencesdashboard"
+      )),
       fluidRow(
-        column(6, h2(get_golem_config("comment_1")),
-               p("Click a bar to see comments related to that category"),
-               # mod_click_plot_ui("click_plot_ui_1")),
-               mod_click_tables_ui("click_tables_ui_1")),
-        
-        if(isTruthy(get_golem_config("comment_2"))){
-          
-          column(6, h2(get_golem_config("comment_2")),
-                 p("Click a bar to see comments related to that category"),
-                 # mod_click_plot_ui("click_plot_ui_2"))
-                 mod_click_tables_ui("click_tables_ui_2"))
-        }
+        h5("Click a row to see comments related to that sub-category"),
+        mod_click_tables_ui("click_tables_ui")
       )
     )
   )
@@ -37,11 +26,9 @@ mod_category_criticality_ui <- function(id){
 
 #' category_criticality Server Functions
 #'
-#' @noRd 
-mod_category_criticality_server <- function(id, filter_data){
-  moduleServer( id, function(input, output, session){
+#' @noRd
+mod_category_criticality_server <- function(id, filter_data) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    
   })
 }
