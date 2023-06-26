@@ -7,7 +7,6 @@
 #' @return a plotly object
 #' @noRd
 compare_demographics <- function(pass_data, variable, score_column = list("fft")) {
-  
   score_column <- unlist(score_column[!vapply(score_column, is.null, TRUE)])
 
   p <- pass_data %>%
@@ -47,10 +46,11 @@ compare_demographics <- function(pass_data, variable, score_column = list("fft")
 #' Draw the distribution of demographics in the sample
 #' @param pass_data A dataframe, filtered to unique individuals
 #' @param variable String. Name of variable - e.g. "age", "gender", "ethnicity"
+#' @param return_ggplot logical if the plot should be returned as a ggplot or plotly object.
 #'
 #' @return a ggplot2 graph
 #' @export
-demographic_distribution <- function(pass_data, variable) {
+demographic_distribution <- function(pass_data, variable, return_ggplot = FALSE) {
   p <- pass_data %>%
     dplyr::count(.data[[variable]]) %>%
     dplyr::mutate(across(
@@ -60,12 +60,25 @@ demographic_distribution <- function(pass_data, variable) {
     ggplot2::ggplot(ggplot2::aes(x = .data[[variable]], y = n)) +
     ggplot2::geom_col(fill = "#005EB8") +
     add_theme_nhs() +
-    ggplot2::coord_flip() +
     ggplot2::theme(
       legend.position = "none",
       axis.title = ggplot2::element_text(size = 12),
       axis.text = ggplot2::element_text(size = 11),
     )
+
+  if (return_ggplot) {
+    return(
+      p +
+        ggplot2::geom_text(
+          ggplot2::aes(label = n),
+          position = ggplot2::position_dodge(width = 0.9),
+          vjust = -0.1
+        )
+      )
+  }
+
+  p <- p +
+    ggplot2::coord_flip() 
   
   p %>%
     plotly::ggplotly(tooltip = c(variable, "n")) %>%

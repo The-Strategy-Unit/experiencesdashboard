@@ -113,21 +113,21 @@ if("sample_demographics" %in% params$options){
   
   cat("### ", stringr::str_to_title(params$demography_1), "  \n")
   
-  print(demographic_distribution(unique_data, params$demography_1))
+  print(demographic_distribution(unique_data, params$demography_1, return_ggplot = TRUE))
   
   cat("  \n")
   cat("  \n")
   
   cat("### ", stringr::str_to_title(params$demography_2), "  \n")
   
-  print(demographic_distribution(unique_data, params$demography_2))
+  print(demographic_distribution(unique_data, params$demography_2, return_ggplot = TRUE))
   
   cat("  \n")
   cat("  \n")
   
   cat("### ", stringr::str_to_title(params$demography_3), "  \n")
   
-  print(demographic_distribution(unique_data, params$demography_3))
+  print(demographic_distribution(unique_data, params$demography_3, return_ggplot = TRUE))
   
   cat("  \n")
     
