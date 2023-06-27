@@ -79,33 +79,40 @@ mod_report_builder_server <- function(id, filter_data,
     output$download_report <- downloadHandler(
       filename = paste0("CustomReport_", Sys.Date(), ".docx"),
       content = function(file) {
-        # check they asked for something
-
-        if (is.null(input$report_components)) {
-          showModal(
-            modalDialog(
-              title = "Error!",
-              HTML("Please select something to report on!"),
-              easyClose = TRUE
+        
+        # add progress report. Progress is updated using incProgress()
+        withProgress(message = "Preparing report, Please be patient...", value = 0, {
+          
+          # check they asked for something
+          if (is.null(input$report_components)) {
+            
+            incProgress(1)
+            
+            showModal(
+              modalDialog(
+                title = "Error!",
+                HTML("Please select something to report on!"),
+                easyClose = TRUE
+              )
             )
-          )
-        }
+          }
 
-        # check there is enough data
-
-        else if (nrow(filter_data()$filter_data) < 10) {
-          showModal(
-            modalDialog(
-              title = "Error!",
-              HTML("Not enough data. Please expand your selection"),
-              easyClose = TRUE
+          # check there is enough data
+          else if (nrow(filter_data()$filter_data) < 10) {
+            
+            incProgress(1)
+            
+            showModal(
+              modalDialog(
+                title = "Error!",
+                HTML("Not enough data. Please expand your selection"),
+                easyClose = TRUE
+              )
             )
-          )
-        }
+          }
 
-        # calculate parameters
-        else {
-          withProgress(message = "Preparing report, Please wait...", value = 0, {
+          # calculate parameters
+          else {
             dates <- switch(input$time_period,
               quarter = previous_quarter(Sys.Date()),
               year = c(Sys.Date(), Sys.Date() - 365),
@@ -114,6 +121,8 @@ mod_report_builder_server <- function(id, filter_data,
                 all_inputs()$date_to[2]
               )
             )
+
+            incProgress(1 / 5)
 
             params <- list(
               dates = dates,
@@ -128,6 +137,8 @@ mod_report_builder_server <- function(id, filter_data,
               demography_3 = get_golem_config("demography_3")
             )
 
+            incProgress(2 / 5)
+
             rmarkdown::render(
               system.file("app", "www", "report.Rmd",
                 package = "experiencesdashboard"
@@ -139,15 +150,17 @@ mod_report_builder_server <- function(id, filter_data,
               envir = new.env(parent = globalenv())
             )
 
+            incProgress(4 / 5)
+
             # copy docx to 'file'
             file.copy(here::here(app_sys(), "app/www", "report.docx"),
               file,
               overwrite = TRUE
             )
+          }
 
-            incProgress(1)
-          })
-        }
+          incProgress(5 / 5)
+        })
       }
     )
   })
