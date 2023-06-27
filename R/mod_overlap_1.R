@@ -194,8 +194,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
               title = "Error!",
               HTML(paste0(
                 strong("Sorry, there is not enough data to draw the upset plot. Please expand your selection")
-              )),
-              easyClose = TRUE
+              ))
             ))
           }
         )
@@ -254,8 +253,11 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       tagList(
         strong(p("This plot is meant to aid users to explore the relationships between the
               sub-categories. Scrow down to select the sub-categories and view the return comments")),
-        # br(),
         plotOutput(ns("category_upset")) %>%
+          ui_tooltip(
+            message = "This plot is here to aid users explore the relationships between the
+              sub-categories in the data."
+          ) %>%
           shinycssloaders::withSpinner(),
 
         # comment table ui ----

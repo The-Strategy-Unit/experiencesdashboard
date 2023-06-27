@@ -45,7 +45,8 @@ Imports:
     writexl,
     xml2,
     SnowballC,
-    pander
+    pander,
+    prompter
 Suggests: 
     assertr,
     data.validator,
