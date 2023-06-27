@@ -4,12 +4,14 @@
 \alias{demographic_distribution}
 \title{Draw the distribution of demographics in the sample}
 \usage{
-demographic_distribution(pass_data, variable)
+demographic_distribution(pass_data, variable, return_ggplot = FALSE)
 }
 \arguments{
 \item{pass_data}{A dataframe, filtered to unique individuals}
 
 \item{variable}{String. Name of variable - e.g. "age", "gender", "ethnicity"}
+
+\item{return_ggplot}{logical if the plot should be returned as a ggplot or plotly object.}
 }
 \value{
 a ggplot2 graph
