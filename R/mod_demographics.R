@@ -82,7 +82,7 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
       demo_data[, get_golem_config("demography_1")] <- demo_data[, get_golem_config("demography_1")] %>%
         unlist(use.names = F) %>%
         factor()
-      
+
       demo_data %>%
         demographic_distribution(variable = get_golem_config("demography_1"))
     })

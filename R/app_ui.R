@@ -43,10 +43,9 @@ app_ui <- function(request) {
         includeCSS(system.file("app/www/", "button-style.css",
           package = "experiencesdashboard"
         )),
-        
+
         # required to add tooltips using the prompter package
         prompter::use_prompt(),
-        
         HTML('<a href="https://github.com/CDU-data-science-team/experiencesdashboard"
              class="github-corner" aria-label="View source on GitHub"><svg width="80"
              height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position:

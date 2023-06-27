@@ -7,7 +7,6 @@
 #' @return a plotly object
 #' @noRd
 compare_demographics <- function(pass_data, variable, score_column = list("fft")) {
-  
   score_column <- unlist(score_column[!vapply(score_column, is.null, TRUE)])
 
   p <- pass_data %>%
@@ -66,7 +65,7 @@ demographic_distribution <- function(pass_data, variable) {
       axis.title = ggplot2::element_text(size = 12),
       axis.text = ggplot2::element_text(size = 11),
     )
-  
+
   p %>%
     plotly::ggplotly(tooltip = c(variable, "n")) %>%
     plotly::config(

@@ -21,7 +21,7 @@ dm_data <- function(data, column_names, comment_1, comment_2 = NULL) {
         comment_type = stringr::str_replace_all(comment_type, "comment_1", comment_1)
       )
   }
-  
+
   return_data %>%
     dplyr::filter(hidden == 0) %>%
     dplyr::select(dplyr::any_of(column_names)) %>%
@@ -35,22 +35,22 @@ dm_data <- function(data, column_names, comment_1, comment_2 = NULL) {
 #'
 #' @param data dataframe. ex. data from the database
 #' @noRd
-clean_super_category <- function(data){
-  data  %>%
+clean_super_category <- function(data) {
+  data %>%
     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
-                  super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
-                  across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
+      super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
+      across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
     )
 }
 
 #' Prepare data for download. Ensures the category and
-#' super_category columns are converted to strings 
-#'  
+#' super_category columns are converted to strings
+#'
 #' @param data dataframe. note: category, super_category columns must be present and in list datatype
 #' @return dataframe
 #' @noRd
-prepare_data_for_download <- function(data){
-  data  %>%
+prepare_data_for_download <- function(data) {
+  data %>%
     # return the category, super_category columns as string
     dplyr::mutate(
       across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
@@ -65,7 +65,7 @@ prepare_data_for_download <- function(data){
 #' @param many_labels rule 2 for defining complex comment
 #' @param data
 #'
-#' @description A fct function to get the rows of data with complex comments. 
+#' @description A fct function to get the rows of data with complex comments.
 #' complex comment is defined as comments with labels more than `many_labels` and words more than `long_words`
 #'
 #' @return a dataframe
@@ -73,13 +73,13 @@ prepare_data_for_download <- function(data){
 #' @noRd
 get_complex_comments <- function(data, multilabel_column = "category", long_words = 50, many_labels = 5) {
   if (!multilabel_column %in% names(data)) stop(paste0("'", multilabel_column, "' not in data"), call. = FALSE)
-  
+
   data %>%
     dplyr::mutate(
       n_word = lengths(stringr::str_split(comment_txt, " ")),
       n_label = sapply(category, length, simplify = TRUE, USE.NAMES = F)
     ) %>%
     dplyr::filter(n_word > long_words | n_label > many_labels) %>%
-    dplyr::select(-n_word, -n_label, -pt_id) %>% 
+    dplyr::select(-n_word, -n_label, -pt_id) %>%
     prepare_data_for_download()
 }

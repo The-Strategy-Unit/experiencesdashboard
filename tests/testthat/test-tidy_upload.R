@@ -43,7 +43,7 @@ test_that("Cleaning of uploaded data works", {
 
   expect_equal(test_template$comment_text, "Service too slow")
   expect_equal(nrow(test_template), 1)
-  
+
   withr::local_envvar("R_CONFIG_ACTIVE" = "trust_LPT")
   test_upload <- upload_data(head(phase_2_upload_data, 50), conn = NULL, trust_id = "trust_LPT", write_db = F)
 

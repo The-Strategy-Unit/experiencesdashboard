@@ -5,7 +5,6 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  
   # Get R_CONFIG_ACTIVE from session data of Connect environment
   # if it hasn't been set before calling run_app()
   cat("Session group on Connect:", session$groups, " \n")

@@ -5,7 +5,6 @@ test_that("demographic_distribution functions works", {
 })
 
 test_that("compare_demographics functions works", {
-
   result2 <- unique_data %>%
     compare_demographics(variable = "age", score_column = list("fft"))
   expect_true(inherits(result2, "plotly"))

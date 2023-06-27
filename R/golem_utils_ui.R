@@ -330,18 +330,19 @@ col_1 <- function(...) {
 #' }
 
 #' Add tooltips to UI element
-#' 
+#'
 #' @param ui_element Element on which a tooltip will be added.
 #' @param message Message to include in the tooltip.
 #' @param type Type of the tooltip. Can be 'NULL' (default),
 #' 'error', 'warning', 'info', 'success'.
 #' @noRd
-ui_tooltip <- function(ui_element, message,  type = "info"){
+ui_tooltip <- function(ui_element, message, type = "info") {
   prompter::add_prompt(
     ui_element,
     message = message,
-    position = "top", type = type, 
-    size = "large", 
+    position = "top", 
+    type = type,
+    size = "large",
     rounded = TRUE,
     bounce = TRUE,
     shadow = FALSE

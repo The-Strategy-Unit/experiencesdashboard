@@ -98,17 +98,17 @@ test_that("get_demography_data works", {
 
 test_that("set_trust_config works", {
   # no group
-  expect_error(set_trust_config("group"), 'Not a member of any group')
-  expect_error(set_trust_config("trust_NUH"), 'Not a member of any group')
+  expect_error(set_trust_config("group"), "Not a member of any group")
+  expect_error(set_trust_config("trust_NUH"), "Not a member of any group")
   expect_error(set_trust_config("otherdashboard-developers"), "Not a member of any group")
   expect_error(set_trust_config("experiencedashboard-admins"), "Not a member of any group")
-  
+
   # multiple groups
   expect_error(
     set_trust_config(c("experiencedashboard-admins", "experiencedashboard-developers", "experiencedashboard-developer-2")),
     "member of multiple groups"
   )
-  
+
   # one group
   expect_equal(set_trust_config(c("experiencedashboard-admins", "experiencedashboard-developers")), "")
   expect_equal(set_trust_config("experiencedashboard-developers"), "")
