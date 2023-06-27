@@ -22,3 +22,13 @@ html_decoder <- function(str) {
   html <- paste0("<x>", str, "</x>")
   parsed <- xml2::xml_text(xml2::read_html(html))
 }
+
+#' Promise aware Pipe operators
+#'
+#' @name promise_pipe
+#' @rdname promise_pipe
+#' @importFrom promises %...>% %...!%
+#' @keywords internal
+#' @noRd
+#' @usage lhs %...>% rhs
+NULL

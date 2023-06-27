@@ -7,6 +7,7 @@
 #' @importFrom golem with_golem_options
 run_app <- function(
     ...) {
+  future::plan(future::multisession) # Options for asynchronous strategies
   with_golem_options(
     app = shinyApp(
       ui = app_ui,

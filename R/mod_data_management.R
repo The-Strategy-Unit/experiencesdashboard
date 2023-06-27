@@ -17,11 +17,16 @@ mod_data_management_ui <- function(id) {
           width = 1,
           actionButton(ns("upload_new_data"), "Upload new data",
             icon = icon("person-circle-plus")
-          )
+          ) %>% 
+            ui_tooltip(
+              message = "Click this button to upload your data. You will get a success message once the 
+                        data is uploaded. You will have to reload your browser to access the new data"
+            )
         )
       ),
       tags$hr(),
-      uiOutput(ns("data_management_UI"))
+      uiOutput(ns("data_management_UI")) %>% 
+        shinycssloaders::withSpinner()
     )
   )
 }
@@ -114,7 +119,12 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         # UI complex comment
 
         fluidRow(
-          column(12, uiOutput(ns("dynamic_complex_ui")))
+          column(
+            12,
+            uiOutput(ns("dynamic_complex_ui"))) %>% 
+            ui_tooltip(
+              message = "This link will download all the rows of data with very long comments or too many assigned sub-categories"
+            )
         ),
         p(strong("To delete row(s): "), "Select the row(s) and click the delete button"),
         # p(strong("To edit any row:"), "Double click the row, edit its value and press CTRL+ENTER to confirm"),
@@ -126,7 +136,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
             title = "Patient experience table",
             DT::DTOutput(ns("pat_table")) %>%
               shinycssloaders::withSpinner()
-          )
+          ) %>% 
+            ui_tooltip(
+              message = "This table contains all the data in the database. You can delete any row or group of rows using the delete button above."
+            )
         )
       )
     })

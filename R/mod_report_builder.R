@@ -75,7 +75,8 @@ mod_report_builder_server <- function(id, filter_data,
         selected = c("category_table", "fft_graph")
       )
     })
-
+    
+    result <- reactiveVal(NULL)
     output$download_report <- downloadHandler(
       filename = paste0("CustomReport_", Sys.Date(), ".docx"),
       content = function(file) {
@@ -138,27 +139,57 @@ mod_report_builder_server <- function(id, filter_data,
             )
 
             incProgress(2 / 5)
-
-            rmarkdown::render(
-              system.file("app", "www", "report.Rmd",
-                package = "experiencesdashboard"
-              ),
-              output_format = "word_document",
-              output_file = here::here(app_sys(), "app/www", "report.docx"),
-              # output_dir =
-              quiet = TRUE, params = params,
-              envir = new.env(parent = globalenv())
-            )
-
-            incProgress(4 / 5)
-
-            # copy docx to 'file'
-            file.copy(here::here(app_sys(), "app/www", "report.docx"),
-              file,
-              overwrite = TRUE
-            )
+            
+            # Implement cross-session asynchronous processes so others users  
+            # don't get stuck waiting for this process during their session
+            promises::future_promise({
+              
+              # this is where error is happen. needs debugging with its throwing this error
+              # quitting from lines 18-44 (report.Rmd) 
+              # <simpleError in isTruthy(params$inputs$location_3): could not find function "isTruthy">
+              #   Unhandled promise error: could not find function "isTruthy"
+              
+              # Building the report (long computation)
+              # rmarkdown::render(
+              #   system.file("app", "www", "report.Rmd",
+              #               package = "experiencesdashboard"
+              #   ),
+              #   output_format = "word_document",
+              #   output_file = here::here(app_sys(), "app/www", "report.docx"),
+              #   # output_dir =
+              #   quiet = TRUE, params = params,
+              #   envir = new.env(parent = globalenv())
+              # )
+              
+              # copy docx to 'file'
+              file.copy(here::here(app_sys(), "app/www", "report.docx"),
+                        file,
+                        overwrite = TRUE
+              )
+            }) %...>% (                
+              # When the report is ready, we prompt the user
+              function(r){
+                showModal(
+                  modalDialog(
+                    title = "Success",
+                    HTML("Your report is ready. See your download folder"),
+                    easyClose = TRUE
+                  )
+                )
+              }
+            ) %...!% (
+                  # If ever the code from the future() returns an error, we prompt the user
+                function(error){
+                  showModal(
+                    modalDialog(
+                      title = "Error",
+                      HTML("Error downloading the report. Please try again or contatct project team if error persist")
+                    )
+                  )
+                print(error)
+                }
+              ) 
           }
-
           incProgress(5 / 5)
         })
       }
