@@ -46,13 +46,13 @@ mod_header_message_server <- function(id, db_data, data_exists) {
         ),
         messageItem(
           from = strong(paste(last_upload_date), style = "color: #005EB8;"),
-          message = p("Date Data was Last Upload"),
+          message = p("Date data was last uploaded"),
           icon = icon("file-pen", style = "color: #005EB8;"),
           time = Sys.Date()
         ),
         messageItem(
           from = strong(paste(last_date_edit), style = "color: #005EB8;"),
-          message = p("Date Data was Last Editted"),
+          message = p("Date data was last editted"),
           icon("calendar", style = "color: #005EB8;")
         )
       )
