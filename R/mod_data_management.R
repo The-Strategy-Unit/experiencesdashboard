@@ -17,15 +17,15 @@ mod_data_management_ui <- function(id) {
           width = 1,
           actionButton(ns("upload_new_data"), "Upload new data",
             icon = icon("person-circle-plus")
-          ) %>% 
+          ) %>%
             ui_tooltip(
-              message = "Click this button to upload your data. You will get a success message once the 
+              message = "Click this button to upload your data. You will get a success message once the
                         data is uploaded. You will have to reload your browser to access the new data"
             )
         )
       ),
       tags$hr(),
-      uiOutput(ns("data_management_UI")) %>% 
+      uiOutput(ns("data_management_UI")) %>%
         shinycssloaders::withSpinner()
     )
   )
@@ -121,7 +121,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         fluidRow(
           column(
             12,
-            uiOutput(ns("dynamic_complex_ui"))) %>% 
+            uiOutput(ns("dynamic_complex_ui"))
+          ) %>%
             ui_tooltip(
               message = "This link will download all the rows of data with very long comments or too many assigned sub-categories"
             )
@@ -136,7 +137,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
             title = "Patient experience table",
             DT::DTOutput(ns("pat_table")) %>%
               shinycssloaders::withSpinner()
-          ) %>% 
+          ) %>%
             ui_tooltip(
               message = "This table contains all the data in the database. You can delete any row or group of rows using the delete button above."
             )
@@ -299,8 +300,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
       )
     })
 
-    # Save (write edited data to source) ####
-
+    # Save (write editted data to source) ####
     observeEvent(input$save_to_db, {
       if (length(dt_out$index) < 1) {
         showModal(modalDialog(
@@ -353,7 +353,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     })
 
     # Download the data ####
-
     output$download1 <- downloadHandler(
       filename = paste0("pat_data-", Sys.Date(), ".xlsx"),
       content = function(file) {
@@ -365,7 +364,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     )
 
     # complex comments ----
-
     output$dynamic_complex_ui <- renderUI({
       # complex comments ----
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
@@ -394,7 +392,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     )
 
     # data upload module ----
-
     observeEvent(input$upload_new_data, {
       # create an upload interface
 
@@ -425,35 +422,44 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
       req(import_dt$data())
 
       raw_df <- import_dt$data()
-      # print(str(raw_df))
+      
+      cat('No of reponders in upload data:', nrow(raw_df), ' \n')
 
       compulsory_cols <- c("date", "location_1", "question_1", "fft_score")
 
-      tryCatch(
-        {
-          if (!all(compulsory_cols %in% names(raw_df))) {
-            stop("the following columns are required [date, location_1, question_1, fft_score]", call. = FALSE)
-          }
+      showModal(modalDialog(
+        title = "Processing...",
+        HTML(paste(
+          p("Your data is being uploaded in the background. You can continue to explore your current data in the dashboard"),
+          p("You will be notified when the new data is ready for exploration.")
+        ))
+      ))
 
-          withProgress(message = "Processing data. This may take a while.
-                     Please wait...", value = 0, {
-            upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
-            incProgress(1)
-          })
+      # Implement inner-session asynchronous processes so others process
+      # don't get stuck waiting for this process during this session
+      promises::future_promise({
+        # Stop and throw an error if compulsory columns are absent
+        if (!all(compulsory_cols %in% names(raw_df))) {
+          stop("the following columns are required [date, location_1, question_1, fft_score]", call. = FALSE)
+        }
 
-
+        # upload the data
+        upload_data(data = raw_df, conn = get_pool(), trust_id = get_golem_config("trust_name"))
+      }, seed = TRUE) %...>% (
+        function(.) {
+          # When the upload is successful, we prompt the user to reload their browser
           showModal(modalDialog(
             title = "Success!",
             paste0(nrow(raw_df), " records successfully imported. Please refresh
-             your browser to access the new data"),
-            easyClose = TRUE
+                your browser to access the new data"),
           ))
-        },
-        error = function(e) {
-          print(e$message) # for logging error
+        }) %...!% (
 
-          # try to guess the error type to improve user experience
+        # If ever the code from the future() returns an error, we prompt the user
+        function(e) {
+          print(e$message) # for logging the error
 
+          # Determine the error type to improve user experience
           col_error <- stringr::str_detect(e$message, "the following columns are required")
           api_error <- stringr::str_detect(e$message, "Connection refused")
           db_error <- stringr::str_detect(e$message, "dbWriteTable|nanodbc/nanodbc")
@@ -461,31 +467,27 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
           if (db_error) {
             showModal(modalDialog(
               title = "Database Error!",
-              "Please try again or contact project admin if error persist",
-              easyClose = TRUE
+              "Please try again or contact project admin if error persist"
             ))
           } else if (col_error) {
             showModal(modalDialog(
               title = "Data Column Error!",
-              paste(e),
-              easyClose = TRUE
+              paste(e)
             ))
           } else if (api_error) {
             showModal(modalDialog(
               title = "API Error!",
-              "Please try again or contact project admin if error persist",
-              easyClose = TRUE
+              "Please try again or contact project admin if error persist"
             ))
           } else {
             showModal(modalDialog(
               title = "Data Error!",
               "There was a problem importing your data. Try reuploading and check
-            in the 'View' section to ensure that the data is well formatted",
-              easyClose = TRUE
+            in the 'View' section to ensure that the data is well formatted"
             ))
           }
-        }
-      )
+        })
+      import_dt <-  NULL # invaldate the upload data holder after each upload
     })
   })
 }
