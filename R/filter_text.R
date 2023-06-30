@@ -82,14 +82,15 @@ matched_comments <- function(lowered_comments, search_fn, search_strings) {
     unlist()
 }
 
+#' Find the stem word version of each search term
+#'
 #' @description sanitise the input strings and add their stemmed words to the list of words to search
 #' @param filter_text comma separated string with search terms in
 #' @noRd
 sanitized_search_strings <- function(filter_text) {
   sanitized_input <- input_sanitizer(filter_text)
   stemmed_input <- tm::stemDocument(sanitized_input)
-  search_strings <- union(sanitized_input, stemmed_input)
-  search_strings <- search_strings[search_strings != ""]
+  search_strings <- stemmed_input[stemmed_input != ""]
 
   return(search_strings)
 }
