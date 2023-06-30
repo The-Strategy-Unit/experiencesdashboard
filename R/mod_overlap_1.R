@@ -139,7 +139,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
 
     ## the upset plot ----
     # create a session-level cacheable version of upset_plot()
-    memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache)
+    memoised_upset_plot <- memoise::memoise(upset_plot, cache = getShinyOption("cache"))
     output$category_upset <- renderPlot(
       {
         if (!is.null(input_select_super_category)) {
@@ -223,7 +223,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
     })
 
     # create a session-level cacheable version of comment_table()
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache)
+    memoised_comment_table <- memoise::memoise(comment_table, cache = getShinyOption("cache"))
     output$overlap_table <- DT::renderDT({
       # only run when at least 2 categories are selected
       req(

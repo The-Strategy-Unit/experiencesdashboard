@@ -23,7 +23,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
+    memoised_comment_table <- memoise::memoise(comment_table, cache = getShinyOption("cache")) # create a session-level cacheable version of comment_table()
 
     # Super UI ----
     output$dynamic_trendUI <- renderUI({

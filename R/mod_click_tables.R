@@ -21,7 +21,7 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
+    memoised_comment_table <- memoise::memoise(comment_table, cache = getShinyOption("cache")) # create a session-level cacheable version of comment_table()
 
     # add NHS blue color to the Datatable header
     initComplete <- DT::JS(

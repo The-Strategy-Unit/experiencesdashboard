@@ -14,3 +14,4 @@ renv*
 trial_scripts/
 inst/app/www/*.docx
 secret-data/
+app_cache/

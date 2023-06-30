@@ -6,6 +6,11 @@
 #' @noRd
 app_server <- function(input, output, session) {
   
+  # Set a persistent application-level cache to serve multiple R processes
+  # When the application is redeployed, the newly-deployed 
+  # version will start with an empty cache
+  shinyOptions(cache = cachem::cache_disk("./app_cache/cache/"))
+  
   # Get R_CONFIG_ACTIVE from session data of Connect environment
   # if it hasn't been set before calling run_app()
   cat("Session group on Connect:", session$groups, " \n")
@@ -209,10 +214,7 @@ app_server <- function(input, output, session) {
       ))
     }
 
-
-
     # filter 2: by selected Locations ----
-
     return_data <- get_location_data(
       date_filter = date_filter(),
       select_location_1 = input$select_location_1,
@@ -221,7 +223,6 @@ app_server <- function(input, output, session) {
     )
 
     # filter 2: by selected demographics ----
-
     demography_data <- get_demography_data(
       return_data = return_data,
       select_demography_1 = demographic_filters()$select_demography_1,
@@ -275,7 +276,18 @@ app_server <- function(input, output, session) {
       "unique_data" = unique_data,
       "demography_number" = no_responders
     ))
-  })
+  }) %>% 
+    bindCache(get_golem_config("trust_name"), 
+              date_filter(),
+              db_data, 
+              data_exists, 
+              input$select_location_1, 
+              input$select_location_2,
+              input$select_location_3,
+              demographic_filters()$select_demography_1,
+              demographic_filters()$select_demography_3,
+              demographic_filters()$select_demography_3
+              )
 
   # modules----
   ## add information to dashboard header ----
