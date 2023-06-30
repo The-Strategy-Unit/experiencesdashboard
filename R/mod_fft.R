@@ -45,6 +45,6 @@ mod_fft_server <- function(id, filter_data) {
 
       plot_fft_spc(graph_data())
     }) %>%
-      bindCache(graph_data())
+      bindCache(filter_data()$unique_data)
   })
 }
