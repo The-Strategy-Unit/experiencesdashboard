@@ -14,12 +14,8 @@ app_server <- function(input, output, session) {
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
 
-  # Initialize the database connection
-  pool <- get_pool()
-
   # fetch  the data
-  memoised_get_db_data <- memoise::memoise(get_db_data, cache = getShinyOption("cache")) # create a app-level cacheable version of get_db_data()
-  db_data <- memoised_get_db_data(pool, get_golem_config("trust_name"))
+  db_data <- get_db_data(get_pool(), get_golem_config("trust_name"))
 
   # find out if there is data in the table
   data_exists <- db_data %>%
@@ -287,7 +283,7 @@ app_server <- function(input, output, session) {
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)
 
-  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists)
+  mod_data_management_server("data_management_1", db_conn = get_pool(), filter_data, data_exists)
 
   filter_category <- mod_category_criticality_server("category_criticality_ui_1",
     filter_data = filter_data
