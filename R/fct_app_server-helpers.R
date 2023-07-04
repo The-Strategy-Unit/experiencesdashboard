@@ -77,7 +77,7 @@ get_tidy_filter_data <- function(return_data, data_exists = FALSE) {
 #' create the database connection
 #' @noRd
 get_pool <- function() {
-  pool <- odbc::dbConnect(
+  odbc::dbConnect(
     drv = odbc::odbc(),
     driver = Sys.getenv("odbc_driver"),
     server = Sys.getenv("HOST_NAME"),
