@@ -5,7 +5,7 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  
+
   # Get R_CONFIG_ACTIVE from session data of Connect environment
   # if it hasn't been set before calling run_app()
   cat("Session group on Connect:", session$groups, " \n")
@@ -14,11 +14,8 @@ app_server <- function(input, output, session) {
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
 
-  # Initialize the database connection
-  pool <- get_pool()
-
   # fetch  the data
-  db_data <- get_db_data(pool, get_golem_config("trust_name"))
+  db_data <- get_db_data(get_pool(), get_golem_config("trust_name"))
 
   # find out if there is data in the table
   data_exists <- db_data %>%
@@ -49,8 +46,7 @@ app_server <- function(input, output, session) {
       dplyr::select(dplyr::any_of(c(
         "location_1", "age",
         "gender", "ethnicity"
-      ))) %>%
-      dplyr::collect()
+      ))) 
   }
 
   # add date filter derived from the db data
@@ -203,16 +199,12 @@ app_server <- function(input, output, session) {
   filter_data <- reactive({
     if (get_golem_config("trust_name") == "demo_trust") {
       return(list(
-        "filter_data" = db_data %>%
-          dplyr::collect(),
+        "filter_data" = db_data,
         "demography_number" = NULL
       ))
     }
 
-
-
     # filter 2: by selected Locations ----
-
     return_data <- get_location_data(
       date_filter = date_filter(),
       select_location_1 = input$select_location_1,
@@ -221,7 +213,6 @@ app_server <- function(input, output, session) {
     )
 
     # filter 2: by selected demographics ----
-
     demography_data <- get_demography_data(
       return_data = return_data,
       select_demography_1 = demographic_filters()$select_demography_1,
@@ -238,7 +229,6 @@ app_server <- function(input, output, session) {
     # only return demography filtered data if the number of responders is more than 20
     if (no_responders < 20 & data_exists) {
       return_data <- return_data %>%
-        dplyr::collect() %>%
         dplyr::arrange(date)
 
       # add a pop up warning whenever any of the demographic filter is selected and
@@ -257,7 +247,6 @@ app_server <- function(input, output, session) {
       }
     } else {
       return_data <- demography_data %>%
-        dplyr::collect() %>%
         dplyr::arrange(date)
     }
 
@@ -294,7 +283,7 @@ app_server <- function(input, output, session) {
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)
 
-  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists)
+  mod_data_management_server("data_management_1", db_conn = get_pool(), filter_data, data_exists)
 
   filter_category <- mod_category_criticality_server("category_criticality_ui_1",
     filter_data = filter_data

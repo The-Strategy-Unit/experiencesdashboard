@@ -446,7 +446,7 @@ test_that("loads mod_data_management_server correctly", {
 
   testServer(app_server, {
     expect_called(m, 1)
-    expect_args(m, 1, "data_management_1", pool, filter_data, data_exists)
+    expect_args(m, 1, "data_management_1", "get_pool", filter_data, data_exists)
   })
 })
 
@@ -814,8 +814,8 @@ test_that("database data is returned as a lazy tibble", {
 
   skip_on_ci()
   testServer(app_server, {
-    # test that the database data is returned as a lazy tibble
-    inherits(db_data, "tbl_sql") |> expect_true()
+    # test that the database data is returned as a tibble
+    inherits(db_data, "data.frame") |> expect_true()
 
     # test that when trust name is "trust_LPT" then db_data is empty
     expect_true(data_exists)
