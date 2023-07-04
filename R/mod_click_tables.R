@@ -59,8 +59,7 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
         count_column = "category",
         comment_type = comment_type
       )
-    }) %>%
-      bindCache(filter_data()$single_labeled_filter_data)
+    })
 
     output$table <- DT::renderDT({
       calculated_table <- calculatedTable()

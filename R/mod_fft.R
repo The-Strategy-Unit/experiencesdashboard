@@ -24,16 +24,14 @@ mod_fft_server <- function(id, filter_data) {
 
     graph_data <- reactive({
       split_data_spc(filter_data()$unique_data, variable = "fft", chunks = "monthly")
-    }) %>%
-      bindCache(filter_data()$unique_data)
-
+    })
+    
     no_group <- reactive({
       graph_data() %>%
         dplyr::pull(1) %>%
         unique() %>%
         length()
-    }) %>%
-      bindCache(filter_data()$unique_data)
+    })
 
     output$spc_plot <- renderPlot({
       validate(
