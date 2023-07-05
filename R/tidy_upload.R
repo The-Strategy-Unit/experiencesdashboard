@@ -207,16 +207,11 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
   stopifnot("values in 'comment ID' should be unique" = final_df$comment_id %>% duplicated() %>% sum() == 0)
 
   if (write_db) {
-    # write the processed data to database
     cat("Just started appending ", nrow(final_df), " rows of data into database ... \n")
-    # DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
-    # this throw error when data can't be appended e.g when data column can't be coerce into the db table datatype
-    dplyr::rows_append(
-      dplyr::tbl(conn, trust_id),
-      final_df,
-      copy = TRUE,
-      in_place = TRUE
-    )
+    
+    # write the processed data to database
+    DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
+    
     print("Done appending to database ...")
   } else {
     return(final_df)
