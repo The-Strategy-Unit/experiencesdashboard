@@ -77,7 +77,7 @@ get_tidy_filter_data <- function(return_data, data_exists = FALSE) {
 #' create the database connection
 #' @noRd
 get_pool <- function() {
-  odbc::dbConnect(
+  pool::dbPool(
     drv = odbc::odbc(),
     driver = Sys.getenv("odbc_driver"),
     server = Sys.getenv("HOST_NAME"),
@@ -98,6 +98,5 @@ get_db_data <- function(pool, trust_name) {
       trust_name
     )
   ) %>%
-    tidy_all_trusts() %>% 
-    dplyr::collect()
+    tidy_all_trusts() 
 }
