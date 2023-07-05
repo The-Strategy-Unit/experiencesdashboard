@@ -417,21 +417,32 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         ))
       }
     )
-
+    
+    # initiate reactive values to track the upload event and update the upload button
+    check_upload <- reactiveVal(NULL)
+    
     observe({
       req(import_dt$data())
-
+      
+      check_upload(NULL)
+      # update actionButton to show we are busy
+      updateActionButton(inputId = "upload_new_data",
+                         label = "Processing and uploading Data",
+                         icon = icon("sync", class = "fa-spin"))
+      
       raw_df <- import_dt$data()
       
       cat('No of reponders in upload data:', nrow(raw_df), ' \n')
 
       compulsory_cols <- c("date", "location_1", "question_1", "fft_score")
-
+      
       showModal(modalDialog(
         title = "Processing...",
         HTML(paste(
-          p("Your data is being uploaded in the background. You can continue to explore your current data in the dashboard"),
-          p("You will be notified when the new data is ready for exploration.")
+          p("Your data is being uploaded in the background."),
+          p("You can continue to explore your current data in the dashboard and
+            You will be notified when the newly updated data is ready for exploration."),
+          p('OR You can close your browser and login later to access the new updated data')
         ))
       ))
 
@@ -445,18 +456,30 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
         # upload the data
         upload_data(data = raw_df, conn = get_pool(), trust_id = get_golem_config("trust_name"))
+        TRUE # return true if the whole future process is successful
       }, seed = TRUE) %...>% (
         function(.) {
+          
+          check_upload(.) 
+          
           # When the upload is successful, we prompt the user to reload their browser
           showModal(modalDialog(
             title = "Success!",
-            paste0(nrow(raw_df), " records successfully imported. Please refresh
-                your browser to access the new data"),
+            paste0(nrow(raw_df), " records have been successfully imported. Please refresh
+                your browser to access the updated data"),
           ))
         }) %...!% (
 
         # If ever the code from the future() returns an error, we prompt the user
         function(e) {
+          
+          # update actionButton to show it is ready for another upload
+          updateActionButton(
+            inputId = "upload_new_data", 
+            label = "Upload new data",
+            icon = icon("person-circle-plus")
+          )
+          
           print(e$message) # for logging the error
 
           # Determine the error type to improve user experience
@@ -489,5 +512,18 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         })
       import_dt <-  NULL # invaldate the upload data holder after each upload
     })
+    
+    observe({
+      
+      req(check_upload())
+      
+      # update actionButton to show it is ready for another upload
+      updateActionButton(
+        inputId = "upload_new_data", 
+        label = "Upload new data",
+        icon = icon("person-circle-plus")
+      )
+    })
+    
   })
 }
