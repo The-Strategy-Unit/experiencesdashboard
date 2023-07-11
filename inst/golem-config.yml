@@ -137,9 +137,9 @@ trust_NTH:
   comment_1: Why did you answer this way?
   comment_2: What could be improved?
   question_1: fft
-  location_1: Division
+  location_1: Site
   location_2: Directorate
-  location_3: Team
+  location_3: Location
   demography_1: age
   demography_2: sex
   demography_3: gender

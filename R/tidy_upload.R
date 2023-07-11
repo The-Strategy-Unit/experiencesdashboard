@@ -34,6 +34,36 @@ tidy_trust_neas <- function(db_tidy) {
     )
 }
 
+tidy_trust_nth <- function(db_tidy) {
+  db_tidy %>%
+    dplyr::mutate(age = as.integer(age)) %>%
+    dplyr::mutate(
+      age = dplyr::case_when(
+        age == 0 ~ "0 - 16",
+        age == 1 ~ "17 - 24",
+        age == 2 ~ "25 - 34",
+        age == 3 ~ "35 - 44",
+        age == 4 ~ "45 - 54",
+        age == 5 ~ "55 - 64",
+        age == 6 ~ "65 - 74",
+        age == 7 ~ "75+",
+        TRUE ~ "Prefer not to say"
+      ),
+      sex = dplyr::case_when(
+        sex == 1 ~ "Male",
+        sex == 2 ~ "Female",
+        sex == 3 ~ "Prefer not to say",
+        TRUE ~ "Prefer to self-describe"
+      ),
+      gender = dplyr::case_when(
+        gender == 1 ~ "Male",
+        gender == 2 ~ "Female",
+        gender == 3 ~ "Prefer not to say",
+        TRUE ~ "Prefer to self-describe"
+      )
+    )
+}
+
 #' Clean an uploaded dataset from a user of the dashboard
 #' @description uploaded data will often have garbage in the comments
 #' box such as "NULL", "NA", "N/A", etc. Clean these comments and drop all
@@ -134,6 +164,7 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
   # do trust specific data cleaning ----
   if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
   if (trust_id == "trust_NEAS") db_tidy <- db_tidy %>% tidy_trust_neas()
+  if (trust_id == "trust_NTH") db_tidy <- db_tidy %>% tidy_trust_nth()
 
   # call API for label predictions ----
   # prepare the data for the API
