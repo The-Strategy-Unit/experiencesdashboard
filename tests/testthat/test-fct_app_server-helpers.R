@@ -1,4 +1,5 @@
 test_that("db connect can be created", {
+  withr::local_envvar("R_CONFIG_ACTIVE" = "trust_NTH")
   skip_on_ci()
   expect_no_error(get_pool())
 })

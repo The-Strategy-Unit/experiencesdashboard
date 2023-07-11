@@ -46,6 +46,7 @@ Imports:
     xml2,
     SnowballC,
     pander,
+    pool,
     prompter
 Suggests: 
     assertr,

@@ -127,7 +127,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
               message = "This link will download all the rows of data with very long comments or too many assigned sub-categories"
             )
         ),
-        p(strong("To delete row(s): "), "Select the row(s) and click the delete button"),
+        p(strong("To delete row(s): "), "Select the row(s) and click the delete button."),
+        p(strong(em("When you are done editting, you will need to refresh your browser to pull the editted data into other tabs of the dashboard"))),
         # p(strong("To edit any row:"), "Double click the row, edit its value and press CTRL+ENTER to confirm"),
 
         # display the table

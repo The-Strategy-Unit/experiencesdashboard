@@ -104,8 +104,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
         make_trend_data() %>%
         plot_trend("super_category", source = super_plot_source) %>%
         plotly::event_register("plotly_click")
-    }) %>%
-      bindCache(filter_data()$single_labeled_filter_data)
+    })
 
     ## trend plot for the sub-category ----
     sub_plot_source <- ns("event_id-1") # to get user data from the sub category plot
@@ -117,11 +116,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
         make_trend_data(selected_super_category = super_category) %>%
         plot_trend("category", source = sub_plot_source, super_category = super_category) %>%
         plotly::event_register("plotly_click")
-    }) %>%
-      bindCache(
-        filter_data()$single_labeled_filter_data,
-        input$select_super_category
-      )
+    })
 
     ## the comments tables - super category ----
 

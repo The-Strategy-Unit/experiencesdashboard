@@ -6,11 +6,6 @@
 #' @noRd
 app_server <- function(input, output, session) {
 
-  # Set a persistent application-level cache to serve multiple R processes
-  # When the application is redeployed, the newly-deployed 
-  # version will start with an empty cache
-  shinyOptions(cache = cachem::cache_disk("./app_cache/cache/"))
-
   # Get R_CONFIG_ACTIVE from session data of Connect environment
   # if it hasn't been set before calling run_app()
   cat("Session group on Connect:", session$groups, " \n")
@@ -19,9 +14,13 @@ app_server <- function(input, output, session) {
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
 
-  # Initialize the database connection
+  # Create  DB connection pool
   pool <- get_pool()
-
+  
+  onStop(function() {
+    pool::poolClose(pool)
+  })
+  
   # fetch  the data
   db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
@@ -54,7 +53,7 @@ app_server <- function(input, output, session) {
       dplyr::select(dplyr::any_of(c(
         "location_1", "age",
         "gender", "ethnicity"
-      ))) %>%
+      ))) %>% 
       dplyr::collect()
   }
 
@@ -208,7 +207,7 @@ app_server <- function(input, output, session) {
   filter_data <- reactive({
     if (get_golem_config("trust_name") == "demo_trust") {
       return(list(
-        "filter_data" = db_data %>%
+        "filter_data" = db_data %>% 
           dplyr::collect(),
         "demography_number" = NULL
       ))
@@ -238,7 +237,7 @@ app_server <- function(input, output, session) {
 
     # only return demography filtered data if the number of responders is more than 20
     if (no_responders < 20 & data_exists) {
-      return_data <- return_data %>%
+      return_data <- return_data %>% 
         dplyr::collect() %>%
         dplyr::arrange(date)
 
@@ -257,7 +256,7 @@ app_server <- function(input, output, session) {
         ))
       }
     } else {
-      return_data <- demography_data %>%
+      return_data <- demography_data %>% 
         dplyr::collect() %>%
         dplyr::arrange(date)
     }
