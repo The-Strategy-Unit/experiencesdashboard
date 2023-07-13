@@ -137,9 +137,19 @@ trust_NTH:
   comment_1: Why did you answer this way?
   comment_2: What could be improved?
   question_1: fft
-  location_1: Division
+  location_1: Site
   location_2: Directorate
-  location_3: Team
+  location_3: Location
   demography_1: age
   demography_2: sex
   demography_3: gender
+trust_NEAS:
+  trust_name: trust_NEAS
+  comment_1: What could be improved?
+  comment_2: FFT overall satisfaction
+  question_1: fft
+  location_1: CCG Area
+  location_2: Station
+  demography_1: ethnicity
+  demography_2: disability
+  demography_3: sexuality

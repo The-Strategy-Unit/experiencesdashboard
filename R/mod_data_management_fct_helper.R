@@ -28,7 +28,8 @@ dm_data <- function(data, column_names, comment_1, comment_2 = NULL) {
     dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
     dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>% # delete all empty columns
     dplyr::mutate(date = as.Date(date)) %>%
-    clean_super_category()
+    clean_super_category() %>% 
+    dplyr::arrange(comment_id)
 }
 
 #' remove duplicate values from each super category row

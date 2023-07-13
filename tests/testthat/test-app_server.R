@@ -814,7 +814,7 @@ test_that("database data is returned as a lazy tibble", {
 
   skip_on_ci()
   testServer(app_server, {
-    # test that the database data is returned as a lazy tibble
+    # test that the database data is returned as a tibble
     inherits(db_data, "tbl_sql") |> expect_true()
 
     # test that when trust name is "trust_LPT" then db_data is empty

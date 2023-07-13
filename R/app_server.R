@@ -5,7 +5,7 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  
+
   # Get R_CONFIG_ACTIVE from session data of Connect environment
   # if it hasn't been set before calling run_app()
   cat("Session group on Connect:", session$groups, " \n")
@@ -14,9 +14,13 @@ app_server <- function(input, output, session) {
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
 
-  # Initialize the database connection
+  # Create  DB connection pool
   pool <- get_pool()
-
+  
+  onStop(function() {
+    pool::poolClose(pool)
+  })
+  
   # fetch  the data
   db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
@@ -49,7 +53,7 @@ app_server <- function(input, output, session) {
       dplyr::select(dplyr::any_of(c(
         "location_1", "age",
         "gender", "ethnicity"
-      ))) %>%
+      ))) %>% 
       dplyr::collect()
   }
 
@@ -203,16 +207,13 @@ app_server <- function(input, output, session) {
   filter_data <- reactive({
     if (get_golem_config("trust_name") == "demo_trust") {
       return(list(
-        "filter_data" = db_data %>%
+        "filter_data" = db_data %>% 
           dplyr::collect(),
         "demography_number" = NULL
       ))
     }
 
-
-
     # filter 2: by selected Locations ----
-
     return_data <- get_location_data(
       date_filter = date_filter(),
       select_location_1 = input$select_location_1,
@@ -221,7 +222,6 @@ app_server <- function(input, output, session) {
     )
 
     # filter 2: by selected demographics ----
-
     demography_data <- get_demography_data(
       return_data = return_data,
       select_demography_1 = demographic_filters()$select_demography_1,
@@ -237,7 +237,7 @@ app_server <- function(input, output, session) {
 
     # only return demography filtered data if the number of responders is more than 20
     if (no_responders < 20 & data_exists) {
-      return_data <- return_data %>%
+      return_data <- return_data %>% 
         dplyr::collect() %>%
         dplyr::arrange(date)
 
@@ -256,7 +256,7 @@ app_server <- function(input, output, session) {
         ))
       }
     } else {
-      return_data <- demography_data %>%
+      return_data <- demography_data %>% 
         dplyr::collect() %>%
         dplyr::arrange(date)
     }

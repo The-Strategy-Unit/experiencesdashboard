@@ -1,5 +1,4 @@
 # function to do trust specific data cleaning
-
 tidy_trust_gosh <- function(db_tidy) {
   db_tidy %>%
     dplyr::mutate(age = as.integer(age)) %>%
@@ -17,30 +16,53 @@ tidy_trust_gosh <- function(db_tidy) {
     )
 }
 
-tidy_trust_d <- function(db_tidy) {
+tidy_trust_neas <- function(db_tidy) {
   db_tidy %>%
-    dplyr::mutate(fft = 6 - fft) %>%
-    dplyr::mutate(date = lubridate::as_date(date, format = "%m/%d/%Y"))
+    dplyr::mutate(
+      fft_score = dplyr::case_when(
+        fft_score == 'Very good' ~ 1,
+        fft_score == 'Good' ~ 2,
+        fft_score == 'Neither good nor poor' ~ 3,
+        fft_score == 'Poor' ~ 4,
+        fft_score == 'Very poor' ~ 5,
+        fft_score == 'Don’t know' ~ 6,
+        TRUE ~ NA
+      )
+    ) %>%
+    dplyr::mutate(
+      date = as.Date(.data$date, "%d/%m/%Y")
+    )
 }
 
-tidy_trust_c_e <- function(db_tidy) {
+tidy_trust_nth <- function(db_tidy) {
   db_tidy %>%
-    dplyr::mutate(fft = dplyr::case_when(
-      fft %in% c("Dont know", "Dont Know") ~ NA_integer_,
-      fft == "Very poor" ~ 1L,
-      fft == "Poor" ~ 2L,
-      fft == "Neither good nor poor" ~ 3L,
-      fft == "Good" ~ 4L,
-      fft == "Very good" ~ 5L,
-      TRUE ~ NA_integer_
-    )) %>%
-    dplyr::mutate(age = dplyr::case_when(
-      age == "Up to 25" ~ "0 - 25",
-      TRUE ~ age
-    )) %>%
-    dplyr::mutate(date = as.Date(date, format = "%d/%m/%Y"))
+    dplyr::mutate(age = as.integer(age)) %>%
+    dplyr::mutate(
+      age = dplyr::case_when(
+        age == 0 ~ "0 - 16",
+        age == 1 ~ "17 - 24",
+        age == 2 ~ "25 - 34",
+        age == 3 ~ "35 - 44",
+        age == 4 ~ "45 - 54",
+        age == 5 ~ "55 - 64",
+        age == 6 ~ "65 - 74",
+        age == 7 ~ "75+",
+        TRUE ~ "Prefer not to say"
+      ),
+      sex = dplyr::case_when(
+        sex == 1 ~ "Male",
+        sex == 2 ~ "Female",
+        sex == 3 ~ "Prefer not to say",
+        TRUE ~ "Prefer to self-describe"
+      ),
+      gender = dplyr::case_when(
+        gender == 1 ~ "Male",
+        gender == 2 ~ "Female",
+        gender == 3 ~ "Prefer not to say",
+        TRUE ~ "Prefer to self-describe"
+      )
+    )
 }
-
 
 #' Clean an uploaded dataset from a user of the dashboard
 #' @description uploaded data will often have garbage in the comments
@@ -65,7 +87,7 @@ clean_dataframe <- function(data, comment_column) {
     dplyr::filter(
       !is.na(.data[[comment_column]]),
       !is.null(.data[[comment_column]]),
-      !.data[[comment_column]] %in% c("NULL", "NA", "N/A")
+      !.data[[comment_column]] %in% c("NULL", "NA", "N/A", "Did not answer")
     )
 }
 
@@ -141,6 +163,8 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
 
   # do trust specific data cleaning ----
   if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
+  if (trust_id == "trust_NEAS") db_tidy <- db_tidy %>% tidy_trust_neas()
+  if (trust_id == "trust_NTH") db_tidy <- db_tidy %>% tidy_trust_nth()
 
   # call API for label predictions ----
   # prepare the data for the API
@@ -185,7 +209,7 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
       hidden = 0,
       date = as.Date(.data$date)
     )
-
+  
   print("Doing final data tidy")
   # set the starting value for the auto-incremented comment_id
   # This will ensure that when we append the new data,
@@ -214,16 +238,11 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
   stopifnot("values in 'comment ID' should be unique" = final_df$comment_id %>% duplicated() %>% sum() == 0)
 
   if (write_db) {
-    # write the processed data to database
     cat("Just started appending ", nrow(final_df), " rows of data into database ... \n")
-    # DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
-    # this throw error when data can't be appended e.g when data column can't be coerce into the db table datatype
-    dplyr::rows_append(
-      dplyr::tbl(conn, trust_id),
-      final_df,
-      copy = TRUE,
-      in_place = TRUE
-    )
+    
+    # write the processed data to database
+    DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
+    
     print("Done appending to database ...")
   } else {
     return(final_df)
