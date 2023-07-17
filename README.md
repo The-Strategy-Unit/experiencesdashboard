@@ -11,6 +11,8 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 ## About
 
+This read me is based on version [0.7.2](https://github.com/CDU-data-science-team/experiencesdashboard/tree/0.7.2)
+
 The Experience dashboard is the front end tool (Shiny App) for the [Patient Experience Qualitative Data Categorisation project](https://cdu-data-science-team.github.io/PatientExperience-QDC/), funded by NHS England and hosted by Nottinghamshire Healthcare NHS Foundation Trust. It ties a machine learning back-end, the [Pxtextmining](https://cdu-data-science-team.github.io/pxtextmining/reference/API/API/), to the data source via an API and present metrics and graphs to help clinical staffs and managers quickly gain insight from patient experience data collected via the [NHS England Friends and Family Test](https://www.england.nhs.uk/fft/).
 
 A hosted version can be found [here](https://feedbackmatters.uk/rsconnect/experience_a/). Please note that some of the data has been modified for the purposes of
@@ -49,6 +51,8 @@ experiencesdashboard
 └── rsconnect/
 ```
 
+------
+
 | Name | Link | Description |
 | ---- | ---- | ----------- |
 | .github/workflows | [[Link](/.github/workflows)]  | Github Action workflow files that automate the `R CMD check` and `deployment` process |
@@ -81,7 +85,7 @@ Follow this approach if you have the right access to this project database
 
 #### Install the package
 
-The development version is available from GitHub with:
+{experiencesdashboard} is not currently on CRAN, so you will have to install it directly from Github.
 
 ``` r
 # install.packages("devtools")
@@ -139,4 +143,4 @@ By contributing to this project, you agree to abide by its terms.
 
 ## License
 
-Distributed under a MIT License. _See [LICENSE.md](/LICENSE) for more information._
+Distributed under a MIT License. _See [LICENSE.md](/LICENSE.md) for more information._
