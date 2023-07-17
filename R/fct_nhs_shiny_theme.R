@@ -13,7 +13,7 @@ nhs_shiny_theme <- function() {
     fresh::adminlte_sidebar(
       width = "250px",
       dark_hover_bg = "#41B6E6",
-      dark_bg = "#D8DEE9",
+      dark_bg = "#E8EDEE",
     ),
     fresh::adminlte_global(
       content_bg = "#FFF",
