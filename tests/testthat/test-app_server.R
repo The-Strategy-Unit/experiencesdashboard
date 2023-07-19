@@ -160,7 +160,7 @@ test_that("loads mod_header_message_server correctly", {
 
   testServer(app_server, {
     expect_called(m, 1)
-    expect_args(m, 1, "messageMenu", phase_2_db_data, data_exists)
+    expect_args(m, 1, "messageMenu", "get_pool", phase_2_db_data, data_exists)
   })
 })
 

@@ -72,18 +72,18 @@ test_that("get_location_data works", {
 })
 
 test_that("get_demography_data works", {
-  withr::local_envvar("R_CONFIG_ACTIVE" = "trust_LPT")
-  # > get_golem_config("demography_2")
-  # [1] "age"
+  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   # > get_golem_config("demography_1")
+  # [1] "age"
+  # > get_golem_config("demography_2")
   # [1] "sex"
   # > get_golem_config("demography_3")
   # [1] "ethnicity"
 
   test1 <- get_demography_data(
     return_data = phase_2_db_data,
-    select_demography_1 = "Male",
-    select_demography_2 = "0 - 11",
+    select_demography_1 = "0 - 11",
+    select_demography_2 = "Male",
     select_demography_3 = "Mixed"
   )
   expect_equal(nrow(test1), 2)
