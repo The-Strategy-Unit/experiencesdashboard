@@ -24,11 +24,11 @@ mod_header_message_server <- function(id, pool, db_data, data_exists) {
       isolate({
         last_upload_date <- DBI::dbGetQuery(pool, paste0("SELECT MAX(last_upload_date) FROM ",
                                                          get_golem_config('trust_name')))$`MAX(last_upload_date)`
-        last_upload_date <- if (is.na(last_upload_date)) "No edit yet" else strptime(last_upload_date, format = "%Y-%m-%d %H:%M")
+        last_upload_date <- if (is.na(last_upload_date)) "No edit yet" else paste(strptime(last_upload_date, format = "%Y-%m-%d %H:%M"), "GMT")
         
         last_date_edit <- DBI::dbGetQuery(pool, paste0("SELECT MAX(last_edit_date) FROM ", 
                                                        get_golem_config('trust_name')))$`MAX(last_edit_date)`
-        last_date_edit <- if (is.na(last_date_edit)) "No edit yet" else strptime(last_date_edit, format = "%Y-%m-%d %H:%M")
+        last_date_edit <- if (is.na(last_date_edit)) "No edit yet" else paste(strptime(last_date_edit, format = "%Y-%m-%d %H:%M"), "GMT")
         
         total_users <- db_data %>%
           dplyr::pull(pt_id) %>%
@@ -46,12 +46,12 @@ mod_header_message_server <- function(id, pool, db_data, data_exists) {
           icon = icon("users", style = "color: #005EB8;")
         ),
         messageItem(
-          from = strong(paste(last_upload_date, "GMT"), style = "color: #005EB8;"),
+          from = strong(last_upload_date, style = "color: #005EB8;"),
           message = p("Date data was last uploaded"),
           icon = icon("file-pen", style = "color: #005EB8;")
         ),
         messageItem(
-          from = strong(paste(last_date_edit, "GMT"), style = "color: #005EB8;"),
+          from = strong(last_date_edit, style = "color: #005EB8;"),
           message = p("Date data was last editted"),
           icon("calendar", style = "color: #005EB8;")
         )
