@@ -188,6 +188,9 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
         )
       ) |>
       dplyr::select(comment_id, comment_text, question_type)
+  } else{
+    tidy_data <- tidy_data %>% 
+      dplyr::filter(question_type == api_question_code(get_golem_config("comment_1")))
   }
 
   cat("Making predictions for ", nrow(db_tidy), "comments from pxtextming API \n")

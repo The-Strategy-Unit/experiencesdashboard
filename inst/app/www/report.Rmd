@@ -20,8 +20,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # produce dataset for unique individuals
   
-unique_data <- params$data %>% 
-  dplyr::distinct(pt_id, .keep_all = TRUE)
+unique_data <- params$data
 
 # where is this report for?
 
@@ -148,7 +147,7 @@ if("fft_graph" %in% params$options){
   
   # confirm we have at least 10 groups to plot
   no_group <- graph_data %>% 
-    dplyr::pull() %>% 
+    dplyr::pull(1) %>% 
     unique() %>% 
     length()
   

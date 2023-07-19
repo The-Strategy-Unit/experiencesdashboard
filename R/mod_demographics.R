@@ -58,8 +58,9 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
           }
         ),
         hr(),
-        h3("Categories with fewer than 10 individuals are excluded"),
-        p("The below chart shows the average percentage of maximum FFT score for each category."),
+        pre("The below chart shows the average percentage of FFT score for each group in the demographic feature.",
+            "Note: Categories with fewer than 10 individuals are excluded",
+            style = "background-color:#005EB8; color:#fff"),
         fluidRow(
           if (has_demography_1) {
             column(width, plotly::plotlyOutput(ns("compare_demography_1")))
