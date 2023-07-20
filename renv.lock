@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://cloud.r-project.org"
+        "URL": "https://packagemanager.posit.co/cran/latest"
       }
     ]
   },
@@ -713,6 +713,57 @@
         "methods"
       ],
       "Hash": "d59f3b464e8da1aef82dc04b588b8dfb"
+    },
+    "experiencesdashboard": {
+      "Package": "experiencesdashboard",
+      "Version": "0.7.0",
+      "Source": "GitHub",
+      "Remotes": "nhs-r-community/NHSRtheme",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "experiencesdashboard",
+      "RemoteUsername": "CDU-data-science-team",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "b714102f6422a93e228738130adc854850fb86a3",
+      "Requirements": [
+        "ComplexUpset",
+        "DBI",
+        "DT",
+        "NHSRplotthedots",
+        "R",
+        "SnowballC",
+        "config",
+        "datamods",
+        "dbplyr",
+        "dplyr",
+        "fresh",
+        "ggplot2",
+        "glue",
+        "golem",
+        "here",
+        "htmltools",
+        "httr",
+        "jsonlite",
+        "lubridate",
+        "magrittr",
+        "memoise",
+        "odbc",
+        "pander",
+        "plotly",
+        "purrr",
+        "rlang",
+        "rmarkdown",
+        "shiny",
+        "shinycssloaders",
+        "shinydashboard",
+        "stringr",
+        "tidyr",
+        "tidyselect",
+        "tm",
+        "writexl",
+        "xml2"
+      ],
+      "Hash": "12675ab1dadd631342662b7c4cad91f3"
     },
     "fansi": {
       "Package": "fansi",
