@@ -14,7 +14,7 @@ mod_header_message_ui <- function(id) {
 #' header_message Server Functions
 #'
 #' @noRd
-mod_header_message_server <- function(id, db_data, data_exists) {
+mod_header_message_server <- function(id, pool, db_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -22,12 +22,14 @@ mod_header_message_server <- function(id, db_data, data_exists) {
       req(data_exists)
 
       isolate({
-        last_upload_date <- unique(dplyr::pull(db_data, last_upload_date)) %>% na.omit()
-        last_upload_date <- if (length(last_upload_date) < 1) "No edit yet" else strptime(max(last_upload_date), format = "%Y-%m-%d %H:%M")
-
-        last_date_edit <- unique(dplyr::pull(db_data, last_edit_date)) %>% na.omit()
-        last_date_edit <- if (length(last_date_edit) < 1) "No edit yet" else strptime(max(last_date_edit), format = "%Y-%m-%d %H:%M")
-
+        last_upload_date <- DBI::dbGetQuery(pool, paste0("SELECT MAX(last_upload_date) FROM ",
+                                                         get_golem_config('trust_name')))$`MAX(last_upload_date)`
+        last_upload_date <- if (is.na(last_upload_date)) "No edit yet" else paste(strptime(last_upload_date, format = "%Y-%m-%d %H:%M"), "GMT")
+        
+        last_date_edit <- DBI::dbGetQuery(pool, paste0("SELECT MAX(last_edit_date) FROM ", 
+                                                       get_golem_config('trust_name')))$`MAX(last_edit_date)`
+        last_date_edit <- if (is.na(last_date_edit)) "No edit yet" else paste(strptime(last_date_edit, format = "%Y-%m-%d %H:%M"), "GMT")
+        
         total_users <- db_data %>%
           dplyr::pull(pt_id) %>%
           unique() %>%
@@ -41,17 +43,15 @@ mod_header_message_server <- function(id, db_data, data_exists) {
         messageItem(
           from = strong(total_users, style = "color: #005EB8;"),
           message = p("Total number of responders"),
-          icon = icon("users", style = "color: #005EB8;"),
-          time = Sys.Date()
+          icon = icon("users", style = "color: #005EB8;")
         ),
         messageItem(
-          from = strong(paste(last_upload_date), style = "color: #005EB8;"),
+          from = strong(last_upload_date, style = "color: #005EB8;"),
           message = p("Date data was last uploaded"),
-          icon = icon("file-pen", style = "color: #005EB8;"),
-          time = Sys.Date()
+          icon = icon("file-pen", style = "color: #005EB8;")
         ),
         messageItem(
-          from = strong(paste(last_date_edit), style = "color: #005EB8;"),
+          from = strong(last_date_edit, style = "color: #005EB8;"),
           message = p("Date data was last editted"),
           icon("calendar", style = "color: #005EB8;")
         )

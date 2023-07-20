@@ -45,7 +45,7 @@ test_that("Cleaning of uploaded data works", {
   expect_equal(nrow(test_template), 1)
   
   withr::local_envvar("R_CONFIG_ACTIVE" = "trust_LPT")
-  test_upload <- upload_data(head(phase_2_upload_data, 50), conn = NULL, trust_id = "trust_LPT", write_db = F)
+  test_upload <- upload_data(data = head(phase_2_upload_data, 50), conn = NULL, trust_id = get_golem_config('trust_name'), write_db = F)
 
   expect_true(inherits(test_upload, "data.frame"))
   expect_true(inherits(test_upload$super_category, "list"))

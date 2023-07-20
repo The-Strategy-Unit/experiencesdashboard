@@ -113,8 +113,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
     # server codes - the overlapping plot / upset plot ----
     upset_data <- reactive({
       filter_data()$single_labeled_filter_data %>%
-        dplyr::rename(value = category) %>%
-        one_hot_labels(column = "value") # apply one hot encoding to the single label column
+        one_hot_labels(column = "category") # apply one hot encoding to the single label column
     })
 
 

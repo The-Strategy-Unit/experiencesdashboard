@@ -66,7 +66,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         "extra_variable_1" = get_golem_config("extra_variable_1"),
         "extra_variable_2" = get_golem_config("extra_variable_2"),
         "extra_variable_3" = get_golem_config("extra_variable_3"),
-        "pt_id" = "Patient ID"
+        "pt_id" = "Responder ID"
       )
     )
 
@@ -233,9 +233,17 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
       rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] %>% unlist(use.name = FALSE)
 
-      # update database
-      query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE comment_id IN ({ids*})",
+      # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows). 
+      # Only rows with hidden == 0 are loaded into the dashboard. By doing this the data can be recovered if needed
+      query <- glue::glue_sql(
+        "UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE comment_id IN ({ids*})",
         ids = rowselected, .con = db_conn
+      )
+      DBI::dbExecute(db_conn, query)
+      
+      # Update the edit date for the deleted rows 
+      query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
+                              ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
 
@@ -288,6 +296,9 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     })
 
     # Save (write edited data to source) ####
+    ### The save functionalities doesn't work for now. The handling of the list columns 
+    ### (category and super_category) after users press ENTER is causing the issue 
+    ### This will need revisiting if we need this data editing functionality
 
     observeEvent(input$save_to_db, {
       if (length(dt_out$index) < 1) {
@@ -319,10 +330,17 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
           dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)),
             by = "comment_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
           )
+          
+          # Update the edit date for the edited rows 
+          query2 <- glue::glue_sql(
+            "UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
+            ids = unlist(dt_out$index, use.names = FALSE), .con = db_conn
+          )
+          DBI::dbExecute(db_conn, query2)
 
           showModal(modalDialog(
             title = "Success!",
-            p(paste("Record of", length(dt_out$index), "Patient(s) have been successfully updated.")),
+            p(paste("Record of", length(dt_out$index), "Responder(s) have been successfully updated.")),
             em("Please refresh your browser to visualise the update"),
             easyClose = TRUE
           ))
