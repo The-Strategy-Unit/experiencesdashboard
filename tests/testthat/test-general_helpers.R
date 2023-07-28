@@ -71,3 +71,93 @@ test_that("get_unique_value works", {
   phase_2_db_data %>%  head() %>% get_unique_value('sex') %>%  expect_no_error()
   phase_2_db_data %>%  head() %>% get_unique_value('date') %>%  expect_no_error()
 })
+
+test_that("parse_date works as expected", {
+  date_s1 <- data.frame(
+    date = c(
+      "01 06 2020",
+      "07 06 20",
+      "10 06 2020",
+      "12 06 2020",
+      "17 06 2020",
+      "29 06 2020"
+    )
+  )
+  
+  date_s2 <- data.frame(
+    date = 
+      c(
+        "2020 06 01",
+        "2020 06 07",
+        "2020 06 10",
+        "2020 06 12",
+        "2020 06 17",
+        "2020 06 29"
+      )
+  )
+  
+  date_s3 <- data.frame(
+    date = c(
+      "2020/06/01",
+      "2020/06/07",
+      "2020/06/10",
+      "2020/06/12",
+      "2020/06/17",
+      "2020/06/29"
+    )
+  )
+  
+  date1 <- data.frame(
+    date = as.Date(
+      c(
+        "01/06/2020",
+        "07/06/20",
+        "10/06/2020",
+        "12/06/2020",
+        "17/06/2020",
+        "29/06/2020"
+      ),
+      "%d/%m/%y"
+    )
+  )
+  
+  date2 <- data.frame(
+    date = as.Date(
+      c(
+        "2020/06/01",
+        "2020/06/07",
+        "2020/06/10",
+        "2020/06/12",
+        "2020/06/17",
+        "2020/06/29"
+      )
+    )
+  )
+  
+  all(
+    parse_date(date_s1) == parse_date(date_s2),
+    parse_date(date_s1) == parse_date(date_s3),
+    parse_date(date_s1) ==  parse_date(date1),
+    parse_date(date_s1) ==  parse_date(date2)
+  ) |> expect_true()
+  
+  
+  # rows without dates are removed
+  date3 <- data.frame(
+    date = as.Date(
+      c(
+        NA,
+        "2020/06/01",
+        "2020/06/07",
+        "2020/06/10",
+        "2020/06/12",
+        "2020/06/17",
+        "2020/06/29"
+      )
+    )
+  )
+  
+  all(
+    parse_date(date_s1) == parse_date(date3)
+  ) |> expect_true()
+})
