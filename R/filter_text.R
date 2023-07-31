@@ -39,8 +39,8 @@ input_sanitizer <- function(filter_text) {
 #' @return list of strings
 lowered_comments <- function(comments) {
   comments %>%
-    gsub("[^[:graph:]]", " ", .) %>%
-    tolower()
+    stringr::str_replace_all("[^[:graph:]]+", " ") %>%
+    stringr::str_to_lower()
 }
 
 #' Find list of words in a string
