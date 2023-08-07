@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Running Code
+
+```{r}
+library(shinyloadtest)
+shinyloadtest::record_session("http://127.0.0.1",
+                              port = 6594)
+```
+
+```{r}
+load_df <- load_runs("shinylogs/run_50")
+
+shinyloadtest_report(load_df, "shinylogs/scripts/report.html")
+```
+
+## Profile
+```{r}
+# Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_demo")
+# golem::detach_all_attached()
+# golem::document_and_reload()
+
+# Run the application
+profvis::profvis(run_app() |> print())
+```
