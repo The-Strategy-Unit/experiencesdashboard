@@ -1,0 +1,249 @@
+---
+title: "sentiment script"
+format:  docx
+echo : false
+warning: false
+# prefer-html: true
+---
+
+```{r include=FALSE}
+## read in the data
+
+pkgload::load_all(export_all = T)
+library(tidyverse)
+# read data that mimic the (general) data
+phase_2_db_data <- readRDS(here::here("tests/p2_db_data_template.rds")) %>%
+  dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, rawToChar)))
+
+
+trend_data <- function(data, group_col1, group_col2){
+  data %>%
+    dplyr::group_by(.data[[group_col1]], .data[[group_col2]]) %>%
+    dplyr::summarize(n = n()) %>% 
+    dplyr::mutate(percent = round(n / sum(n) * 100)) %>% 
+    dplyr::ungroup()
+}
+
+plot_trend_data <- function(data, x, y,
+                            event_id, 
+                            plot_title = "", 
+                            xaxis_title = "",
+                            yaxis_title = "",
+                            yaxis.type = '-',
+                            ...
+                            ){
+  
+  data %>%
+        plotly::plot_ly(
+          x = x, 
+          y = y,
+          source = event_id,
+          showlegend = FALSE,
+          color = ~sentiment,
+          colors = c('1' = plot_colors[1], '2' = plot_colors[1], '3' = plot_colors[2],
+                    '4' = plot_colors[3], '5' = plot_colors[3]),
+          hovertemplate = ~ paste(
+            "Date:", date,
+            "<br>Sentiment score:", sentiment,
+            "<br>%total: ", percent, "%",
+            "<br>No. comments:", n
+          ),
+          ...
+        )  %>% 
+        plotly::config(
+          modeBarButtons = list(list("toImage")),
+          toImageButtonOptions = list(
+            format = "png"
+          )
+        ) %>%
+        plotly::layout(
+          title = plot_title,
+          xaxis = list(title = xaxis_title
+                       # categoryorder = "total descending"
+                       ),
+          yaxis = list(title = yaxis_title, 
+                       type =  yaxis.type,
+                       # ticksuffix = "%" # to add % and reformat the numbers then use tickformat = "%"
+                       ...
+                       ),
+          ...
+        )
+}
+
+# read data that mimic the (sentiment) data
+sentiment_table <- data.frame(
+  comment_id = 1:nrow(phase_2_db_data),
+  sentiment = sample(1:5, nrow(phase_2_db_data), replace = T)
+)
+
+```
+
+
+```{r}
+## join the general table to the sentiment table by comment_id
+
+filter_data <- dplyr::left_join(
+  phase_2_db_data,
+  sentiment_table, 
+  by ="comment_id"
+)# %>% 
+  #dplyr::filter(lubridate::year(date) < 2021)
+
+```
+
+## Number of comments by sentiment score
+
+```{r}
+
+event_id = 'plot1'
+nhs_yellow = "#FAE100"
+nhs_green <- "#009639"
+nhs_red <- "#DA291C"
+
+
+clicked_data <- calculate_table(filter_data, 'sentiment')
+
+clicked_data %>%
+  dplyr::mutate(sentiment = as.factor(sentiment)) %>%
+        plotly::plot_ly(
+          x = ~n, y = ~ sentiment, #reorder(n,sentiment),
+          type = "bar",
+          color = ~sentiment,
+          colors = c('1' = nhs_red, '2' = nhs_red, '3' = nhs_yellow,
+                    '4' = nhs_green, '5' = nhs_green), #I("#005EB8"),
+          showlegend = FALSE,
+          source = event_id,
+          hovertemplate = ~ paste(
+            "Score:", sentiment,
+            "<br>%total: ", percent,
+            "<br>Number of Comments:", n
+          )
+        )  %>% 
+        plotly::config(
+          modeBarButtons = list(list("toImage")),
+          toImageButtonOptions = list(
+            format = "png"
+          )
+        ) %>%
+        plotly::layout(
+          title = "Number of comments by sentiment score",
+          xaxis = list(title = "Number of comments"
+                       # categoryorder = "total descending"
+                       ),
+          yaxis = list(title = "Sentiment score")
+        )
+```
+
+## Sentiment score group by fft score
+
+```{r}
+
+new_clicked_data <- filter_data |>
+  dplyr::filter(fft < 6) |>
+  trend_data('fft', 'sentiment')
+
+event_id = 'plot1'
+new_clicked_data %>%
+  dplyr::mutate(#fft = as.factor(fft),
+                sentiment = as.factor(sentiment)) %>%
+        plotly::plot_ly(
+          x = ~fft, y = ~ percent, #reorder(n,sentiment),
+          type = "bar",
+          color = ~sentiment,
+          colors = c('1' = nhs_red, '2' = nhs_red, '3' = nhs_yellow,
+                    '4' = nhs_green, '5' = nhs_green),
+          showlegend = FALSE,
+          source = event_id,
+          hovertemplate = ~ paste(
+            "Score:", sentiment,
+            "<br>%total: ", percent, "%",
+            "<br>Number of Comments:", n
+          )
+        )  %>% 
+        plotly::config(
+          modeBarButtons = list(list("toImage")),
+          toImageButtonOptions = list(
+            format = "png"
+          )
+        ) %>%
+        plotly::layout(
+          title = "%contribution of Sentiment score grouped by fft score",
+          xaxis = list(title = "fft score"
+                       # categoryorder = "total descending"
+                       ),
+          yaxis = list(title = "% contribution",
+                       ticksuffix = "%" ),
+          barmode = 'stack'
+        )
+```
+
+## Sentiment over time
+
+```{r}
+timeframe = 'month'
+group_col1 <-  "date"
+group_col2 <-  "sentiment"
+timeframe = "month"
+event_id = 'plot1'
+plot_colors = c(nhs_red, nhs_yellow, nhs_green)
+
+ t_data <- filter_data |>
+  dplyr::mutate(date = as.Date(cut(date, timeframe))) |>
+  trend_data(group_col1, group_col2)
+```
+
+### Column chart
+
+```{r}
+t_data %>% 
+  dplyr::mutate(
+    sentiment = as.factor(sentiment)
+    ) %>%
+  plot_trend_data(
+    x = ~date,
+    y = ~percent,
+    event_id = event_id,  
+    plot_title = "Sentiment score over time",
+    xaxis_title = 'Date (Month)',
+    yaxis_title = "% contribution",
+    type = "bar",
+    barmode = 'stack',
+    ticksuffix = "%" )
+```
+##
+
+```{r}
+t_data %>% 
+  dplyr::mutate(
+    sentiment = as.factor(sentiment)
+    ) %>%
+  plot_trend_data(
+    x = ~date,
+    y = ~n,
+    event_id = event_id,  plot_title = "Sentiment score over time",
+    xaxis_title = 'Date (Month)',
+    yaxis_title = "No. comments",
+    type = "bar",
+    barmode = 'stack')
+```
+
+
+### scatter graph
+
+```{r}
+t_data %>% 
+  dplyr::mutate(
+    sentiment = as.character(sentiment)
+    ) %>%
+  plot_trend_data(y = ~sentiment, x= ~date,
+          event_id =  event_id,
+          plot_title = 'Sentiment over time', 
+          xaxis_title = 'Date (month)',  
+          yaxis_title = 'Sentiment score',  
+          size = ~n,
+          type = "scatter",
+          mode = "markers",
+          yaxis.type = 'category',
+      symbol = I("square")
+      )
+```
