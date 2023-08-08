@@ -7,7 +7,8 @@
 plot_fft_spc(data)
 }
 \arguments{
-\item{data}{dataframe, that you probably made with the split_data_spc function}
+\item{data}{dataframe, that you probably made with the split_data_spc function
+with a `date` and `fft` column.}
 }
 \value{
 SPC plot

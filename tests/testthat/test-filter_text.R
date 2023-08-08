@@ -1,4 +1,8 @@
 test_that("filter_text works", {
+  # lowered_comments works as expected
+  expect_equal("this   and ThaT" %>%
+    lowered_comments(), "this and that")
+
   test1 <- matched_comments(
     lowered_comments = c(
       "tricky times, I recommend quick appraisals ",

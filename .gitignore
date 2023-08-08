@@ -8,6 +8,5 @@ inst/doc
 doc
 Meta
 scratch.R
-trial_scripts/
 inst/app/www/*.docx
-secret-data/
+secret/

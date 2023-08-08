@@ -17,10 +17,9 @@ calculate_table <- function(table_data, count_column,
       comment_txt != "",
       !is.na(comment_txt)
     ) %>%
-    # dplyr::filter(.data[[count_column]] != "Not assigned") %>%
     dplyr::count(.data[[count_column]]) %>%
-    purrr::set_names(c("Category", "n")) %>%
-    dplyr::filter(!is.na(Category)) %>%
+    purrr::set_names(c(count_column, "n")) %>%
+    dplyr::filter(!is.na(.data[[count_column]])) %>%
     dplyr::mutate(percent = round(n / sum(n) * 100, 1)) %>%
     dplyr::arrange(dplyr::desc(percent))
 }

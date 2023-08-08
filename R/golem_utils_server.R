@@ -425,3 +425,47 @@ assign_highlevel_categories <- function(sub_cats) {
   simplify = TRUE, USE.NAMES = FALSE
   )
 }
+
+#' Attempt to parse a date column from character to date 
+#'
+#' @param data a dataframe
+#' @param date_column the name of the date column (default to 'date')
+#'
+#' @return dataframe
+#'
+#' @noRd
+parse_date <- function(data, date_column = "date") {
+  
+  if (inherits(data$date, "character")) {
+    
+    data <- data %>% 
+      dplyr::filter(date != ' ',
+                    date !='',
+                    !is.na(date))
+    
+    suppressWarnings({
+      parsed_data <- data %>%
+        dplyr::mutate(
+          date = lubridate::as_date(.data$date, format = c("%d-%m-%y", "%d/%m/%y", "%d-%m-%Y", "%d/%m/%Y", "%d %m %y", "%d %m %Y"))
+        )
+      
+      # try this if the dates are not well parsed (i.e. if the column contain NA)
+      # parse it automatically
+      if (any(is.na(parsed_data$date))) {
+        parsed_data <- data %>%
+          dplyr::mutate(
+            date = lubridate::as_date(.data$date)
+          )
+      }
+    })
+    
+    stopifnot("date column can't be parse" = !any(is.na(parsed_data$date)))
+    return(parsed_data)
+  } else {
+    data %>%
+      dplyr::filter(!is.na(date)) %>%
+      dplyr::mutate(
+        date = lubridate::as_date(.data$date)
+      )
+  }
+}
