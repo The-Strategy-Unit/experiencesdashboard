@@ -6,7 +6,7 @@ test_that("demographic_distribution functions works:  return plotly object by de
 
 test_that("demographic_distribution functions works: return ggplot object", {
   result <- unique_data %>%
-    demographic_distribution(variable = "age", return_ggplot = TRUE)
+    demographic_distribution(variable = "ethnicity", return_ggplot = TRUE)
   expect_true(inherits(result, "ggplot"))
 })
 

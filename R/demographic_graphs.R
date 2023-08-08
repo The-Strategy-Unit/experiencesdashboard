@@ -73,8 +73,12 @@ demographic_distribution <- function(pass_data, variable, return_ggplot = FALSE)
           ggplot2::aes(label = n),
           position = ggplot2::position_dodge(width = 0.9),
           vjust = -0.1
-        )
-      )
+        ) +
+        ggplot2::theme(
+          axis.text.x = ggplot2::element_text(angle = 45, vjust = 1.2, hjust=1)
+        ) +
+        ggplot2::ylab("Number of comments")
+    )
   }
 
   p <- p +
