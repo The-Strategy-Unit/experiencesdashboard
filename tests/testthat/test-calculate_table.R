@@ -17,3 +17,14 @@ test_that("Calculate table works", {
 
   expect_false(isTRUE(all.equal(test_table_best, test_table_imp)))
 })
+
+test_that("multigroup_calculated_data works", {
+  
+  test_data <- phase_2_db_data |>
+    dplyr::mutate(date = as.Date(cut(date, 'month'))) |>
+    multigroup_calculated_data('date', 'fft')
+  
+  expect_equal(ncol(test_data), 4)
+  expect_equal(sum(test_data$n), nrow(phase_2_db_data))
+  expect_true(max(test_data$percent)<=100)
+})
