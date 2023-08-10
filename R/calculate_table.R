@@ -31,7 +31,7 @@ calculate_table <- function(table_data, count_column,
 multigroup_calculated_data <- function(data, group_col1, group_col2) {
   data %>%
     dplyr::group_by(.data[[group_col1]], .data[[group_col2]]) %>%
-    dplyr::summarize(n = dplyr::n()) %>%
-    dplyr::mutate(percent = round(n / sum(n) * 100)) %>%
+    dplyr::summarize(n = length(unique(comment_id))) %>% 
+    dplyr::mutate(percent = n / sum(n) * 100) %>%
     dplyr::ungroup()
 }

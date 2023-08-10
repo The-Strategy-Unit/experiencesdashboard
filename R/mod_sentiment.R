@@ -53,8 +53,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
     clicked_data <- reactive(
       filter_data()$filter_data |>
         dplyr::mutate(date = as.Date(cut(date, "month"))) |>
-        multigroup_calculated_data("date", "sentiment") %>%
-        dplyr::mutate(sentiment = as.factor(sentiment))
+        multigroup_calculated_data("date", "sentiment") 
     )
 
     # the plot ----
@@ -63,7 +62,9 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
         plot_sentiment_trend(
           x = ~date,
           y = ~percent,
+          color = ~sentiment,
           key = ~sentiment,
+          colors = c("#DA291C", "#FAE100", "#009639"),
           event_id = event_id,
           plot_title = "Sentiment score over time",
           xaxis_title = "Date (Month)",

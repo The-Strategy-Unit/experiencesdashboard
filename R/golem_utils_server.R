@@ -351,7 +351,6 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
       dplyr::across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = FALSE))
     ) %>%
     dplyr::mutate(
-      sentiment = get_sentiment_text(sentiment),
       comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
     ) %>%
     dplyr::arrange(date)

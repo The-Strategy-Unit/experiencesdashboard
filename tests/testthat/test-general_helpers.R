@@ -191,6 +191,7 @@ test_that("plot_sentiment_trend works", {
       plot_sentiment_trend(
         x = ~date,
         y = ~percent,
+        colors = c("#DA291C", "#FAE100", "#009639"),
         event_id = 'event_id',
         plot_title = "Sentiment score over time",
         xaxis_title = "Date (Month)",

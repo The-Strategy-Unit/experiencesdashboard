@@ -14,28 +14,16 @@
 #' @noRd
 plot_sentiment_trend <- function(data, x, y, event_id = 'A', barmode = "stack", plot_title = "", 
                                  xaxis_title = "", yaxis_title = "", yaxis_type = "-", ...) {
-  nhs_yellow <- "#FAE100"
-  nhs_green <- "#009639"
-  nhs_red <- "#DA291C"
-
-  plot_colors <- c(nhs_red, nhs_yellow, nhs_green)
-
   data %>%
     plotly::plot_ly(
       x = x,
       y = y,
       source = event_id,
       type = "bar",
-      showlegend = FALSE,
-      color = ~sentiment,
-      colors = c(
-        "1" = plot_colors[1], "2" = plot_colors[1], "3" = plot_colors[2],
-        "4" = plot_colors[3], "5" = plot_colors[3]
-      ),
       hovertemplate = ~ paste(
         "Date:", date,
         "<br>Sentiment score:", sentiment,
-        "<br>%total: ", percent, "%",
+        "<br>%total: ", round(percent, 1), "%",
         "<br>No. comments:", n
       ),
       ...

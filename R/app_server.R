@@ -265,6 +265,10 @@ app_server <- function(input, output, session) {
     return_data <- return_data %>% 
       dplyr::mutate(
         sentiment = sample(1:5, nrow(return_data), replace = T)
+      ) %>%
+      dplyr::mutate(sentiment = get_sentiment_text(sentiment)) %>% 
+      dplyr::mutate(
+        sentiment = factor(sentiment, levels = c("Very Negative", "Negative", "Neutral", "Positive","Very Positive"))
       )
     ##########################
 
