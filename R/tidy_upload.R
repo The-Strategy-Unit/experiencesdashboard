@@ -71,7 +71,8 @@ tidy_trust_nth <- function(db_tidy) {
 #' @return dataframe with cleaned text
 #' @export
 clean_dataframe <- function(data, comment_column) {
-  data %>%
+  data %>% 
+    dplyr::mutate(across(all_of(comment_column), \(.x) stringr::str_replace_all(.x, "[^[:alnum:][:punct:]]+", " "))) %>% # remove non-graphical characters, ‘⁠[:graph:  is not reliable⁠’
     dplyr::mutate(
       dplyr::across(
         where(is.character), ~ dplyr::case_when(
@@ -85,7 +86,7 @@ clean_dataframe <- function(data, comment_column) {
       !is.na(.data[[comment_column]]),
       !is.null(.data[[comment_column]]),
       !.data[[comment_column]] %in% c("NULL", "NA", "N/A", "Did not answer")
-    )
+    ) 
 }
 
 #' Tidy data upload from users

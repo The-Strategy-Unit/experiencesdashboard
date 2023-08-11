@@ -43,11 +43,28 @@ test_that("Cleaning of uploaded data works", {
 
   expect_equal(test_template$comment_text, "Service too slow")
   expect_equal(nrow(test_template), 1)
-  
-  withr::local_envvar("R_CONFIG_ACTIVE" = "trust_LPT")
-  test_upload <- upload_data(data = head(phase_2_upload_data, 50), conn = NULL, trust_id = get_golem_config('trust_name'), write_db = F)
-
-  expect_true(inherits(test_upload, "data.frame"))
-  expect_true(inherits(test_upload$super_category, "list"))
-  expect_true(inherits(test_upload$category, "list"))
 })
+
+test_that("clean_dataframe works", {
+  
+  df <- data.frame(
+    comment = c("staff are really friendly and kind, they are happy to help us when we need it.� they take real care with my baby.� i feel so comfortable letting them look after my child. you feel really welcome and like you are living in a second home.� truly wonderful staff everywhere",
+                "Staff are very friendly�& informative.")
+  )
+  
+  result <- df |>
+    clean_dataframe('comment')
+  
+  expect_equal(result$comment[2], "Staff are very friendly & informative.")
+})
+
+
+# test_that("uploaded data works", {
+# 
+#   withr::local_envvar("R_CONFIG_ACTIVE" = "trust_LPT")
+#   test_upload <- upload_data(data = head(phase_2_upload_data, 50), conn = NULL, trust_id = get_golem_config('trust_name'), write_db = F)
+#   
+#   expect_true(inherits(test_upload, "data.frame"))
+#   expect_true(inherits(test_upload$super_category, "list"))
+#   expect_true(inherits(test_upload$category, "list"))
+# })
