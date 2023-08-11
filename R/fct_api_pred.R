@@ -1,3 +1,67 @@
+#' Get the prediction URL or the data from the `pxtextmining API`
+#' @description A function to call the `pxtextmining` API
+#'
+#' @param data Dataframe with column `comment_id`, `comment_text` and `question_type`
+#' @param api_key api key to access the api
+#' @return a dataframe or a url to get the data
+#' @export
+api_pred_url <- function(data, api_key = Sys.getenv("API_Key")) {
+  endpoint <- paste0("https://pxtextmining-docker-api.azurewebsites.net/api/StartContainerInstance?code=", api_key)
+
+  json_data <- data |>
+    jsonlite::toJSON()
+
+  r <- httr::POST(endpoint,
+    body = json_data, encode = "json",
+    httr::add_headers("Content-Type" = "application/json")
+  )
+
+  # throw an error when the API call result in an error
+  if (!any((r$status_code == 200) | (r$status_code == 202))) {
+    print(httr::http_status(r)$message) # for debugging
+    stop(httr::http_status(r)$message, call. = FALSE)
+  }
+
+  print("Successful Call")
+  # return the url to go get the data or the data
+  if (r$status_code == 202) {
+    results_url <- httr::content(r, "text")
+    print(glue::glue("URL for results is `{results_url}`"))
+    return(results_url)
+  } else {
+    return(
+      httr::content(r, "text", encoding = "UTF-8") |>
+        jsonlite::fromJSON()
+    )
+  }
+}
+
+#' Get the prediction from the URL returned from the pxtextmining API
+#'
+#' @param api_url the url return from `api_pred_url()` where you can get the prediction data when its ready
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_pred_from_url <- function(api_url) {
+  results_response <- httr::GET(api_url)
+
+  if (results_response$status_code == 200) {
+    return_data <- httr::content(results_response, "text") |>
+      jsonlite::fromJSON()
+    end <- lubridate::seconds(Sys.time())
+
+    time_taken <- end - start
+    print(glue::glue("Time taken for {nrow(df)} comments: {round(time_taken,2)} seconds"))
+
+    return(return_data)
+  } else {
+    print("Machine learning API is still busy. Trying again in 60 seconds...")
+    return("Busy")
+  }
+}
+
 #' api_pred
 #' @description A function to call the `pxtextmining` API
 #' @param json JSON list of dictionaries with the following compulsory keys:
@@ -6,7 +70,7 @@
 #' @return a dataframe
 #' @export
 api_pred <- function(json) {
-  endpoint <- "https://connect.strategyunitwm.nhs.uk/content/015061a2-94ef-41ac-a5ac-313248fd82c9/predict_multilabel"
+  endpoint <- paste0("https://pxtextmining-docker-api.azurewebsites.net/api/StartContainerInstance?code=", Sys.getenv("API_Key"))
 
   r <- httr::POST(endpoint,
     body = json, encode = "json",

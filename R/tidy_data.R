@@ -14,6 +14,8 @@ tidy_all_trusts <- function(data) {
         !is.null(comment_txt),
         comment_txt != "NA",
         comment_txt != "NULL",
+        comment_txt != "",
+        comment_txt != " ",
         hidden == 0
       )
   } else {

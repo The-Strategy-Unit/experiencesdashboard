@@ -128,13 +128,14 @@ to_string <- function(x) {
 #' @param column_name The name of the column holding the comma separated labels
 #' @param n_labels maximum number of labels assigned to any row
 #'
-#' @return A dataframe with a row per comment per comment type
+#' @return A dataframe with a row per comment per comment type. columns returned are 
+#' "comment_id", "comment_type", "date", "comment_txt", "fft", "sentiment", "category", "super_category"
 #' @noRd
 single_to_multi_label <- function(sl_data) {
   mt_data <- sl_data %>%
     dplyr::group_by(comment_id, comment_type) %>%
     dplyr::summarise(
-      across(c(date, comment_txt, fft), unique),
+      across(c(date, comment_txt, fft, sentiment), unique),
       across(c(category, super_category), \(x) list(unique(x))), # remove duplicated
     ) %>%
     dplyr::ungroup() %>%
@@ -345,7 +346,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = data$comment_id %>% duplicated() %>% sum() == 0)
 
   data <- data %>%
-    dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
+    dplyr::select(date, comment_type, fft, sentiment, comment_txt, category, super_category) %>%
     dplyr::mutate(
       dplyr::across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = FALSE))
     ) %>%
@@ -362,7 +363,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   }
 
   colnames(data) <- c(
-    "Date", "FFT Question", "FFT Score",
+    "Date", "FFT Question", "FFT Score", "Sentiment",
     "FFT Answer", "Sub-Category", "Category"
   )
 
