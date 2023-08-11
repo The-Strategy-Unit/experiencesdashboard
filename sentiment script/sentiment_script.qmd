@@ -1,5 +1,6 @@
 ---
-title: "sentiment script"
+title: "Sentiment script"
+format: docx
 output: 
   word_document:
     fig_width: 9
@@ -8,6 +9,13 @@ echo : false
 warning: false
 # prefer-html: true
 ---
+
+# Intro 
+
+Below are some ideas on plot to include in the dashboard. The plot in section 3 is currently on the dashboard (for testing purpose). 
+If it will be beneficial, we can add a sub-category selection option to go with any of the chart so users can drill down using the sub-categories.
+
+Your comment will be appreciated. 
 
 ```{r include=FALSE}
 ## read in the data
@@ -82,24 +90,18 @@ nhs_yellow = "#FAE100"
 nhs_green <- "#009639"
 nhs_red <- "#DA291C"
 
-```
-
-
-```{r}
 ## join the general table to the sentiment table by comment_id
 
 filter_data <- dplyr::left_join(
   phase_2_db_data,
   sentiment_table, 
-  by ="comment_id"
-)# %>% 
-  #dplyr::filter(lubridate::year(date) < 2021)
+  by ="comment_id")
 
 ```
 
-## Number of comments by sentiment score
 
 ```{r}
+## Number of comments by sentiment score
 
 # clicked_data <- calculate_table(filter_data, 'sentiment')
 # 
@@ -135,10 +137,10 @@ filter_data <- dplyr::left_join(
 ```
 
 
-## Sentiment vs FFT groups
-#### sentiment group by fft score
+## 1. Sentiment vs FFT groups
 
-```{r}
+```{r include=FALSE}
+#### Sentiment grouped by fft score 
 
 new_clicked_data <- filter_data |>
   dplyr::filter(fft < 6) |>
@@ -167,7 +169,7 @@ new_clicked_data %>%
           )
         ) %>%
         plotly::layout(
-          title = "%contribution of Sentiment score grouped by fft score",
+          title = "%contribution of Sentiment grouped by fft score",
           xaxis = list(title = "fft score"
                        # categoryorder = "total descending"
                        ),
@@ -177,8 +179,9 @@ new_clicked_data %>%
         )
 ```
 
-
 ### Sentiment score group by fft score and category
+
+The idea here is that users will be able to select using sub-categories of their choice and the plot will show for only that sub-categories. 
 
 ```{r}
 selected_super_cat = 'Staff'
@@ -218,7 +221,7 @@ new_clicked_data %>%
           )
         ) %>%
         plotly::layout(
-          title = "%contribution of Sentiment score grouped by fft score",
+          title = paste("%contribution of Sentiment grouped by fft score", selected_sub_cat),
           xaxis = list(title = "fft score"
                        # categoryorder = "total descending"
                        ),
@@ -229,7 +232,7 @@ new_clicked_data %>%
 ```
 
 
-## Sentiment over time
+## 2. Sentiment over time
 
 ```{r}
 timeframe = 'month'
@@ -245,13 +248,18 @@ t_data <- filter_data |>
   trend_data(group_col1, group_col2)
 ```
 
-### Column chart
-#### comment sentiment grouped by fft score
-```{r}
+#### Comment sentiment over time
+```{r include=FALSE}
+if (max(filter_data$date) - min(filter_data$date) < 180){
+  timeframe = 'week'
+} else{
+  timeframe = 'month'
+}
+
 filter_data |>
   get_tidy_filter_data(TRUE) |>
   dplyr::mutate(date = as.Date(cut(date, timeframe))) |>
-  trend_data(group_col1, group_col2) |>
+  trend_data('date', 'sentiment') |>
   dplyr::mutate(sentiment = get_sentiment_text(sentiment)) |>
   dplyr::mutate(
     sentiment = factor(sentiment, levels = c("Very Negative", "Negative", "Neutral", "Positive","Very Positive"))
@@ -271,33 +279,6 @@ filter_data |>
 #### comment sentiment grouped by fft score and categories
 
 ```{r}
-selected_super_cat = "Staff"
-filter_data |>
-  get_tidy_filter_data(TRUE) |>
-  dplyr::mutate(date = as.Date(cut(date, timeframe))) |>
-  dplyr::filter(super_category == selected_super_cat) |>
-  trend_data(group_col1, group_col2) |>
-  dplyr::mutate(sentiment = get_sentiment_text(sentiment)) |>
-  dplyr::mutate(
-    sentiment = factor(sentiment, levels = c("Very Negative", "Negative", "Neutral", "Positive","Very Positive"))
-    ) |>
-  
-  plot_trend_data(
-    x = ~date,
-    y = ~percent,
-    colors = plot_colors,
-    event_id = event_id,  
-    plot_title = "Sentiment score over time",
-    xaxis_title = 'Date (Month)',
-    yaxis_title = "% contribution",
-    type = "bar",
-    barmode = 'stack',
-    ticksuffix = "%" )
-```
-
-#### comment sentiment grouped by fft score and sub-categories
-
-```{r}
 selected_sub_cat <- "Gratitude/ good experience"
 filter_data |>
   get_tidy_filter_data(TRUE) |>
@@ -314,7 +295,7 @@ filter_data |>
     y = ~percent,
     colors = plot_colors,
     event_id = event_id,  
-    plot_title = "Sentiment score over time",
+    plot_title = glue::glue("Sentiment score over ({selected_sub_cat}) sub-category"),
     xaxis_title = 'Date (Month)',
     yaxis_title = "% contribution",
     type = "bar",
@@ -322,22 +303,27 @@ filter_data |>
     ticksuffix = "%" )
 ```
 
-### scatter graph
+### 3. scatter graph
 
 ```{r}
-# t_data %>% 
-#   dplyr::mutate(
-#     sentiment = as.character(sentiment)
-#     ) %>%
-#   plot_trend_data(y = ~sentiment, x = ~date,
-#           event_id =  event_id,
-#           plot_title = 'Sentiment over time', 
-#           xaxis_title = 'Date (month)',  
-#           yaxis_title = 'Sentiment score',  
-#           size = ~n,
-#           type = "scatter",
-#           mode = "markers",
-#           yaxis.type = 'category',
-#       symbol = I("square")
-#       )
+filter_data |>
+  get_tidy_filter_data(TRUE) |>
+  dplyr::mutate(date = as.Date(cut(date, timeframe))) |>
+  trend_data(group_col1, group_col2) |>
+  dplyr::mutate(sentiment = get_sentiment_text(sentiment)) |>
+  dplyr::mutate(
+    sentiment = factor(sentiment, levels = c("Very Negative", "Negative", "Neutral", "Positive","Very Positive"))
+    ) |>
+  plot_trend_data(y = ~sentiment, x = ~date,
+          event_id =  event_id,
+          plot_title = 'Sentiment over time',
+          xaxis_title = 'Date (month)',
+          yaxis_title = 'Sentiment value',
+          size = ~n,
+          colors = plot_colors,
+          type = "scatter",
+          mode = "markers",
+          yaxis.type = 'category',
+      symbol = I("square")
+      )
 ```

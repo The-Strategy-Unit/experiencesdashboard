@@ -31,7 +31,9 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
       )
 
       tagList(
-        p("6 months or less data is viewed on a weekly level"),
+        pre("When the filtered data contain less than 7months of data, The sentiment plot below will be plotted as a weekly data rather than a month data. You can interact with the plot to read the underline comments",
+          style = "background-color:#005EB8; color:#fff"
+        ),
         plotly::plotlyOutput(ns("sentiment_plot")),
         tags$hr(),
         uiOutput(ns("dynamic_UI"))
@@ -50,7 +52,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
     })
 
     # the data ----
-    
+
     # set the timeframe to view to weekly if the data duration is less than 6months (180 days) else monthly
     timeframe <- reactive(
       if (max(filter_data()$filter_data$date) - min(filter_data()$filter_data$date) < 180) {
@@ -76,7 +78,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
           key = ~sentiment,
           colors = c("#DA291C", "#FAE100", "#009639"),
           event_id = event_id,
-          plot_title = "Comment sentiment over time",
+          plot_title = glue::glue("Comment sentiment over time ({timeframe()})"),
           xaxis_title = glue::glue("Date ({timeframe()})"),
           yaxis_title = "% contribution",
         )
