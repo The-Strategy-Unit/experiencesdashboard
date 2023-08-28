@@ -73,8 +73,8 @@ get_pred_from_url <- function(api_url) {
 #' @return a dataframe
 #' @export
 api_pred <- function(json) {
-  endpoint <- paste0("https://pxtextmining-docker-api.azurewebsites.net/api/StartContainerInstance?code=", Sys.getenv("API_Key"))
-
+  endpoint <- "https://connect.strategyunitwm.nhs.uk/content/015061a2-94ef-41ac-a5ac-313248fd82c9/predict_multilabel"
+  
   r <- httr::POST(endpoint,
     body = json, encode = "json",
     httr::add_headers("Content-Type" = "application/json")
