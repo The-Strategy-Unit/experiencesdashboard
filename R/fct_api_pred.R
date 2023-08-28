@@ -56,9 +56,12 @@ get_pred_from_url <- function(api_url) {
     print(glue::glue("Time taken for {nrow(df)} comments: {round(time_taken,2)} seconds"))
 
     return(return_data)
-  } else {
+  } else if (results_response$status_code == 202) {
     print("Machine learning API is still busy. Trying again in 60 seconds...")
     return("Busy")
+    
+  } else {
+    stop(httr::http_status(results_response)$message)
   }
 }
 
