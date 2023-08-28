@@ -118,7 +118,7 @@ This package uses data from a database to populate the dashboard. The [`get_pool
 
 #### Format your data for the app
 
-Your data type must follow the schema in [Database table schema](data-raw\phase_2_schema.csv) before you can load the data into the app in step 2 above. Though not all the columns are required but to ignore any will depend on your configuration in step 3 above. 
+Your data type must follow the schema in [Database table schema](data-raw/phase_2_schema.csv) before you can load the data into the app in step 2 above. Though not all the columns are required but to ignore any will depend on your configuration in step 3 above. 
 
   i. You can safely ignore these columns without any modification:  `'extra_variable_1', 'extra_variable_2', 'extra_variable_3'`
   
