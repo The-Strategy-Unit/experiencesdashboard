@@ -17,20 +17,9 @@ jobs:
         with:
           use-public-rspm: true
       
-      # install dependency from DESCRIPTION file and some extra dependencies required to lunch to rsconnect
+        # install dependency from renv.lock
       - name: Install dependencies 
-        uses: r-lib/actions/setup-r-dependencies@v2 
-        with:
-          extra-packages: |
-            any::rsconnect
-            any::BH
-            any::cpp11
-            any::prettyunits
-            any::progress 
-            
-      - name: Update MASS
-        shell: Rscript {0}
-        run: pak::pkg_install("MASS@7.3-60")
+        uses: r-lib/actions/setup-renv@v2
         
         # file required by Connect for deploying content programmatically.
       - name: Generate manifest.json 

@@ -5,10 +5,8 @@ account: oluwasegun.apejoye
 server: connect.strategyunitwm.nhs.uk
 hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
 appId: 111
-bundleId: 528
-url: https://connect.strategyunitwm.nhs.uk/content/77198ff5-3487-4708-a8b6-d0aeed3dc2d9/
-when: 1686919492.17906
-lastSyncTime: 1686919492.17908
+bundleId: 572
+url: https://connect.strategyunitwm.nhs.uk/qdc_dev/
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .github/workflows/R-CMD-check.yaml|.RData|.Rprofile|dev|secret-data|tests|trial_scripts
+ignoredFiles: .github/workflows/deploy-dev.yaml|.github/workflows/deploy-prod.yaml|.github/workflows/R-CMD-check.yaml|.Rprofile|CODE_OF_CONDUCT.md|data-raw/New general trust template.xlsx|data-raw/phase_2_schema.csv|LICENSE|LICENSE.md|NEWS.md|README.md|renv.lock|vignettes/experiencesdashboard.Rmd|dev|secret-data|tests|trial_scripts

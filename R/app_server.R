@@ -5,7 +5,6 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-
   # Get R_CONFIG_ACTIVE from session data of Connect environment
   # if it hasn't been set before calling run_app()
   cat("Session group on Connect:", session$groups, " \n")
@@ -16,11 +15,11 @@ app_server <- function(input, output, session) {
 
   # Create  DB connection pool
   pool <- get_pool()
-  
+
   onStop(function() {
     pool::poolClose(pool)
   })
-  
+
   # fetch  the data
   db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
@@ -53,7 +52,7 @@ app_server <- function(input, output, session) {
       dplyr::select(dplyr::any_of(c(
         "location_1", "age",
         "gender", "ethnicity"
-      ))) %>% 
+      ))) %>%
       dplyr::collect()
   }
 
@@ -207,7 +206,7 @@ app_server <- function(input, output, session) {
   filter_data <- reactive({
     if (get_golem_config("trust_name") == "demo_trust") {
       return(list(
-        "filter_data" = db_data %>% 
+        "filter_data" = db_data %>%
           dplyr::collect(),
         "demography_number" = NULL
       ))
@@ -237,7 +236,7 @@ app_server <- function(input, output, session) {
 
     # only return demography filtered data if the number of responders is more than 20
     if (no_responders < 20 & data_exists) {
-      return_data <- return_data %>% 
+      return_data <- return_data %>%
         dplyr::collect() %>%
         dplyr::arrange(date)
 
@@ -256,10 +255,22 @@ app_server <- function(input, output, session) {
         ))
       }
     } else {
-      return_data <- demography_data %>% 
+      return_data <- demography_data %>%
         dplyr::collect() %>%
         dplyr::arrange(date)
     }
+    
+    ############# temporary implementation ################
+    # make data that mimic the (sentiment) data
+    return_data <- return_data %>% 
+      dplyr::mutate(
+        sentiment = sample(1:5, nrow(return_data), replace = T)
+      ) %>%
+      dplyr::mutate(sentiment = get_sentiment_text(sentiment)) %>% 
+      dplyr::mutate(
+        sentiment = factor(sentiment, levels = c("Very Negative", "Negative", "Neutral", "Positive","Very Positive"))
+      )
+    ##########################
 
     # also return a dataset with unique individuals
 
@@ -290,7 +301,7 @@ app_server <- function(input, output, session) {
 
   # modules----
   ## add information to dashboard header ----
-  mod_header_message_server("messageMenu", db_data, data_exists)
+  mod_header_message_server("messageMenu", pool, db_data, data_exists)
 
   ## combine ALL sub-modules----
   mod_patient_experience_server("patient_experience_ui_1")
@@ -310,6 +321,8 @@ app_server <- function(input, output, session) {
   filter_category <- mod_category_criticality_server("category_criticality_ui_1",
     filter_data = filter_data
   )
+  
+  mod_sentiment_server("sentiment_1", filter_data, data_exists)
 
   mod_fft_server("fft_ui_1", filter_data = filter_data)
 

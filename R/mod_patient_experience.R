@@ -46,7 +46,6 @@ mod_patient_experience_server <- function(id) {
       )
 
       # Theme Trend and overlap tab
-
       ui_list <- c(
         ui_list,
         list(
@@ -68,7 +67,19 @@ mod_patient_experience_server <- function(id) {
           )
         )
       )
-
+      
+      # Sentiment tab
+      
+      ui_list <- c(
+        ui_list,
+        list(
+          tabPanel(
+            "Sentiment Analysis",
+            mod_sentiment_ui("sentiment_1")
+          )
+        )
+      )
+      
       # Comment search tab (key tab to show)
 
       ui_list <- c(

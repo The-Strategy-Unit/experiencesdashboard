@@ -10,41 +10,41 @@
 #' @export
 split_data_spc <- function(data, variable = "fft", chunks) {
   if (chunks == "monthly") {
-    return(
-      data %>%
-        dplyr::filter(.data[[variable]] %in% 1:5) %>%
-        dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
-        dplyr::mutate(fft = .data[[variable]] * 20) %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarise(fft = mean(fft, na.rm = TRUE))
-    )
+    data %>%
+      dplyr::filter(.data[[variable]] %in% 1:5) %>%
+      dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
+      dplyr::mutate(fft = .data[[variable]] * 20) %>%
+      dplyr::group_by(date) %>%
+      dplyr::filter(dplyr::n() >= 10) %>%
+      dplyr::summarise(fft = mean(fft, na.rm = TRUE))
   } else {
-    return(
-      data %>%
-        dplyr::filter(.data[[variable]] %in% 1:5) %>%
-        dplyr::mutate(group = ceiling(dplyr::cur_group_rows() / nrow(.) * chunks)) %>%
-        dplyr::group_by(group) %>%
-        dplyr::mutate(date = min(date)) %>%
-        dplyr::mutate(fft = .data[[variable]] * 20) %>%
-        dplyr::filter(dplyr::n() > 2) %>%
-        dplyr::group_by(group, date) %>%
-        dplyr::summarise(fft = mean(fft, na.rm = TRUE))
-    )
+    data %>%
+      dplyr::filter(.data[[variable]] %in% 1:5) %>%
+      dplyr::mutate(group = ceiling(dplyr::cur_group_rows() / nrow(.) * chunks)) %>%
+      dplyr::group_by(group) %>%
+      dplyr::mutate(date = min(date)) %>%
+      dplyr::mutate(fft = .data[[variable]] * 20) %>%
+      dplyr::filter(dplyr::n() >= 10) %>%
+      dplyr::group_by(group, date) %>%
+      dplyr::summarise(fft = mean(fft, na.rm = TRUE))
   }
 }
 
 #' Plot data
 #'
 #' @param data dataframe, that you probably made with the split_data_spc function
+#' with a `date` and `fft` column.
 #' @return SPC plot
 #'
 #' @export
 plot_fft_spc <- function(data) {
+  stopifnot("At least 10 observation is required" = nrow(data) >= 10)
+
   data %>%
     NHSRplotthedots::ptd_spc(
       value_field = fft,
       date_field = date,
-      screen_outliers = F
+      screen_outliers = FALSE
     ) %>%
     plot(
       y_axis_label = "% FFT score",

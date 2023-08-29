@@ -28,9 +28,6 @@ tidy_trust_neas <- function(db_tidy) {
         fft_score == 'Don’t know' ~ 6,
         TRUE ~ NA
       )
-    ) %>%
-    dplyr::mutate(
-      date = as.Date(.data$date, "%d/%m/%Y")
     )
 }
 
@@ -74,7 +71,8 @@ tidy_trust_nth <- function(db_tidy) {
 #' @return dataframe with cleaned text
 #' @export
 clean_dataframe <- function(data, comment_column) {
-  data %>%
+  data %>% 
+    dplyr::mutate(across(all_of(comment_column), \(.x) stringr::str_replace_all(.x, "[^[:alnum:][:punct:]]+", " "))) %>% # remove non-graphical characters, ‘⁠[:graph:  is not reliable⁠’
     dplyr::mutate(
       dplyr::across(
         where(is.character), ~ dplyr::case_when(
@@ -88,7 +86,7 @@ clean_dataframe <- function(data, comment_column) {
       !is.na(.data[[comment_column]]),
       !is.null(.data[[comment_column]]),
       !.data[[comment_column]] %in% c("NULL", "NA", "N/A", "Did not answer")
-    )
+    ) 
 }
 
 #' Tidy data upload from users
@@ -164,7 +162,11 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
   if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
   if (trust_id == "trust_NEAS") db_tidy <- db_tidy %>% tidy_trust_neas()
   if (trust_id == "trust_NTH") db_tidy <- db_tidy %>% tidy_trust_nth()
-
+  
+  # parse the date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded). 
+  db_tidy <- parse_date(db_tidy)
+  stopifnot("Start year should reasonably be after year 2000" = lubridate::year(min(db_tidy$date)) > 2000)
+  
   # call API for label predictions ----
   # prepare the data for the API
 
@@ -187,6 +189,9 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
         )
       ) |>
       dplyr::select(comment_id, comment_text, question_type)
+  } else{
+    tidy_data <- tidy_data %>% 
+      dplyr::filter(question_type == api_question_code(get_golem_config("comment_1")))
   }
 
   cat("Making predictions for ", nrow(db_tidy), "comments from pxtextming API \n")
@@ -205,8 +210,7 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
     ) %>%
     dplyr::select(-comment_id) %>%
     dplyr::mutate(
-      hidden = 0,
-      date = as.Date(.data$date)
+      hidden = 0
     )
   
   print("Doing final data tidy")
@@ -233,9 +237,11 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) %>%
     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, charToRaw)))
 
+  # Do a final check on the data before loading to db
   # throw error if comment_id is not unique
   stopifnot("values in 'comment ID' should be unique" = final_df$comment_id %>% duplicated() %>% sum() == 0)
-
+  stopifnot("comment_id column should not be empty" = all(!is.na(final_df$comment_id) & final_df$comment_id != ""))
+  
   if (write_db) {
     cat("Just started appending ", nrow(final_df), " rows of data into database ... \n")
     

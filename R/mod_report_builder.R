@@ -128,7 +128,7 @@ mod_report_builder_server <- function(id, filter_data,
             params <- list(
               dates = dates,
               inputs = all_inputs(),
-              data = filter_data()$filter_data,
+              data = filter_data()$unique_data,
               single_label_data = filter_data()$single_labeled_filter_data,
               options = input$report_components,
               comment_1 = get_golem_config("comment_1"),

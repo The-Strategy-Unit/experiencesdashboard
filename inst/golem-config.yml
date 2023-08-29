@@ -113,14 +113,9 @@ trust_NUH:
 trust_LPT:
   trust_name: trust_LPT
   comment_1: Why did you answer this way?
-  comment_2: What could be improved?
   question_1: fft
-  location_1: Division
-  location_2: Directorate
-  location_3: Team
-  demography_1: sex
-  demography_2: age
-  demography_3: ethnicity
+  location_1: Directorate
+  location_2: Location
 trust_GOSH:
   trust_name: trust_GOSH
   comment_1: Why did you answer this way?

@@ -31,7 +31,7 @@ mod_search_text_server <- function(id, filter_data) {
     memoised_comment_table <- memoise::memoise(comment_table, cache = getShinyOption("cache")) # create a session-level cacheable version of comment_table()
 
     output$dynamic_comment_ui <- renderUI({
-      req(input$text_search)
+      req(text_search())
       req(return_data())
 
       tagList(
@@ -42,12 +42,19 @@ mod_search_text_server <- function(id, filter_data) {
       )
     })
 
+    text_search <- reactive({
+      if (is.null(input$text_search))
+        NULL
+      else
+        input$text_search
+    }) %>% debounce(1000)
+    
     return_data <- reactive({
-      req(input$text_search)
+      req(text_search())
 
       return_search_text(
         text_data = filter_data()$filter_data,
-        filter_text = input$text_search,
+        filter_text = text_search(),
         comment_type_filter = NULL, search_type = "and"
       ) %>%
         dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
@@ -59,7 +66,7 @@ mod_search_text_server <- function(id, filter_data) {
 
     output$comment_output <- DT::renderDT({
       validate(
-        need(input$text_search, "Please enter a search term")
+        need(text_search(), "Please enter a search term")
       )
       memoised_comment_table(return_data())
     })
@@ -67,7 +74,7 @@ mod_search_text_server <- function(id, filter_data) {
     # Download the data ####
     output$search_download_data <- downloadHandler(
       filename = reactive({
-        sanitized_search_strings(input$text_search) %>%
+        sanitized_search_strings(text_search()) %>%
           paste(collapse = ", ") %>%
           paste0("-", Sys.Date(), ".xlsx")
       }),

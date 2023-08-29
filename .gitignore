@@ -8,10 +8,5 @@ inst/doc
 doc
 Meta
 scratch.R
-renv/
-renv*
-.Rprofile
-trial_scripts/
 inst/app/www/*.docx
-secret-data/
-app_cache/
+secret/

@@ -83,7 +83,7 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
       data <- filter_data()$single_labeled_filter_data
 
       if (isTruthy(input$table_rows_selected)) {
-        category_selected <- calculatedTable()$Category[input$table_rows_selected]
+        category_selected <- calculatedTable()$category[input$table_rows_selected]
 
         print(category_selected)
 

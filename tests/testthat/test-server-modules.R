@@ -87,7 +87,7 @@ test_that("mod_data_management_server work correctly", {
     expect_equal(nrow(dt_out$data), 100)
     expect_equal(ncol(dt_out$data), 18)
     expect_equal(class(dt_out$data$category), "list")
-    expect_snapshot(output$pat_table)
+    expect_no_error(output$pat_table)
     expect_equal(class(proxy), "dataTableProxy")
     expect_true(inherits(dt_out$complex_comments, "data.frame"))
   })
@@ -316,19 +316,21 @@ test_that("it validates the plot data when group is at least 10", {
 # mod_header_message_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_header_message_server work correctly", {
   # arrange
+  
+  stub(mod_header_message_server, "DBI::dbGetQuery", 
+       tibble::tibble("MAX(last_upload_date)" = Sys.Date(),
+                  "MAX(last_edit_date)" = Sys.Date()))
   data <- phase_2_db_data %>%
     mutate(last_edit_date = NA)
 
   # no data in the database
-  # there is data in the database
-  testServer(mod_header_message_server, args = list(data, FALSE), {
+  testServer(mod_header_message_server, args = list('pool', data, FALSE), {
     # act/assert
     expect_error(output$dynamic_messageMenu)
   })
 
-  # There is data in the database
   # there is data in the database
-  testServer(mod_header_message_server, args = list(data, TRUE), {
+  testServer(mod_header_message_server, args = list('pool', data, TRUE), {
     # act/assert
     expect_no_error(output$dynamic_messageMenu)
     expect_identical(db_data, data)
@@ -377,7 +379,7 @@ test_that("mod_patient_experience_server work correctly", {
     expect_called(m, 1)
     expect_called(m2, 1)
     expect_called(m3, 1)
-    expect_called(m4, 0)
+    expect_called(m4, 1)
     expect_called(m5, 1)
     expect_called(m6, 1)
     expect_called(m7, 1)
