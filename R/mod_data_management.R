@@ -247,17 +247,17 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
       rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] %>% unlist(use.name = FALSE)
 
-      # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows). 
+      # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows).
       # Only rows with hidden == 0 are loaded into the dashboard. By doing this the data can be recovered if needed
       query <- glue::glue_sql(
         "UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE comment_id IN ({ids*})",
         ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
-      
-      # Update the edit date for the deleted rows 
+
+      # Update the edit date for the deleted rows
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
-                              ids = rowselected, .con = db_conn
+        ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
 
@@ -310,8 +310,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     })
 
     # Save (write edited data to source) ####
-    ### The save functionalities doesn't work for now. The handling of the list columns 
-    ### (category and super_category) after users press ENTER is causing the issue 
+    ### The save functionalities doesn't work for now. The handling of the list columns
+    ### (category and super_category) after users press ENTER is causing the issue
     ### This will need revisiting if we need this data editing functionality
 
     observeEvent(input$save_to_db, {
@@ -344,8 +344,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
           dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)),
             by = "comment_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
           )
-          
-          # Update the edit date for the edited rows 
+
+          # Update the edit date for the edited rows
           query2 <- glue::glue_sql(
             "UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
             ids = unlist(dt_out$index, use.names = FALSE), .con = db_conn
@@ -437,113 +437,121 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         ))
       }
     )
-    
+
     # initiate reactive values to track the upload event and update the upload button
-    check_upload <- reactiveVal(NULL)
-    
+    rv_check <- reactiveVal(NULL)
+
     observe({
       req(import_dt$data())
-      
-      check_upload(NULL)
+
+      rv_check(NULL)
       # update actionButton to show we are busy
-      updateActionButton(inputId = "upload_new_data",
-                         label = "Processing and uploading Data",
-                         icon = icon("sync", class = "fa-spin"))
-      
+      updateActionButton(
+        inputId = "upload_new_data",
+        label = "Processing and uploading Data",
+        icon = icon("sync", class = "fa-spin")
+      )
+
       raw_df <- import_dt$data()
-      
-      cat('No of reponders in upload data:', nrow(raw_df), ' \n')
+
+      cat("No of reponders in upload data:", nrow(raw_df), " \n")
 
       compulsory_cols <- c("date", "location_1", "question_1", "fft_score")
-      
+
       showModal(modalDialog(
         title = "Processing...",
         HTML(paste(
           p("Your data is being uploaded in the background."),
           p("You can continue to explore your current data in the dashboard and
             You will be notified when the newly updated data is ready for exploration."),
-          p('OR You can close your browser and login later to access the new updated data')
+          p("OR You can close your browser and login later to access the new updated data")
         ))
       ))
 
       # Implement inner-session asynchronous processes so others process
       # don't get stuck waiting for this process during this session
-      promises::future_promise({
-        # Stop and throw an error if compulsory columns are absent
-        if (!all(compulsory_cols %in% names(raw_df))) {
-          stop("the following columns are required [date, location_1, question_1, fft_score]", call. = FALSE)
-        }
+      promises::future_promise(
+        {
+          # Stop and throw an error if compulsory columns are absent
+          if (!all(compulsory_cols %in% names(raw_df))) {
+            stop("the following columns are required [date, location_1, question_1, fft_score]", call. = FALSE)
+          }
 
-        # upload the data
-        upload_data(data = raw_df, conn = get_pool(), trust_id = get_golem_config("trust_name"))
-        TRUE # return true if the whole future process is successful
-      }, seed = TRUE) %...>% (
-        function(.) {
-          
-          check_upload(.) 
-          
-          # When the upload is successful, we prompt the user to reload their browser
-          showModal(modalDialog(
-            title = "Success!",
-            paste0(nrow(raw_df), " records have been successfully imported. Please refresh
-                your browser to access the updated data"),
-          ))
-        }) %...!% (
+          # upload the data
+          Sys.sleep(50)
+          # upload_data(data = raw_df, conn = get_pool(), trust_id = get_golem_config("trust_name"), write_db = F)
+          TRUE # return true if the whole future process is successful
 
-        # If ever the code from the future() returns an error, we prompt the user
-        function(e) {
-          
-          # update actionButton to show it is ready for another upload
-          updateActionButton(
-            inputId = "upload_new_data", 
-            label = "Upload new data",
-            icon = icon("person-circle-plus")
-          )
-          
-          print(e$message) # for logging the error
+          stop()
+        },
+        seed = TRUE
+      ) |>
+        promises::then(
+          function(.) {
+            rv_check(.)
 
-          # Determine the error type to improve user experience
-          col_error <- stringr::str_detect(e$message, "the following columns are required")
-          api_error <- stringr::str_detect(e$message, "Connection refused")
-          db_error <- stringr::str_detect(e$message, "dbWriteTable|nanodbc/nanodbc")
-
-          if (db_error) {
+            # When the upload is successful, we prompt the user to reload their browser
             showModal(modalDialog(
-              title = "Database Error!",
-              "Please try again or contact project admin if error persist"
-            ))
-          } else if (col_error) {
-            showModal(modalDialog(
-              title = "Data Column Error!",
-              paste(e)
-            ))
-          } else if (api_error) {
-            showModal(modalDialog(
-              title = "API Error!",
-              "Please try again or contact project admin if error persist"
-            ))
-          } else {
-            showModal(modalDialog(
-              title = "Data Error!",
-              "There was a problem importing your data. Try reuploading and check
-            in the 'View' section to ensure that the data is well formatted"
+              title = "Success!",
+              paste0(nrow(raw_df), " records have been successfully imported. Please refresh
+                  your browser to access the updated data"),
             ))
           }
-        })
-      import_dt <-  NULL # invaldate the upload data holder after each upload
+        ) |>
+        promises::catch(
+
+          # If ever the code from the future() returns an error, we prompt the user
+          function(e) {
+            # update actionButton to show it is ready for another upload
+            updateActionButton(
+              inputId = "upload_new_data",
+              label = "Upload new data",
+              icon = icon("person-circle-plus")
+            )
+
+            print(e$message) # for logging the error
+
+            # Determine the error type to improve user experience
+            col_error <- stringr::str_detect(e$message, "the following columns are required")
+            api_error <- stringr::str_detect(e$message, "Connection refused")
+            db_error <- stringr::str_detect(e$message, "dbWriteTable|nanodbc/nanodbc")
+
+            if (db_error) {
+              showModal(modalDialog(
+                title = "Database Error!",
+                "Please try again or contact project admin if error persist"
+              ))
+            } else if (col_error) {
+              showModal(modalDialog(
+                title = "Data Column Error!",
+                paste(e)
+              ))
+            } else if (api_error) {
+              showModal(modalDialog(
+                title = "API Error!",
+                "Please try again or contact project admin if error persist"
+              ))
+            } else {
+              showModal(modalDialog(
+                title = "Data Error!",
+                "There was a problem importing your data. Try reuploading and check
+              in the 'View' section to ensure that the data is well formatted"
+              ))
+            }
+          }
+        )
+      import_dt <- NULL # invaldate the upload data holder after each upload
     })
-    
+
     observe({
-      
-      req(check_upload())
-      
+      req(rv_check())
+
       # update actionButton to show it is ready for another upload
       updateActionButton(
-        inputId = "upload_new_data", 
+        inputId = "upload_new_data",
         label = "Upload new data",
         icon = icon("person-circle-plus")
       )
     })
-    
   })
 }
