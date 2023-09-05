@@ -29,7 +29,7 @@ mod_data_management_ui <- function(id) {
 #' data_management Server Functions
 #'
 #' @noRd
-mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
+mod_data_management_server <- function(id, db_conn, filter_data, data_exists, user) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -443,7 +443,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
           withProgress(message = "Processing data. This may take a while.
                      Please wait...", value = 0, {
-            upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
+            upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"), user = user)
             incProgress(1)
           })
 

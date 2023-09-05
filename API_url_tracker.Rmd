@@ -1,0 +1,52 @@
+---
+title: "API URL tracker"
+author: "Oluwasegun Apejoye"
+date: "2023-09-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install api branch from experience dashboard
+# remotes::install_github("CDU-data-science-team/experiencesdashboard@latest_api_interface")
+# library(experiencesdashboard)
+pkgload::load_all(export_all = T)
+
+library(dplyr)
+```
+
+## load the api job table from the database
+
+```{r cars}
+pool <- odbc::dbConnect(
+  drv = odbc::odbc(),
+  driver = Sys.getenv("odbc_driver"),
+  server = Sys.getenv("HOST_NAME"),
+  UID = Sys.getenv("DB_USER"),
+  PWD = Sys.getenv("MYSQL_PASSWORD"),
+  database = "TEXT_MINING",
+  Port = 3306
+)
+
+api_tracker <- dplyr::tbl(
+  pool,
+  dbplyr::in_schema(
+    "TEXT_MINING",
+    "api_jobs"
+  )
+) |>
+  dplyr::collect() # %>%
+```
+
+## GET THE PREDICTION
+```{r track job}
+if (nrow(api_tracker) > 0) {
+  api_tracker |>
+    apply(1, track_api_job,
+      conn = pool, write_db = T
+    )
+} else {
+  paste("No pending job")
+}
+```

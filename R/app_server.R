@@ -22,6 +22,9 @@ app_server <- function(input, output, session) {
 
   # fetch  the data
   db_data <- get_db_data(pool, get_golem_config("trust_name"))
+  
+  # get the current user
+  user <- if (is.null(session$user)) 'demo user' else session$user
 
   # find out if there is data in the table
   data_exists <- db_data %>%
@@ -305,7 +308,7 @@ app_server <- function(input, output, session) {
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)
 
-  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists)
+  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists, user)
 
   filter_category <- mod_category_criticality_server("category_criticality_ui_1",
     filter_data = filter_data
