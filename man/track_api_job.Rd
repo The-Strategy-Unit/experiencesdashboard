@@ -14,7 +14,7 @@ track_api_job(job, conn, write_db = TRUE)
 \item{write_db}{logical should the prediction data be written to the database or returned as a dataframe?}
 }
 \value{
-dataframe/string, the prediction table or result from `dplyr::rows_update()` or a string stating the state of the job
+dataframe/string, the prediction table or result from `dplyr::rows_update()` or a string stating the status of the job
 }
 \description{
 Track the API job table. If prediction is done, it writes it to the main table and delete the job from the api job table

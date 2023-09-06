@@ -212,7 +212,8 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     date = Sys.time(),
     url = api_result,
     trust_id = trust_id,
-    user = user
+    user = user,
+    status = "submitted"
   )
 
   DBI::dbWriteTable(conn, "api_jobs", job_table, append = TRUE)

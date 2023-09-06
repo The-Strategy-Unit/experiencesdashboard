@@ -29,18 +29,22 @@ pool <- odbc::dbConnect(
   Port = 3306
 )
 
-api_tracker <- dplyr::tbl(
+api_trackers <- dplyr::tbl(
   pool,
   dbplyr::in_schema(
     "TEXT_MINING",
     "api_jobs"
   )
 ) |>
-  dplyr::collect() # %>%
+  dplyr::collect()
+
+api_tracker <- api_trackers# |>
+  filter(status == "submitted")
 ```
 
 ## GET THE PREDICTION
 ```{r track job}
+Sys.sleep(2) # sleep for 5 seconds to give time for any pending job to start in the API
 if (nrow(api_tracker) > 0) {
   api_tracker |>
     apply(1, track_api_job,

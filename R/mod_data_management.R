@@ -449,10 +449,13 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
 
           showModal(modalDialog(
-            title = "Success!",
-            paste0(nrow(raw_df), " records successfully imported. Please refresh
-             your browser to access the new data"),
-            easyClose = TRUE
+            title = strong("Success!"),
+            HTML(paste(
+              h4(paste(nrow(raw_df), "records successfully imported. The new data is not ready yet, the dashboard is predicting the sentiment score.")
+              ),
+              h3(strong(em(("Please check back in about an hour (1hr) to access the new data"))))
+            )),
+            easyClose = FALSE
           ))
         },
         error = function(e) {

@@ -68,7 +68,7 @@ get_pred_from_url <- function(api_url) {
 #' @param conn database connection
 #' @param write_db logical should the prediction data be written to the database or returned as a dataframe?
 #'
-#' @return dataframe/string, the prediction table or result from `dplyr::rows_update()` or a string stating the state of the job
+#' @return dataframe/string, the prediction table or result from `dplyr::rows_update()` or a string stating the status of the job
 #' @export
 track_api_job <- function(job, conn, write_db = TRUE) {
   job_id <- as.character(job["job_id"])
@@ -76,8 +76,17 @@ track_api_job <- function(job, conn, write_db = TRUE) {
   trust_id <- as.character(job["trust_id"])
 
   cat("Checking Job", job_id, "\n")
+  prediction <- NULL
 
-  prediction <- get_pred_from_url(url)
+  tryCatch(
+    {
+      prediction <- get_pred_from_url(url)
+    },
+    error = function(.) {
+      # update the job status as failed
+      DBI::dbGetQuery(conn, paste("UPDATE api_jobs SET status='failed' WHERE job_id =", job_id))
+    }
+  )
 
   if (is.data.frame(prediction)) {
     cat("Job", job_id, "is done \n")
@@ -85,8 +94,8 @@ track_api_job <- function(job, conn, write_db = TRUE) {
     prediction <- prediction |>
       dplyr::mutate(dplyr::across(dplyr::everything(), as.integer))
 
-    # delete the job from the api job table
-    DBI::dbGetQuery(conn, paste("DELETE FROM api_jobs WHERE job_id =", job_id))
+    # update the job status as complete
+    DBI::dbGetQuery(conn, paste("UPDATE api_jobs SET status='completed' WHERE job_id =", job_id))
 
     if (!write_db) {
       return(prediction)
@@ -101,8 +110,10 @@ track_api_job <- function(job, conn, write_db = TRUE) {
       copy = TRUE,
       in_place = TRUE
     )
-  } else {
+  } else if (is.character(prediction)) {
     cat("Job", job_id, "is still busy \n")
+  } else {
+    cat("Job", job_id, "failed \n")
   }
 }
 
