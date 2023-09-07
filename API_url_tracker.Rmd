@@ -11,10 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 # install api branch from experience dashboard
 # remotes::install_github("CDU-data-science-team/experiencesdashboard@latest_api_interface")
 # library(experiencesdashboard)
-pkgload::load_all(export_all = T)
+
+# temporarily import the required function from the experiencesdashboard package
+source("https://raw.githubusercontent.com/CDU-data-science-team/experiencesdashboard/latest_api_interface/R/fct_api_pred.R")
 
 library(dplyr)
 ```
+
+# Last rendered at `r round(Sys.time())`
 
 ## load the api job table from the database
 
@@ -38,7 +42,7 @@ api_trackers <- dplyr::tbl(
 ) |>
   dplyr::collect()
 
-api_tracker <- api_trackers# |>
+api_tracker <- api_trackers |>
   filter(status == "submitted")
 ```
 

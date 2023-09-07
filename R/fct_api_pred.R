@@ -110,10 +110,15 @@ track_api_job <- function(job, conn, write_db = TRUE) {
       copy = TRUE,
       in_place = TRUE
     )
+    
   } else if (is.character(prediction)) {
+    
     cat("Job", job_id, "is still busy \n")
+    
   } else {
+    
     cat("Job", job_id, "failed \n")
+    
   }
 }
 
