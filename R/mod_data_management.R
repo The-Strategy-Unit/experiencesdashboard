@@ -233,17 +233,17 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
       rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] %>% unlist(use.name = FALSE)
 
-      # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows). 
+      # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows).
       # Only rows with hidden == 0 are loaded into the dashboard. By doing this the data can be recovered if needed
       query <- glue::glue_sql(
         "UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE comment_id IN ({ids*})",
         ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
-      
-      # Update the edit date for the deleted rows 
+
+      # Update the edit date for the deleted rows
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
-                              ids = rowselected, .con = db_conn
+        ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
 
@@ -296,8 +296,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     })
 
     # Save (write edited data to source) ####
-    ### The save functionalities doesn't work for now. The handling of the list columns 
-    ### (category and super_category) after users press ENTER is causing the issue 
+    ### The save functionalities doesn't work for now. The handling of the list columns
+    ### (category and super_category) after users press ENTER is causing the issue
     ### This will need revisiting if we need this data editing functionality
 
     observeEvent(input$save_to_db, {
@@ -330,8 +330,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
           dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)),
             by = "comment_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
           )
-          
-          # Update the edit date for the edited rows 
+
+          # Update the edit date for the edited rows
           query2 <- glue::glue_sql(
             "UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
             ids = unlist(dt_out$index, use.names = FALSE), .con = db_conn
@@ -402,8 +402,14 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     # data upload module ----
 
     observeEvent(input$upload_new_data, {
-      # create an upload interface
+      # update actionButton to show data is uploading
+      updateActionButton(
+        inputId = "upload_new_data",
+        label = "Processing and uploading Data",
+        icon = icon("sync", class = "fa-spin")
+      )
 
+      # create an upload interface
       datamods::import_modal(
         id = session$ns("myid"),
         from = "file",
@@ -447,12 +453,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
             incProgress(1)
           })
 
-
           showModal(modalDialog(
             title = strong("Success!"),
             HTML(paste(
-              h4(paste(nrow(raw_df), "records successfully imported. The new data is not ready yet, the dashboard is predicting the sentiment score.")
-              ),
+              h4(paste(nrow(raw_df), "records successfully imported. The new data is not ready yet, the dashboard is predicting the sentiment score.")),
               h3(strong(em(("Please check back in about an hour (1hr) to access the new data"))))
             )),
             easyClose = FALSE
@@ -493,6 +497,14 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
               easyClose = TRUE
             ))
           }
+        },
+        finally = {
+          # update actionButton to show it is ready for another upload
+          updateActionButton(
+            inputId = "upload_new_data",
+            label = "Upload new data",
+            icon = icon("person-circle-plus")
+          )
         }
       )
     })
