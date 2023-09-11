@@ -83,6 +83,7 @@ golem::add_module(name = "trend", utils = "helper") # Name of the module
 golem::add_module(name = "header_message") # Name of the module
 golem::add_module(name = "overlap_1") # Name of the module
 golem::add_module(name = "sentiment", utils = "helper") # Name of the module
+golem::add_module(name = "comment_download", utils = "helper") # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
