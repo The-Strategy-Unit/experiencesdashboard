@@ -81,8 +81,20 @@ mod_patient_experience_server <- function(id) {
         )
       )
       
-      # Comment search tab (key tab to show)
+      # crosstab tab
 
+      ui_list <- c(
+        ui_list,
+        list(
+          tabPanel(
+            "3-way cross tab",
+            mod_crosstabs_ui("mod_crosstabs_ui_1")
+          )
+        )
+      )
+      
+      # Comment search tab (key tab to show)
+      
       ui_list <- c(
         ui_list,
         list(
@@ -92,7 +104,7 @@ mod_patient_experience_server <- function(id) {
           )
         )
       )
-
+      
       # Demographics tab
 
       if (isTruthy(get_golem_config("demography_1")) |

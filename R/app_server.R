@@ -338,4 +338,9 @@ app_server <- function(input, output, session) {
     "demographics_ui_1",
     filter_data, data_exists
   )
+
+  mod_crosstabs_server (
+    "mod_crosstabs_ui_1",
+    filter_data, data_exists
+  )
 }
