@@ -183,3 +183,37 @@ api_question_code <- function(value) {
     TRUE ~ "nonspecific"
   )
 }
+
+#' Get for api jobs in the api table in the database
+#'
+#' @param pool database connection
+#' @param trust_id the trust id
+#'
+#' @return list of latest_time and no_record
+#' @noRd
+check_api_job = function(pool, trust_id = get_golem_config("trust_name")) {
+  
+  data <- dplyr::tbl(
+    pool,
+    dbplyr::in_schema(
+      "TEXT_MINING",
+      "api_jobs"
+    )
+  ) |>
+    dplyr::filter(
+      trust_id == !!trust_id,
+      status == "submitted"
+    ) 
+  
+  lastest_time <- data |>
+    dplyr::select(date) |>
+    dplyr::pull() |>
+    lubridate::as_datetime()
+  
+  no_record <- data |>
+    dplyr::tally() |>
+    dplyr::pull() |>
+    as.integer()
+  
+  list("latest_time" = lastest_time, "no_record" = no_record)
+}

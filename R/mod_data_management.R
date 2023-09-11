@@ -401,21 +401,35 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
     # data upload module ----
 
-    observeEvent(input$upload_new_data, {
-      # update actionButton to show data is uploading
-      updateActionButton(
-        inputId = "upload_new_data",
-        label = "Processing and uploading Data",
-        icon = icon("sync", class = "fa-spin")
-      )
-
-      # create an upload interface
-      datamods::import_modal(
-        id = session$ns("myid"),
-        from = "file",
-        title = "Import data to be used in Dashboard"
-      )
-    })
+    observe({
+      api_jobs <- check_api_job(db_conn)
+      
+      if (api_jobs$no_record > 0){
+        
+        showModal(
+          modalDialog(
+            title = "Existing Upload!",
+            HTML(paste("Sorry, a data upload started at", api_jobs$latest_time, " is still uploading. Please allow it to finish uploading before starting a new upload"))
+          )
+        )
+      } else{
+        
+        # update actionButton to show data is uploading
+        updateActionButton(
+          inputId = "upload_new_data",
+          label = "Processing and uploading Data",
+          icon = icon("sync", class = "fa-spin")
+        )
+  
+        # create an upload interface
+        datamods::import_modal(
+          id = session$ns("myid"),
+          from = "file",
+          title = "Import data to be used in Dashboard"
+        )
+      }
+    }) |>
+      bindEvent(input$upload_new_data)
 
     # Get the imported data as tibble
 
