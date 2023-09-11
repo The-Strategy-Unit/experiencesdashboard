@@ -271,7 +271,7 @@ app_server <- function(input, output, session) {
       ) %>%
       dplyr::mutate(sentiment = get_sentiment_text(sentiment)) %>% 
       dplyr::mutate(
-        sentiment = factor(sentiment, levels = c("Very Negative", "Negative", "Neutral", "Positive","Very Positive"))
+        sentiment = factor(sentiment, levels = c("Very Positive", "Positive", "Neutral", "Negative", "Very Negative"))
       )
     ##########################
 
