@@ -22,9 +22,9 @@ app_server <- function(input, output, session) {
 
   # fetch  the data
   db_data <- get_db_data(pool, get_golem_config("trust_name"))
-  
+
   # get the current user
-  user <- if (is.null(session$user)) 'demo user' else session$user
+  user <- if (is.null(session$user)) "demo user" else session$user
 
   # find out if there is data in the table
   data_exists <- db_data %>%
@@ -41,6 +41,25 @@ app_server <- function(input, output, session) {
         h4("To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can
           refresh your browser to start exploring your data."),
         h4(HTML(paste0("To get started, Please go to the", strong(em(("'Data upload and management'"))), "tab to upload your data")))
+      ))
+    ))
+  }
+
+  # alert the user when the trust has a pending api job
+  api_jobs <- check_api_job(pool)
+  latest_time <- api_jobs$latest_time
+  wait_time <- api_jobs$estimated_wait_time
+
+
+  if (!is.null(latest_time)) {
+    showModal(modalDialog(
+      title = strong("Warning!"),
+      HTML(paste(
+        h5(strong("Please note that this is not the most up-to-date data")),
+        h6(HTML(paste0(
+          "A data uploaded at", strong(em((paste(latest_time, "GMT")))), "is still uploading. If you really need to access the most up-to-date data, please check back or refresh your browser in roughly",
+          strong(em((paste(wait_time, "minutes")))), "time"
+        )))
       ))
     ))
   }
@@ -262,14 +281,14 @@ app_server <- function(input, output, session) {
         dplyr::collect() %>%
         dplyr::arrange(date)
     }
-    
+
     ############# temporary implementation ################
     # make data that mimic the (sentiment) data
-    return_data <- return_data %>% 
+    return_data <- return_data %>%
       dplyr::mutate(
         sentiment = sample(1:5, nrow(return_data), replace = T)
       ) %>%
-      dplyr::mutate(sentiment = get_sentiment_text(sentiment)) %>% 
+      dplyr::mutate(sentiment = get_sentiment_text(sentiment)) %>%
       dplyr::mutate(
         sentiment = factor(sentiment, levels = c("Very Positive", "Positive", "Neutral", "Negative", "Very Negative"))
       )
@@ -313,7 +332,7 @@ app_server <- function(input, output, session) {
   filter_category <- mod_category_criticality_server("category_criticality_ui_1",
     filter_data = filter_data
   )
-  
+
   mod_sentiment_server("sentiment_1", filter_data, data_exists)
 
   mod_fft_server("fft_ui_1", filter_data = filter_data)

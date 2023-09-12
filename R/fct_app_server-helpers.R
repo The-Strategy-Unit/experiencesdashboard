@@ -98,5 +98,5 @@ get_db_data <- function(pool, trust_name) {
       trust_name
     )
   ) %>%
-    tidy_all_trusts() 
+    tidy_all_trusts()
 }

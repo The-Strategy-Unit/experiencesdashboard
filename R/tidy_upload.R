@@ -102,7 +102,9 @@ clean_dataframe <- function(data, comment_column) {
 upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   # throw error if for any reason the trust_id is not same a trust name
   stopifnot("trust_id should be same as trust_name" = get_golem_config("trust_name") == trust_id)
-
+  
+  last_upload_date = Sys.time() # to track when the data upload started. to be used in the api job table and the main table
+  
   if (trust_id == "demo_trust") {
     db_tidy <- data %>%
       dplyr::mutate(location_1 = sample(
@@ -209,10 +211,11 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   # update api job table ----
   job_table <- dplyr::tibble(
     job_id = max_job_id + 1,
-    date = Sys.time(),
+    date = last_upload_date,
     url = api_result,
     trust_id = trust_id,
     user = user,
+    no_comments = nrow(tidy_data),
     status = "submitted"
   )
 
@@ -242,7 +245,7 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
       comment_type = stringr::str_replace_all(.data$comment_type, "question", "comment")
     ) %>%
     # update the last upload date column with todays date
-    dplyr::mutate(last_upload_date = Sys.time()) %>%
+    dplyr::mutate(last_upload_date = last_upload_date) %>%
     #  assign the super categories
     tidyr::unnest(category) %>% # Unnest the category column into rows and columns
     dplyr::mutate(super_category = assign_highlevel_categories(category)) %>% # assign super categories
