@@ -213,6 +213,7 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     url = api_result,
     trust_id = trust_id,
     user = user,
+    no_comments = nrow(tidy_data),
     status = "submitted"
   )
 

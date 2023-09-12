@@ -403,12 +403,17 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
     observe({
       api_jobs <- check_api_job(db_conn)
+      latest_time <- api_jobs$latest_time
+      wait_time <- api_jobs$estimated_wait_time
 
-      if (api_jobs$no_record > 0) {
+      if (!is.null(latest_time)) {
         showModal(
           modalDialog(
             title = "Existing Upload!",
-            HTML(paste("Sorry, a data upload started at", max(api_jobs$latest_time), "(GMT) is still uploading. Please allow it to finish uploading before starting a new upload"))
+            HTML(paste(
+              "Sorry, a data upload started at", latest_time, "(GMT) is still uploading. Please allow it to finish uploading (in about",
+              wait_time, "mins time) before starting a new upload"
+            ))
           )
         )
       } else {

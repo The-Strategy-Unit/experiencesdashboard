@@ -110,15 +110,10 @@ track_api_job <- function(job, conn, write_db = TRUE) {
       copy = TRUE,
       in_place = TRUE
     )
-    
   } else if (is.character(prediction)) {
-    
     cat("Job", job_id, "is still busy \n")
-    
   } else {
-    
     cat("Job", job_id, "failed \n")
-    
   }
 }
 
@@ -191,8 +186,7 @@ api_question_code <- function(value) {
 #'
 #' @return list of latest_time and no_record
 #' @noRd
-check_api_job = function(pool, trust_id = get_golem_config("trust_name")) {
-  
+check_api_job <- function(pool, trust_id = get_golem_config("trust_name")) {
   data <- dplyr::tbl(
     pool,
     dbplyr::in_schema(
@@ -203,17 +197,32 @@ check_api_job = function(pool, trust_id = get_golem_config("trust_name")) {
     dplyr::filter(
       trust_id == !!trust_id,
       status == "submitted"
-    ) 
-  
-  lastest_time <- data |>
+    ) |>
+    dplyr::filter(date == max(date))
+
+  if (data |>
+    dplyr::tally() |>
+    dplyr::pull() < 1) {
+    return(list("latest_time" = NULL, "estimated_wait_time" = 0))
+  }
+
+  latest_time <- data |>
     dplyr::select(date) |>
     dplyr::pull() |>
     lubridate::as_datetime()
-  
-  no_record <- data |>
-    dplyr::tally() |>
-    dplyr::pull() |>
-    as.integer()
-  
-  list("latest_time" = lastest_time, "no_record" = no_record)
+
+  no_comments <- data |>
+    dplyr::select(no_comments) |>
+    dplyr::pull()
+
+  wait_time <- floor(as.numeric(lubridate::now(tz = "UTC") - latest_time, units = "mins"))
+
+  estimated_wait_time <- dplyr::case_when(
+    no_comments < 1000 ~ 15 - wait_time,
+    no_comments < 10000 ~ 30 - wait_time,
+    no_comments < 25000 ~ 60 - wait_time,
+    TRUE ~ 120
+  )
+
+  list("latest_time" = latest_time, "estimated_wait_time" = estimated_wait_time)
 }
