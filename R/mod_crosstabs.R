@@ -26,7 +26,7 @@ mod_crosstabs_server <- function(id, filter_data, data_exists) {
     # create dynamic UI that Only show module contents if the data from the database is not empty
     output$dynamic_UI <- renderUI({
       validate(
-        need(data_exists, "Category Trends plots will appear here")
+        need(data_exists, "Cross tab table for sentient, sub-categories, and fft scores will appear here")
       )
 
       fluidPage(
