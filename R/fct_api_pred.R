@@ -98,6 +98,9 @@ track_api_job <- function(job, conn, write_db = TRUE) {
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='completed' WHERE job_id =", job_id))
 
     if (!write_db) {
+      # update the job status as uploaded (successfully write prediction to main table)
+      DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
+      
       return(prediction)
     }
 
