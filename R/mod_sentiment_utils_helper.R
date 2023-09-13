@@ -63,3 +63,16 @@ get_sentiment_text <- function(value) {
     TRUE ~ NA
   )
 }
+
+#' Transform the sentiment values from numeric to their text form
+#' @param data dtaframe
+#' @param sentiment_column string, name of the sentiment column
+#'
+#' @noRd
+transform_sentiment <- function(data, sentiment_column = 'sentiment') {
+  data %>%
+    dplyr::mutate(sentiment = get_sentiment_text(!!rlang::sym(sentiment_column))) %>%
+    dplyr::mutate(
+      sentiment = factor(!!rlang::sym(sentiment_column), levels = c("Very Positive", "Positive", "Neutral", "Negative", "Very Negative"))
+    )
+}

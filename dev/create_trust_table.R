@@ -41,7 +41,7 @@ create_job_table <- function(conn) {
       trust_id tinytext NOT NULL,
       user tinytext NOT NULL,
       email tinytext,
-      status tinytext NOT NULL CHECK (status IN ('submitted', 'completed', 'failed')),
+      status tinytext NOT NULL CHECK (status IN ('submitted', 'completed', 'failed', 'uploaded')),
       PRIMARY KEY (job_id)
   )"
 

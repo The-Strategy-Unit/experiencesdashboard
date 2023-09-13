@@ -68,7 +68,7 @@ get_pred_from_url <- function(api_url) {
 #' @param conn database connection
 #' @param write_db logical should the prediction data be written to the database or returned as a dataframe?
 #'
-#' @return dataframe/string, the prediction table or result from `dplyr::rows_update()` or a string stating the status of the job
+#' @return dataframe (if `write_db` is FALSE)
 #' @export
 track_api_job <- function(job, conn, write_db = TRUE) {
   job_id <- as.character(job["job_id"])
@@ -94,10 +94,13 @@ track_api_job <- function(job, conn, write_db = TRUE) {
     prediction <- prediction |>
       dplyr::mutate(dplyr::across(dplyr::everything(), as.integer))
 
-    # update the job status as complete
-    DBI::dbGetQuery(conn, paste("UPDATE api_jobs SET status='completed' WHERE job_id =", job_id))
+    # update the job status as complete (Prediction has been returned)
+    DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='completed' WHERE job_id =", job_id))
 
     if (!write_db) {
+      # update the job status as uploaded (successfully write prediction to main table)
+      DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
+      
       return(prediction)
     }
 
@@ -110,6 +113,11 @@ track_api_job <- function(job, conn, write_db = TRUE) {
       copy = TRUE,
       in_place = TRUE
     )
+
+    # update the job status as uploaded (successfully write prediction to main table)
+    DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
+
+    cat("Job", job_id, "prediction has been successfully written to database \n")
   } else if (is.character(prediction)) {
     cat("Job", job_id, "is still busy \n")
   } else {
@@ -182,11 +190,13 @@ api_question_code <- function(value) {
 #' Get for api jobs in the api table in the database
 #'
 #' @param pool database connection
-#' @param trust_id the trust id
-#'
-#' @return list of latest_time and no_record
+#' @param trust_id string, the trust id
+#' @param schedule_time integer, number of mins used in the Rmarkdown schedule that tracks the api job table.
+#' default is 15mins. its only needed to guess how long users might have to wait for the prediction to complete 
+#' 
+#' @return list of latest_time and estimated_wait_time (in mins)
 #' @noRd
-check_api_job <- function(pool, trust_id = get_golem_config("trust_name")) {
+check_api_job <- function(pool, trust_id = get_golem_config("trust_name"), schedule_time = 15) {
   data <- dplyr::tbl(
     pool,
     dbplyr::in_schema(
@@ -196,9 +206,9 @@ check_api_job <- function(pool, trust_id = get_golem_config("trust_name")) {
   ) |>
     dplyr::filter(
       trust_id == !!trust_id,
-      status == "submitted"
+      status %in% c("submitted", "completed")
     ) |>
-    dplyr::filter(date == max(date))
+    dplyr::filter(date == max(date, na.rm = TRUE))
 
   if (data |>
     dplyr::tally() |>
@@ -218,9 +228,9 @@ check_api_job <- function(pool, trust_id = get_golem_config("trust_name")) {
   wait_time <- floor(as.numeric(lubridate::now(tz = "UTC") - latest_time, units = "mins"))
 
   estimated_wait_time <- dplyr::case_when(
-    no_comments < 1000 ~ 15 - wait_time,
-    no_comments < 10000 ~ 30 - wait_time,
-    no_comments < 25000 ~ 60 - wait_time,
+    no_comments < 1000 ~ schedule_time + 15 - wait_time,
+    no_comments < 10000 ~ schedule_time + 30 - wait_time,
+    no_comments < 25000 ~ schedule_time + 60 - wait_time,
     TRUE ~ 120
   )
 

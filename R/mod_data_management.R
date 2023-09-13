@@ -376,7 +376,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       # complex comments ----
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
 
-      if ((nrow(dt_out$complex_comments) > 1)) {
+      if (nrow(dt_out$complex_comments) > 1) {
         n_complex_comments <- dt_out$complex_comments |>
           dplyr::pull(comment_txt) |>
           length()
@@ -402,6 +402,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     # data upload module ----
 
     observe({
+      
+      # guess the wait time for sentiment prediction
       api_jobs <- check_api_job(db_conn)
       latest_time <- api_jobs$latest_time
       wait_time <- api_jobs$estimated_wait_time
@@ -463,11 +465,15 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
             incProgress(1)
           })
 
+          # guess the wait time for sentiment prediction
+          api_jobs <- check_api_job(db_conn)
+          wait_time <- api_jobs$estimated_wait_time
+
           showModal(modalDialog(
             title = strong("Success!"),
             HTML(paste(
-              h4(paste(nrow(raw_df), "records successfully imported. The new data is not ready yet, the dashboard is predicting the sentiment score.")),
-              h3(strong(em(("Please check back in about an hour (1hr) to access the new data"))))
+              h5(paste(nrow(raw_df), "records successfully imported. The new data is not ready yet, the dashboard is busy predicting the sentiment score.")),
+              h4(strong(em(paste("Please check back or refresh your browser in about", wait_time, "mins to access the new data"))))
             )),
             easyClose = FALSE
           ))
