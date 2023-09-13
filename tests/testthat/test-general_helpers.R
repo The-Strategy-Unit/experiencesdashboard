@@ -169,10 +169,14 @@ test_that("get_sentiment_text works", {
   codes = c(1,2,3,3,5,6)
   test <- get_sentiment_text(codes)
   
-  expect_equal(test, c('Very Negative', 'Negative', 'Neutral', 'Neutral', 'Very Positive', NA))
+  expect_equal(get_sentiment_text(c(5, 2,6, 9)), c("Very Negative", "Positive", NA, NA))
+  
+  expect_equal(test, c('Very Positive', 'Positive', 'Neutral', 'Neutral', 'Very Negative', NA))
   
   expect_equal(length(test), length(codes))
 })
+
+# mod_sentiment_utils_helper ----
 
 test_that("plot_sentiment_trend works", {
   
@@ -200,4 +204,23 @@ test_that("plot_sentiment_trend works", {
   )
   
   expect_true(inherits(plot, 'plotly'))
+})
+
+test_that("transform_sentiment works and return expected result", {
+  
+  comment_id <- c("1", "2", "3", '4')
+  sentiment <- c(5, 2,6, 9)
+  df <- data.frame(comment_id, sentiment)
+  
+  result <- transform_sentiment(df)
+  
+  expect_true(inherits(result, 'data.frame'))
+  
+  expect_true(inherits(result$sentiment, 'factor'))
+  
+  expect_equal(levels(result$sentiment),  c("Very Positive", "Positive", "Neutral", "Negative", "Very Negative"))
+ 
+  expect_equal(as.character(result$sentiment), c("Very Negative", "Positive", NA, NA))
+   
+  expect_equal(nrow(df), nrow(result))
 })

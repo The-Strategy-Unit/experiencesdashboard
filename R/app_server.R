@@ -51,7 +51,17 @@ app_server <- function(input, output, session) {
   wait_time <- api_jobs$estimated_wait_time
 
 
-  if (!is.null(latest_time)) {
+  if (!is.null(latest_time) & data_exists) {
+    # filter out all the unfinished rows(api job time is same as last_upload_date when doing data upload)
+    db_data <- db_data %>%
+      dplyr::filter(last_upload_date != latest_time)
+    
+    # for first upload to the dashboard, this will ensure all the tabs are left blank 
+    # till the upload is done
+    data_exists <- db_data %>%
+      dplyr::tally() %>%
+      dplyr::pull(n) > 0
+
     showModal(modalDialog(
       title = strong("Warning!"),
       HTML(paste(
@@ -282,20 +292,11 @@ app_server <- function(input, output, session) {
         dplyr::arrange(date)
     }
 
-    ############# temporary implementation ################
-    # make data that mimic the (sentiment) data
-    return_data <- return_data %>%
-      dplyr::mutate(
-        sentiment = sample(1:5, nrow(return_data), replace = T)
-      ) %>%
-      dplyr::mutate(sentiment = get_sentiment_text(sentiment)) %>%
-      dplyr::mutate(
-        sentiment = factor(sentiment, levels = c("Very Positive", "Positive", "Neutral", "Negative", "Very Negative"))
-      )
-    ##########################
-
+    # TRANSFORM THE SENTIMENT COLUMN
+    return_data <- return_data %>% 
+      transform_sentiment()
+    
     # also return a dataset with unique individuals
-
     unique_data <- return_data %>%
       dplyr::distinct(pt_id, .keep_all = TRUE)
 
