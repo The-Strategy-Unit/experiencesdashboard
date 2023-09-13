@@ -84,7 +84,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
           y = ~percent,
           color = ~sentiment,
           key = ~sentiment,
-          colors = c( "#009639", "#FAE100", "#DA291C"),
+          colors = c("#DA291C", "#FAE100", "#009639"),
           event_id = event_id,
           plot_title = glue::glue("Comment sentiment over time ({timeframe()})"),
           xaxis_title = glue::glue("Date ({timeframe()})"),
