@@ -45,7 +45,7 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
         downloadButton(ns("click_table_download_data"), "Download data",
           icon = icon("download")
         ),
-        DT::DTOutput(ns("comment_table"))
+        uiOutput(ns("comment_table"))
       )
     })
 
@@ -90,20 +90,10 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
       return(prep_data_for_comment_table(data))
     })
 
-    output$comment_table <- DT::renderDT({
-      memoised_comment_table(return_data())
+    ## the comments tables ----
+    output$comment_table <- renderUI({
+      mod_comment_download_server(ns("comment_download_1"), return_data(), filepath = "sub-category-data-")
     })
-
-    # Download the data ####
-    output$click_table_download_data <- downloadHandler(
-      filename = paste0("sub-category-", Sys.Date(), ".xlsx"),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data(), file)
-          incProgress(1)
-        })
-      }
-    )
 
     reactive(
       input$table_rows_selected

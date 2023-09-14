@@ -35,20 +35,18 @@ mod_search_text_server <- function(id, filter_data) {
       req(return_data())
 
       tagList(
-        downloadButton(ns("search_download_data"), "Download data",
-          icon = icon("download")
-        ),
-        DT::DTOutput(ns("comment_output"))
+        uiOutput(ns("comment_output"))
       )
     })
 
     text_search <- reactive({
-      if (is.null(input$text_search))
+      if (is.null(input$text_search)) {
         NULL
-      else
+      } else {
         input$text_search
+      }
     }) %>% debounce(1000)
-    
+
     return_data <- reactive({
       req(text_search())
 
@@ -64,26 +62,20 @@ mod_search_text_server <- function(id, filter_data) {
         prep_data_for_comment_table(in_tidy_format = FALSE)
     })
 
-    output$comment_output <- DT::renderDT({
+
+    ## the comments tables ----
+    output$comment_output <- renderUI({
       validate(
         need(text_search(), "Please enter a search term")
       )
-      memoised_comment_table(return_data())
-    })
 
-    # Download the data ####
-    output$search_download_data <- downloadHandler(
-      filename = reactive({
-        sanitized_search_strings(text_search()) %>%
-          paste(collapse = ", ") %>%
-          paste0("-", Sys.Date(), ".xlsx")
-      }),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data(), file)
-          incProgress(1)
-        })
-      }
-    )
+      mod_comment_download_server(
+        ns("comment_download_1"),
+        return_data(),
+        filepath = sanitized_search_strings(text_search()) %>%
+          paste(collapse = "_") %>%
+          paste0("-")
+      )
+    })
   })
 }

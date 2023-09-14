@@ -49,14 +49,14 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
         )
       )
 
-      DT::DTOutput(ns("dynamic_table"))
+      uiOutput(ns("sentiment_comment"))
     })
 
     # the data ----
-    
+
     sentimen_data <- reactive({
       req(filter_data()$filter_data)
-      
+
       filter_data()$filter_data |>
         dplyr::filter(!is.na(sentiment))
     })
@@ -116,8 +116,8 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
     })
 
     ## the comments tables ----
-    output$dynamic_table <- DT::renderDT({
-      memoised_comment_table(return_data())
+    output$sentiment_comment <- renderUI({
+      mod_comment_download_server(ns("comment_download_1"), return_data(), filepath = "sentiment-filter-data-")
     })
   })
 }
