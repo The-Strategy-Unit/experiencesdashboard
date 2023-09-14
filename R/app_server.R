@@ -330,32 +330,23 @@ app_server <- function(input, output, session) {
 
   mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists, user)
 
-  filter_category <- mod_category_criticality_server("category_criticality_ui_1",
-    filter_data = filter_data
-  )
-
   mod_sentiment_server("sentiment_1", filter_data, data_exists)
 
   mod_fft_server("fft_ui_1", filter_data = filter_data)
 
-  mod_report_builder_server("report_builder_ui_1",
+  mod_report_builder_server(
+    "report_builder_ui_1",
     filter_data = filter_data,
     all_inputs = all_inputs,
     data_exists = data_exists
   )
 
-  mod_click_tables_server("click_tables_ui",
-    filter_data = filter_data
-  )
+  mod_click_tables_server("click_tables_ui", filter_data = filter_data, data_exists = data_exists)
 
-  mod_search_text_server("search_text_ui_1",
-    filter_data = filter_data
-  )
+  mod_search_text_server("search_text_ui_1", filter_data = filter_data)
 
   mod_trend_overlap_server("trend_overlap_ui", filter_data, data_exists)
 
-  mod_demographics_server(
-    "demographics_ui_1",
-    filter_data, data_exists
+  mod_demographics_server("demographics_ui_1", filter_data, data_exists
   )
 }

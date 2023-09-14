@@ -17,7 +17,7 @@ mod_click_tables_ui <- function(id) {
 #' click_tables Server Functions
 #'
 #' @noRd
-mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
+mod_click_tables_server <- function(id, filter_data, data_exists, comment_type = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -32,15 +32,11 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
 
     output$dynamic_click_tableUI <- renderUI({
       validate(
-        need(
-          filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0,
-          "Data Table will appear here"
-        )
+        need(data_exists, "Sub-Category Table will appear here")
       )
 
       fluidPage(
+        h5("Click a row to see comments related to that sub-category"),
         DT::DTOutput(ns("table")) %>%
           shinycssloaders::withSpinner(),
         hr(),
