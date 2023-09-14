@@ -151,7 +151,12 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     max_id <- 0
   }
 
+  # parse the date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded).
+  data <- parse_date(data)
+  stopifnot("Start year should reasonably be after year 2000" = lubridate::year(min(data$date)) > 2000)
+  
   db_tidy <- data %>%
+    dplyr::arrange(date) %>% 
     dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>% # to uniquely identify individual responder
     tidyr::pivot_longer(
       cols = dplyr::starts_with("question"),
@@ -168,10 +173,6 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
   if (trust_id == "trust_NEAS") db_tidy <- db_tidy %>% tidy_trust_neas()
   if (trust_id == "trust_NTH") db_tidy <- db_tidy %>% tidy_trust_nth()
-
-  # parse the date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded).
-  db_tidy <- parse_date(db_tidy)
-  stopifnot("Start year should reasonably be after year 2000" = lubridate::year(min(db_tidy$date)) > 2000)
 
   # call API for predictions ----
 
