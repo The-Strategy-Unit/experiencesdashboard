@@ -21,7 +21,6 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
     event_id <- ns("sentiment_plot")
 
     output$dynamic_sentiment_UI <- renderUI({
@@ -54,7 +53,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
 
     # the data ----
 
-    sentimen_data <- reactive({
+    sentiment_data <- reactive({
       req(filter_data()$filter_data)
 
       filter_data()$filter_data |>
@@ -63,7 +62,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
 
     # set the timeframe to view to weekly if the data duration is less than 6months (180 days) else monthly
     timeframe <- reactive(
-      if (max(sentimen_data()$date) - min(sentimen_data()$date) < 180) {
+      if (max(sentiment_data()$date) - min(sentiment_data()$date) < 180) {
         "week"
       } else {
         "month"
@@ -71,7 +70,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
     )
 
     clicked_data <- reactive(
-      sentimen_data() |>
+      sentiment_data() |>
         dplyr::mutate(date = as.Date(cut(date, timeframe()))) |>
         multigroup_calculated_data("date", "sentiment")
     )
@@ -94,7 +93,7 @@ mod_sentiment_server <- function(id, filter_data, data_exists) {
 
     # the input reactive object ----
     return_data <- reactive({
-      ret_data <- sentimen_data()
+      ret_data <- sentiment_data()
 
       if (isTruthy(plotly::event_data("plotly_click", source = event_id, priority = "input"))) {
         fiter_output <- plotly::event_data("plotly_click", source = event_id, priority = "input")

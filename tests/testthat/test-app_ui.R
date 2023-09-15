@@ -3,11 +3,6 @@ test_that("app_ui works", {
   expect_snapshot(app_ui("id"))
 })
 
-# mod_category_criticality_ui ----
-test_that("mod_category_criticality_ui works", {
-  expect_snapshot(mod_category_criticality_ui("id"))
-})
-
 # mod_click_tables_ui ----
 test_that("mod_click_tables_ui works", {
   expect_snapshot(mod_click_tables_ui("id"))

@@ -207,13 +207,15 @@ check_api_job <- function(pool, trust_id = get_golem_config("trust_name"), sched
     dplyr::filter(
       trust_id == !!trust_id,
       status %in% c("submitted", "completed")
-    ) |>
-    dplyr::filter(date == max(date, na.rm = TRUE))
+    ) 
 
   if (data |>
     dplyr::tally() |>
     dplyr::pull() < 1) {
     return(list("latest_time" = NULL, "estimated_wait_time" = 0))
+  } else {
+    data <- data |>
+    dplyr::filter(date == max(date, na.rm = TRUE))
   }
 
   latest_time <- data |>

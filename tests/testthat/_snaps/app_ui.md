@@ -97,70 +97,6 @@
         </div>
       </body>
 
-# mod_category_criticality_ui works
-
-    Code
-      mod_category_criticality_ui("id")
-    Output
-      <div class="container-fluid">
-        <style type="text/css">.tag {
-        display: inline-block;
-        padding: 2px 12px;
-        border-radius: 15px;
-        font-weight: 600;
-        font-size: 12px;
-      }
-      
-      .crit_-5 {
-        background: #A50026;
-      }
-      
-      .crit_-4 {
-        background: #D73027;
-      }
-      
-      .crit_-3 {
-        background: #F46D43;
-      }
-      
-      .crit_-2 {
-        background: #FDAE61;
-      }
-      
-      .crit_-1 {
-        background: #FEE08B;
-      }
-      
-      .crit_0 {
-        background: #FFFFBF;
-      }
-      
-      .crit_1 {
-        background: #D9EF8B;
-      }
-      
-      .crit_2 {
-        background: #A6D96A;
-      }
-      
-      .crit_3 {
-        background: #66BD63;
-      }
-      
-      .crit_4 {
-        background: #1A9850;
-      }
-      
-      .crit_5 {
-        background: #006837;
-      }
-      </style>
-        <div class="row">
-          <h5>Click a row to see comments related to that sub-category</h5>
-          <div id="click_tables_ui-dynamic_click_tableUI" class="shiny-html-output"></div>
-        </div>
-      </div>
-
 # mod_click_tables_ui works
 
     Code
@@ -258,7 +194,7 @@
         <p>Add multiple search terms with comma</p>
         <div class="form-group shiny-input-container">
           <label class="control-label" id="id-text_search-label" for="id-text_search">Search term(s)</label>
-          <input id="id-text_search" type="text" class="form-control" value="" placeholder="e.g. staff, doctor, nurse"/>
+          <input id="id-text_search" type="text" class="shiny-input-text form-control" value="" placeholder="e.g. staff, doctor, nurse"/>
         </div>
         <hr/>
         <div id="id-dynamic_comment_ui" class="shiny-html-output"></div>
