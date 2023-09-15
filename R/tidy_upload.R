@@ -5,11 +5,11 @@ tidy_trust_gosh <- function(db_tidy) {
     dplyr::mutate(
       age = dplyr::case_when(
         age < 12 ~ "0 - 11",
-        age > 11 | age < 18 ~ "12 - 17",
-        age > 17 | age < 26 ~ "18 - 25",
-        age > 25 | age < 40 ~ "26 - 39",
-        age > 39 | age < 65 ~ "40 - 64",
-        age > 64 | age < 80 ~ "65 - 79",
+        age < 18 ~ "12 - 17",
+        age < 26 ~ "18 - 25",
+        age < 40 ~ "26 - 39",
+        age < 65 ~ "40 - 64",
+        age < 80 ~ "65 - 79",
         age > 79 ~ "80+",
         TRUE ~ as.character(age)
       )
@@ -105,30 +105,6 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   
   last_upload_date = Sys.time() # to track when the data upload started. to be used in the api job table and the main table
   
-  if (trust_id == "demo_trust") {
-    db_tidy <- data %>%
-      dplyr::mutate(location_1 = sample(
-        c(
-          "Location A", "Location B",
-          "Location C"
-        ),
-        nrow(data),
-        replace = TRUE
-      )) %>%
-      dplyr::mutate(date = sample(
-        seq(as.Date("2019-01-01"),
-          as.Date("2021-01-01"),
-          by = "days"
-        ),
-        nrow(data),
-        replace = TRUE
-      ))
-
-    # delete ALL previous data
-
-    DBI::dbExecute(conn, "TRUNCATE TABLE demo_trust")
-  }
-
   # reformat and clean the uploaded data ----
   required_cols <- c(
     "date", "pt_id", "location_1", "location_2", "location_3",

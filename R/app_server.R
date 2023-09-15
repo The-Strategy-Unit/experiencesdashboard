@@ -78,16 +78,6 @@ app_server <- function(input, output, session) {
 
   interpolate_date <- Sys.Date()
 
-  if (get_golem_config("trust_name") != "demo_trust") {
-    store_data <- db_data %>%
-      dplyr::filter(date > interpolate_date - 3 * 365) %>%
-      dplyr::select(dplyr::any_of(c(
-        "location_1", "age",
-        "gender", "ethnicity"
-      ))) %>%
-      dplyr::collect()
-  }
-
   # add date filter derived from the db data
   output$date_filter_ui <- renderUI({
     dateRangeInput(
@@ -236,13 +226,6 @@ app_server <- function(input, output, session) {
   })
 
   filter_data <- reactive({
-    if (get_golem_config("trust_name") == "demo_trust") {
-      return(list(
-        "filter_data" = db_data %>%
-          dplyr::collect(),
-        "demography_number" = NULL
-      ))
-    }
 
     # filter 2: by selected Locations ----
     return_data <- get_location_data(
