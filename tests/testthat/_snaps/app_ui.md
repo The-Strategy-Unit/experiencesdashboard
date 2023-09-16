@@ -194,7 +194,7 @@
         <p>Add multiple search terms with comma</p>
         <div class="form-group shiny-input-container">
           <label class="control-label" id="id-text_search-label" for="id-text_search">Search term(s)</label>
-          <input id="id-text_search" type="text" class="form-control" value="" placeholder="e.g. staff, doctor, nurse"/>
+          <input id="id-text_search" type="text" class="shiny-input-text form-control" value="" placeholder="e.g. staff, doctor, nurse"/>
         </div>
         <hr/>
         <div id="id-dynamic_comment_ui" class="shiny-html-output"></div>

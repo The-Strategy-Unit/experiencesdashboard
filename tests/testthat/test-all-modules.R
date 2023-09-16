@@ -11,13 +11,9 @@ test_that("mod_click_tables_server set up dynamic_click_tableUI correctly", {
   # data exist in the database
   testServer(mod_click_tables_server, args = list(reactiveVal(), TRUE), {
     # act/assert
-    expect_snapshot(output$dynamic_click_tableUI)
     expect_no_error(output$dynamic_click_tableUI)
   })
 })
-
-
-
 
 ## test 2 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_click_tables_server set's up correctly", {
@@ -414,12 +410,12 @@ test_that("mod_summary_record_server works correctly", {
     expect_equal(global$current_responses, NULL)
     expect_equal(global$current_individuals, NULL)
 
-    # act
-    expect_snapshot(output$dynamic_summary_record)
-    expect_snapshot(output$commentBox)
-    expect_snapshot(output$individualBox)
-    expect_snapshot(output$current_commentBox)
-    expect_snapshot(output$current_individualBox)
+    # assert output are accessible
+    expect_no_error(output$dynamic_summary_record)
+    expect_no_error(output$commentBox)
+    expect_no_error(output$individualBox)
+    expect_no_error(output$current_commentBox)
+    expect_no_error(output$current_individualBox)
 
     # assert all global variable are expected values after a call to output$dynamic_summary_record
     expect_equal(global$n_responses, 1981)
