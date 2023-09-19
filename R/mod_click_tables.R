@@ -17,11 +17,9 @@ mod_click_tables_ui <- function(id) {
 #' click_tables Server Functions
 #'
 #' @noRd
-mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
+mod_click_tables_server <- function(id, filter_data, data_exists, comment_type = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
-
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
 
     # add NHS blue color to the Datatable header
     initComplete <- DT::JS(
@@ -32,15 +30,11 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
 
     output$dynamic_click_tableUI <- renderUI({
       validate(
-        need(
-          filter_data()$filter_data %>%
-            dplyr::tally() %>%
-            dplyr::pull(n) > 0,
-          "Data Table will appear here"
-        )
+        need(data_exists, "Sub-Category Table will appear here")
       )
 
       fluidPage(
+        h5("Click a row to see comments related to that sub-category"),
         DT::DTOutput(ns("table")) %>%
           shinycssloaders::withSpinner(),
         hr(),
@@ -49,7 +43,7 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
         downloadButton(ns("click_table_download_data"), "Download data",
           icon = icon("download")
         ),
-        DT::DTOutput(ns("comment_table"))
+        uiOutput(ns("comment_table"))
       )
     })
 
@@ -94,20 +88,10 @@ mod_click_tables_server <- function(id, filter_data, comment_type = NULL) {
       return(prep_data_for_comment_table(data))
     })
 
-    output$comment_table <- DT::renderDT({
-      memoised_comment_table(return_data())
+    ## the comments tables ----
+    output$comment_table <- renderUI({
+      mod_comment_download_server(ns("comment_download_1"), return_data(), filepath = "sub-category-data-")
     })
-
-    # Download the data ####
-    output$click_table_download_data <- downloadHandler(
-      filename = paste0("sub-category-", Sys.Date(), ".xlsx"),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data(), file)
-          incProgress(1)
-        })
-      }
-    )
 
     reactive(
       input$table_rows_selected

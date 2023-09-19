@@ -1,0 +1,61 @@
+---
+title: "API URL tracker"
+author: "Oluwasegun Apejoye"
+date: "2023-09-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install api branch from experience dashboard
+# remotes::install_github("CDU-data-science-team/experiencesdashboard@latest_api_interface")
+# library(experiencesdashboard)
+
+# temporarily import the required function from the experiencesdashboard package
+source("https://raw.githubusercontent.com/CDU-data-science-team/experiencesdashboard/latest_api_interface/R/fct_api_pred.R")
+
+library(dplyr)
+```
+
+# Last rendered at `r round(Sys.time())`
+
+## load the api job table from the database
+
+```{r}
+conn <- odbc::dbConnect(
+  drv = odbc::odbc(),
+  driver = Sys.getenv("odbc_driver"),
+  server = Sys.getenv("HOST_NAME"),
+  UID = Sys.getenv("DB_USER"),
+  PWD = Sys.getenv("MYSQL_PASSWORD"),
+  database = "TEXT_MINING",
+  Port = 3306
+)
+
+pending_jobs <- dplyr::tbl(
+  conn,
+  dbplyr::in_schema(
+    "TEXT_MINING",
+    "api_jobs"
+  )
+) |>
+  filter(status == "submitted") |>
+  dplyr::collect()
+
+```
+
+## GET THE PREDICTION
+```{r track job}
+Sys.sleep(2) # Sleep for 5 seconds to allow any pending tasks to start in the API.
+
+# check the url of each submitted job and update the sentiment column of the main database table if the prediction is ready 
+if (nrow(pending_jobs) > 0) {
+  pending_jobs |>
+    apply(1, track_api_job,
+      conn = conn, write_db = TRUE
+    )
+} else {
+  paste("No pending job")
+}
+```

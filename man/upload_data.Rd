@@ -4,7 +4,7 @@
 \alias{upload_data}
 \title{Tidy data upload from users}
 \usage{
-upload_data(data, conn, trust_id, write_db = TRUE)
+upload_data(data, conn, trust_id, user, write_db = TRUE)
 }
 \arguments{
 \item{data}{dataframe, loaded within Shiny application}
@@ -12,6 +12,8 @@ upload_data(data, conn, trust_id, write_db = TRUE)
 \item{conn}{connection, from existing {pool}. Can be `NULL` if `write_db = FALSE`}
 
 \item{trust_id}{string. Which trust are you uploading data for?}
+
+\item{user}{the current user's username gotten from `session$user`}
 
 \item{write_db}{logical should the final data be written to the database or returned as a dataframe?}
 }

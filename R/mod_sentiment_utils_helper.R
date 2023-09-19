@@ -55,11 +55,24 @@ plot_sentiment_trend <- function(data, x, y, event_id = 'A', barmode = "stack", 
 #' @examples get_sentiment_text(c(1, 2, 3, 3, 5))
 get_sentiment_text <- function(value) {
   dplyr::case_when(
-    value == 1 ~ "Very Negative",
-    value == 2 ~ "Negative",
+    value == 1 ~ "Very Positive",
+    value == 2 ~ "Positive",
     value == 3 ~ "Neutral",
-    value == 4 ~ "Positive",
-    value == 5 ~ "Very Positive",
+    value == 4 ~ "Negative",
+    value == 5 ~ "Very Negative",
     TRUE ~ NA
   )
+}
+
+#' Transform the sentiment values from numeric to their text form
+#' @param data dtaframe
+#' @param sentiment_column string, name of the sentiment column
+#'
+#' @noRd
+transform_sentiment <- function(data, sentiment_column = 'sentiment') {
+  data %>%
+    dplyr::mutate(sentiment = get_sentiment_text(!!rlang::sym(sentiment_column))) %>%
+    dplyr::mutate(
+      sentiment = factor(!!rlang::sym(sentiment_column), levels = c("Very Positive", "Positive", "Neutral", "Negative", "Very Negative"))
+    )
 }

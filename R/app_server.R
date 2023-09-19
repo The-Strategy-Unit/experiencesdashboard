@@ -23,6 +23,9 @@ app_server <- function(input, output, session) {
   # fetch  the data
   db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
+  # get the current user
+  user <- if (is.null(session$user)) "demo user" else session$user
+
   # find out if there is data in the table
   data_exists <- db_data %>%
     dplyr::tally() %>%
@@ -42,19 +45,38 @@ app_server <- function(input, output, session) {
     ))
   }
 
+  # alert the user when the trust has a pending api job
+  api_jobs <- check_api_job(pool)
+  latest_time <- api_jobs$latest_time
+  wait_time <- api_jobs$estimated_wait_time
+
+
+  if (!is.null(latest_time) & data_exists) {
+    # filter out all the unfinished rows(api job time is same as last_upload_date when doing data upload)
+    db_data <- db_data %>%
+      dplyr::filter(last_upload_date != latest_time)
+    
+    # for first upload to the dashboard, this will ensure all the tabs are left blank 
+    # till the upload is done
+    data_exists <- db_data %>%
+      dplyr::tally() %>%
+      dplyr::pull(n) > 0
+
+    showModal(modalDialog(
+      title = strong("Warning!"),
+      HTML(paste(
+        h5(strong("Please note that this is not the most up-to-date data")),
+        h6(HTML(paste0(
+          "A data uploaded at", strong(em((paste(latest_time, "GMT")))), "is still uploading. If you really need to access the most up-to-date data, please check back or refresh your browser in roughly",
+          strong(em((paste(wait_time, "minutes")))), "time"
+        )))
+      ))
+    ))
+  }
+
   # store values of demographics and location_1 from last 3 years
 
   interpolate_date <- Sys.Date()
-
-  if (get_golem_config("trust_name") != "demo_trust") {
-    store_data <- db_data %>%
-      dplyr::filter(date > interpolate_date - 3 * 365) %>%
-      dplyr::select(dplyr::any_of(c(
-        "location_1", "age",
-        "gender", "ethnicity"
-      ))) %>%
-      dplyr::collect()
-  }
 
   # add date filter derived from the db data
   output$date_filter_ui <- renderUI({
@@ -204,13 +226,6 @@ app_server <- function(input, output, session) {
   })
 
   filter_data <- reactive({
-    if (get_golem_config("trust_name") == "demo_trust") {
-      return(list(
-        "filter_data" = db_data %>%
-          dplyr::collect(),
-        "demography_number" = NULL
-      ))
-    }
 
     # filter 2: by selected Locations ----
     return_data <- get_location_data(
@@ -259,21 +274,12 @@ app_server <- function(input, output, session) {
         dplyr::collect() %>%
         dplyr::arrange(date)
     }
-    
-    ############# temporary implementation ################
-    # make data that mimic the (sentiment) data
+
+    # TRANSFORM THE SENTIMENT COLUMN
     return_data <- return_data %>% 
-      dplyr::mutate(
-        sentiment = sample(1:5, nrow(return_data), replace = T)
-      ) %>%
-      dplyr::mutate(sentiment = get_sentiment_text(sentiment)) %>% 
-      dplyr::mutate(
-        sentiment = factor(sentiment, levels = c("Very Negative", "Negative", "Neutral", "Positive","Very Positive"))
-      )
-    ##########################
-
+      transform_sentiment()
+    
     # also return a dataset with unique individuals
-
     unique_data <- return_data %>%
       dplyr::distinct(pt_id, .keep_all = TRUE)
 
@@ -305,34 +311,25 @@ app_server <- function(input, output, session) {
 
   mod_summary_record_server("summary_record_1", db_data, filter_data)
 
-  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists)
+  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists, user)
 
-  filter_category <- mod_category_criticality_server("category_criticality_ui_1",
-    filter_data = filter_data
-  )
-  
   mod_sentiment_server("sentiment_1", filter_data, data_exists)
 
   mod_fft_server("fft_ui_1", filter_data = filter_data)
 
-  mod_report_builder_server("report_builder_ui_1",
+  mod_report_builder_server(
+    "report_builder_ui_1",
     filter_data = filter_data,
     all_inputs = all_inputs,
     data_exists = data_exists
   )
 
-  mod_click_tables_server("click_tables_ui",
-    filter_data = filter_data
-  )
+  mod_click_tables_server("click_tables_ui", filter_data = filter_data, data_exists = data_exists)
 
-  mod_search_text_server("search_text_ui_1",
-    filter_data = filter_data
-  )
+  mod_search_text_server("search_text_ui_1", filter_data = filter_data)
 
   mod_trend_overlap_server("trend_overlap_ui", filter_data, data_exists)
 
-  mod_demographics_server(
-    "demographics_ui_1",
-    filter_data, data_exists
+  mod_demographics_server("demographics_ui_1", filter_data, data_exists
   )
 }

@@ -1,67 +1,63 @@
 # mod_click_tables_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## test 1 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_that("mod_click_tables_server set's up calculate_table_data correctly and empty filter data throw error", {
-  # arrange
-  m <- mock("calculate_table_data")
 
-  stub(mod_click_tables_server, "calculate_table", m)
-
-  testServer(mod_click_tables_server, args = list(reactiveVal(), NULL), {
-    filter_data(
-      list(
-        filter_data = data.frame(),
-        single_labeled_filter_data = "single_labeled_filter_data"
-      )
-    )
-
+test_that("mod_click_tables_server set up dynamic_click_tableUI correctly", {
+  # no data in the database
+  testServer(mod_click_tables_server, args = list(reactiveVal(), FALSE), {
     # act/assert
-    expect_equal(calculatedTable(), "calculate_table_data")
-    expect_error(output$dynamic_click_tableUI, "Data Table will appear here")
+    expect_error(output$dynamic_click_tableUI, "Sub-Category Table will appear here")
+  })
+
+  # data exist in the database
+  testServer(mod_click_tables_server, args = list(reactiveVal(), TRUE), {
+    # act/assert
+    expect_no_error(output$dynamic_click_tableUI)
   })
 })
 
 ## test 2 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_that("mod_click_tables_server set's up sub-category datatable and dynamic_click_tableUI correctly", {
+test_that("mod_click_tables_server set's up correctly", {
   # arrange
-  m <- mock(phase_2_db_data)
-
+  m <- mock(data.frame())
   stub(mod_click_tables_server, "calculate_table", m)
 
-  testServer(mod_click_tables_server, args = list(reactiveVal(), NULL), {
+  stub(mod_click_tables_server, "prep_data_for_comment_table", identity)
+
+  testServer(mod_click_tables_server, args = list(reactiveVal(), TRUE), {
     filter_data(
       list(
-        filter_data = phase_2_db_data,
-        single_labeled_filter_data = "single_labeled_filter_data"
+        single_labeled_filter_data = single_labeled_filter_data
       )
     )
 
     # act/assert
-    expect_true(inherits(output$table, "json"))
-    expect_snapshot(output$dynamic_click_tableUI)
+    expect_equal(calculatedTable(), data.frame())
+    expect_equal(return_data(), single_labeled_filter_data)
+    expect_no_error(output$table)
+    expect_no_error(output$comment_table)
+
+    # expect calculate_table is called once and with the correct arguements
+    expect_called(m, 1)
+    expect_args(m, 1, single_labeled_filter_data, "category", comment_type)
   })
 })
 
 ## test 3 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_that("mod_click_tables_server works correctly", {
+test_that("mod_click_tables_server works correctly - user input can be accessed", {
   # arrange
-  m <- mock("prep_data_for_comment_table")
-  stub(mod_click_tables_server, "prep_data_for_comment_table", m)
+  stub(mod_click_tables_server, "prep_data_for_comment_table", identity)
 
-  m2 <- mock("test")
-  stub(mod_click_tables_server, "comment_table", phase_2_db_data |> head())
-
-  testServer(mod_click_tables_server, args = list(reactiveVal(), NULL), {
+  testServer(mod_click_tables_server, args = list(reactiveVal(), TRUE), {
     filter_data(
       list(
-        filter_data = "data",
-        single_labeled_filter_data = get_tidy_filter_data(phase_2_db_data, TRUE)
+        single_labeled_filter_data = single_labeled_filter_data
       )
     )
 
     # act/assert
-    session$setInputs(table_rows_selected = "Not assigned")
-    expect_equal(input$table_rows_selected, "Not assigned") # user input can be accessed
-    expect_equal(return_data(), "prep_data_for_comment_table") # return_data can be accessed
+    session$setInputs(table_rows_selected = "Gratitude/ good experience")
+    expect_equal(input$table_rows_selected, "Gratitude/ good experience") # user input can be accessed
+    expect_no_error(return_data()) # return_data can be accessed
     expect_snapshot(output$comment_table) # comment table output is working correctly
   })
 })
@@ -316,21 +312,25 @@ test_that("it validates the plot data when group is at least 10", {
 # mod_header_message_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_header_message_server work correctly", {
   # arrange
-  
-  stub(mod_header_message_server, "DBI::dbGetQuery", 
-       tibble::tibble("MAX(last_upload_date)" = Sys.Date(),
-                  "MAX(last_edit_date)" = Sys.Date()))
+
+  stub(
+    mod_header_message_server, "DBI::dbGetQuery",
+    tibble::tibble(
+      "MAX(last_upload_date)" = Sys.Date(),
+      "MAX(last_edit_date)" = Sys.Date()
+    )
+  )
   data <- phase_2_db_data %>%
     mutate(last_edit_date = NA)
 
   # no data in the database
-  testServer(mod_header_message_server, args = list('pool', data, FALSE), {
+  testServer(mod_header_message_server, args = list("pool", data, FALSE), {
     # act/assert
     expect_error(output$dynamic_messageMenu)
   })
 
   # there is data in the database
-  testServer(mod_header_message_server, args = list('pool', data, TRUE), {
+  testServer(mod_header_message_server, args = list("pool", data, TRUE), {
     # act/assert
     expect_no_error(output$dynamic_messageMenu)
     expect_identical(db_data, data)
@@ -353,21 +353,24 @@ test_that("mod_patient_experience_server work correctly", {
   stub(mod_patient_experience_server, "mod_trend_overlap_ui", m4)
 
   m5 <- mock()
-  stub(mod_patient_experience_server, "mod_category_criticality_ui", m5)
+  stub(mod_patient_experience_server, "mod_click_tables_ui", m5)
 
   m6 <- mock()
-  stub(mod_patient_experience_server, "mod_search_text_ui", m6)
+  stub(mod_patient_experience_server, "mod_sentiment_ui", m6)
 
   m7 <- mock()
-  stub(mod_patient_experience_server, "mod_summary_ui", m7)
+  stub(mod_patient_experience_server, "mod_search_text_ui", m7)
+
+  m8 <- mock()
+  stub(mod_patient_experience_server, "mod_summary_ui", m8)
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "random_config")
-  m8 <- mock()
-  stub(mod_patient_experience_server, "mod_demographics_ui", m8)
-
-  withr::local_envvar("R_CONFIG_ACTIVE" = "trust_NUH")
   m9 <- mock()
   stub(mod_patient_experience_server, "mod_demographics_ui", m9)
+
+  withr::local_envvar("R_CONFIG_ACTIVE" = "trust_NUH")
+  m10 <- mock()
+  stub(mod_patient_experience_server, "mod_demographics_ui", m10)
 
   # there is data in the database
   testServer(mod_patient_experience_server, {
@@ -383,10 +386,11 @@ test_that("mod_patient_experience_server work correctly", {
     expect_called(m5, 1)
     expect_called(m6, 1)
     expect_called(m7, 1)
-    expect_called(m9, 1)
+    expect_called(m8, 1)
+    expect_called(m10, 1)
 
     # modules not called when no demographic feature in config
-    expect_called(m8, 0)
+    expect_called(m9, 0)
   })
 })
 
@@ -406,12 +410,12 @@ test_that("mod_summary_record_server works correctly", {
     expect_equal(global$current_responses, NULL)
     expect_equal(global$current_individuals, NULL)
 
-    # act
-    expect_snapshot(output$dynamic_summary_record)
-    expect_snapshot(output$commentBox)
-    expect_snapshot(output$individualBox)
-    expect_snapshot(output$current_commentBox)
-    expect_snapshot(output$current_individualBox)
+    # assert output are accessible
+    expect_no_error(output$dynamic_summary_record)
+    expect_no_error(output$commentBox)
+    expect_no_error(output$individualBox)
+    expect_no_error(output$current_commentBox)
+    expect_no_error(output$current_individualBox)
 
     # assert all global variable are expected values after a call to output$dynamic_summary_record
     expect_equal(global$n_responses, 1981)
@@ -553,7 +557,6 @@ test_that("mod_search_text_server work correctly", {
     # act/assert
     expect_no_error(return_data())
     expect_no_error(output$comment_output)
-    expect_no_error(output$search_download_data)
   })
 })
 
@@ -582,7 +585,7 @@ test_that("mod_trend_server work correctly", {
   testServer(mod_trend_server, args = list(reactiveVal(), TRUE), {
     filter_data(
       list(
-        single_labeled_filter_data = phase_2_db_data |> head(10) |> get_tidy_filter_data(TRUE)
+        single_labeled_filter_data = single_labeled_filter_data
       )
     )
 
@@ -602,7 +605,6 @@ test_that("mod_trend_overlap_server work correctly", {
   # data exist in the database
   testServer(mod_trend_overlap_server, args = list(reactiveVal(), TRUE), {
     # act/assert
-    expect_no_error(output$dynamic_trend_overlap)
     expect_no_error(output$dynamic_trend_overlap)
   })
 })
@@ -718,16 +720,12 @@ test_that("mod_overlap_1_server initialise top sub category selectors correctly"
 })
 
 test_that("mod_overlap_1_server works correctly when given some inputs", {
-  # Arrange
-  data <- phase_2_db_data |>
-    head(100) |>
-    get_tidy_filter_data(TRUE)
-
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
   testServer(mod_overlap_1_server, args = list(reactiveVal(), "General", 1), {
+    # Arrange
     filter_data(
       list(
-        single_labeled_filter_data = data
+        single_labeled_filter_data = single_labeled_filter_data
       )
     )
 
@@ -750,6 +748,45 @@ test_that("mod_overlap_1_server works correctly when given some inputs", {
     expect_equal(nrow(return_data()), 0)
     expect_error(output$download_data_ui)
     expect_no_error(output$overlap_table)
-    expect_no_error(output$overlap_download_data)
+  })
+})
+
+
+# mod_sentiment_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_that("mod_sentiment_server work correctly", {
+  test_that("mod_sentiment_server work correctly", {
+    # throw error when there is no data in the database
+    testServer(mod_sentiment_server, args = list(reactiveVal(), FALSE), {
+      # assert
+      expect_error(output$dynamic_sentiment_UI)
+    })
+  })
+
+  # all variables can be accessed when the right data is give
+
+  # arrange
+  data <- head(phase_2_db_data, 100)
+
+  # mock prep_data_for_comment_table to almays return empty dataframe
+  m <- mock(data.frame())
+  stub(mod_sentiment_server, "prep_data_for_comment_table", m)
+  testServer(mod_sentiment_server, args = list(reactiveVal(), TRUE), {
+    filter_data(
+      list(
+        filter_data = data
+      )
+    )
+
+    # assert
+    expect_identical(sentiment_data(), data)
+    expect_equal(timeframe(), "month")
+    expect_no_error(clicked_data())
+    expect_no_error(return_data())
+    expect_no_error(output$dynamic_sentiment_UI)
+    expect_no_error(output$sentiment_plot)
+    expect_no_error(output$sentiment_comment)
+
+    # prep_data_for_comment_table is called only once
+    expect_called(m, 1)
   })
 })

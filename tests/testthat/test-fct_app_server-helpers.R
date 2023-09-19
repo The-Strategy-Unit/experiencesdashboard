@@ -1,15 +1,29 @@
 test_that("db connect can be created", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "trust_NTH")
   skip_on_ci()
-  expect_no_error(get_pool())
+  # Create  DB connection pool
+  pool <- get_pool()
+  
+  onStop(function() {
+    pool::poolClose(pool)
+  })
+  
+  expect_no_error(pool)
 })
 
 test_that("db data can be accessed", {
   skip_on_ci()
-  expect_error(get_db_data(get_pool(), "random_config") %>%
+  # Create  DB connection pool
+  pool <- get_pool()
+  
+  onStop(function() {
+    pool::poolClose(pool)
+  })
+  
+  expect_error(get_db_data(pool, "random_config") %>%
     head(1) %>%
     collect())
-  expect_no_error(get_db_data(get_pool(), "trust_NUH") %>%
+  expect_no_error(get_db_data(pool, "trust_NUH") %>%
     head(1) %>%
     collect())
 })

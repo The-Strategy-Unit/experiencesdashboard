@@ -5,11 +5,11 @@ tidy_trust_gosh <- function(db_tidy) {
     dplyr::mutate(
       age = dplyr::case_when(
         age < 12 ~ "0 - 11",
-        age > 11 | age < 18 ~ "12 - 17",
-        age > 17 | age < 26 ~ "18 - 25",
-        age > 25 | age < 40 ~ "26 - 39",
-        age > 39 | age < 65 ~ "40 - 64",
-        age > 64 | age < 80 ~ "65 - 79",
+        age < 18 ~ "12 - 17",
+        age < 26 ~ "18 - 25",
+        age < 40 ~ "26 - 39",
+        age < 65 ~ "40 - 64",
+        age < 80 ~ "65 - 79",
         age > 79 ~ "80+",
         TRUE ~ as.character(age)
       )
@@ -20,12 +20,12 @@ tidy_trust_neas <- function(db_tidy) {
   db_tidy %>%
     dplyr::mutate(
       fft_score = dplyr::case_when(
-        fft_score == 'Very good' ~ 1,
-        fft_score == 'Good' ~ 2,
-        fft_score == 'Neither good nor poor' ~ 3,
-        fft_score == 'Poor' ~ 4,
-        fft_score == 'Very poor' ~ 5,
-        fft_score == 'Don’t know' ~ 6,
+        fft_score == "Very good" ~ 1,
+        fft_score == "Good" ~ 2,
+        fft_score == "Neither good nor poor" ~ 3,
+        fft_score == "Poor" ~ 4,
+        fft_score == "Very poor" ~ 5,
+        fft_score == "Don’t know" ~ 6,
         TRUE ~ NA
       )
     )
@@ -61,17 +61,18 @@ tidy_trust_nth <- function(db_tidy) {
     )
 }
 
-#' Clean an uploaded dataset from a user of the dashboard
+#' Clean the comment column of uploaded dataset from a user of the dashboard
+#'
 #' @description uploaded data will often have garbage in the comments
 #' box such as "NULL", "NA", "N/A", etc. Clean these comments and drop all
 #' rows without comment before they go to the pipeline
 #' @param data a dataframe of uploaded patient experience data
 #' @param comment_column a string for the name of the column for the comment text
 #'
-#' @return dataframe with cleaned text
+#' @return dataframe with cleaned comment_column
 #' @export
 clean_dataframe <- function(data, comment_column) {
-  data %>% 
+  data %>%
     dplyr::mutate(across(all_of(comment_column), \(.x) stringr::str_replace_all(.x, "[^[:alnum:][:punct:]]+", " "))) %>% # remove non-graphical characters, ‘⁠[:graph:  is not reliable⁠’
     dplyr::mutate(
       dplyr::across(
@@ -85,8 +86,8 @@ clean_dataframe <- function(data, comment_column) {
     dplyr::filter(
       !is.na(.data[[comment_column]]),
       !is.null(.data[[comment_column]]),
-      !.data[[comment_column]] %in% c("NULL", "NA", "N/A", "Did not answer")
-    ) 
+      !.data[[comment_column]] %in% c(" ", "NULL", "NA", "N/A", "Did not answer")
+    )
 }
 
 #' Tidy data upload from users
@@ -94,38 +95,16 @@ clean_dataframe <- function(data, comment_column) {
 #' @param data dataframe, loaded within Shiny application
 #' @param conn connection, from existing {pool}. Can be `NULL` if `write_db = FALSE`
 #' @param trust_id string. Which trust are you uploading data for?
+#' @param user the current user's username gotten from `session$user`
 #' @param write_db logical should the final data be written to the database or returned as a dataframe?
 #'
 #' @return boolean, indicating success or failure in upload
-upload_data <- function(data, conn, trust_id, write_db = TRUE) {
-  
+upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   # throw error if for any reason the trust_id is not same a trust name
-  stopifnot('trust_id should be same as trust_name' = get_golem_config('trust_name') == trust_id)
+  stopifnot("trust_id should be same as trust_name" = get_golem_config("trust_name") == trust_id)
   
-  if (trust_id == "demo_trust") {
-    db_tidy <- data %>%
-      dplyr::mutate(location_1 = sample(
-        c(
-          "Location A", "Location B",
-          "Location C"
-        ),
-        nrow(data),
-        replace = TRUE
-      )) %>%
-      dplyr::mutate(date = sample(
-        seq(as.Date("2019-01-01"),
-          as.Date("2021-01-01"),
-          by = "days"
-        ),
-        nrow(data),
-        replace = TRUE
-      ))
-
-    # delete ALL previous data
-
-    DBI::dbExecute(conn, "TRUNCATE TABLE demo_trust")
-  }
-
+  last_upload_date = Sys.time() # to track when the data upload started. to be used in the api job table and the main table
+  
   # reformat and clean the uploaded data ----
   required_cols <- c(
     "date", "pt_id", "location_1", "location_2", "location_3",
@@ -148,29 +127,32 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
     max_id <- 0
   }
 
+  # parse the date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded).
+  data <- parse_date(data)
+  stopifnot("Start year should reasonably be after year 2000" = lubridate::year(min(data$date)) > 2000)
+  
   db_tidy <- data %>%
-    dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>%
+    dplyr::arrange(date) %>% 
+    dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>% # to uniquely identify individual responder
     tidyr::pivot_longer(
       cols = dplyr::starts_with("question"),
       names_to = "comment_type",
       values_to = "comment_text"
     ) %>%
     dplyr::select(dplyr::any_of(required_cols)) %>%
-    dplyr::mutate(comment_id = 1:nrow(.)) %>% # to uniquely identify individual comment
-    clean_dataframe("comment_text")
+    clean_dataframe("comment_text") %>%
+    dplyr::mutate(
+      comment_id = seq.int(max_id + 1, max_id + nrow(.))
+    ) # to uniquely identify individual comment
 
   # do trust specific data cleaning ----
   if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
   if (trust_id == "trust_NEAS") db_tidy <- db_tidy %>% tidy_trust_neas()
   if (trust_id == "trust_NTH") db_tidy <- db_tidy %>% tidy_trust_nth()
-  
-  # parse the date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded). 
-  db_tidy <- parse_date(db_tidy)
-  stopifnot("Start year should reasonably be after year 2000" = lubridate::year(min(db_tidy$date)) > 2000)
-  
-  # call API for label predictions ----
-  # prepare the data for the API
 
+  # call API for predictions ----
+
+  # prepare the data for the API
   tidy_data <- db_tidy |>
     dplyr::mutate(question_type = comment_type) |>
     dplyr::mutate(
@@ -190,17 +172,38 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
         )
       ) |>
       dplyr::select(comment_id, comment_text, question_type)
-  } else{
-    tidy_data <- tidy_data %>% 
+  } else {
+    tidy_data <- tidy_data %>%
       dplyr::filter(question_type == api_question_code(get_golem_config("comment_1")))
   }
 
-  cat("Making predictions for ", nrow(db_tidy), "comments from pxtextming API \n")
+  ## sentiment prediction ----
+  cat("Making sentiment predictions for", nrow(db_tidy), "comments from pxtextming API \n")
+  api_result <- get_api_pred_url(tidy_data, Sys.getenv("API_key"))
 
+  # get the maximum job id from the api job table
+  max_job_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(job_id) FROM api_jobs"))$`MAX(job_id)`
+  max_job_id <- if (is.na(max_job_id)) 0 else max_job_id
+
+  # update api job table ----
+  job_table <- dplyr::tibble(
+    job_id = max_job_id + 1,
+    date = last_upload_date,
+    url = api_result,
+    trust_id = trust_id,
+    user = user,
+    no_comments = nrow(tidy_data),
+    status = "submitted"
+  )
+
+  DBI::dbWriteTable(conn, "api_jobs", job_table, append = TRUE)
+
+  ## label prediction ----
+  cat("\nMaking label predictions for", nrow(db_tidy), "comments from pxtextming API \n")
   preds <- batch_predict(tidy_data) %>%
     dplyr::mutate(comment_id = as.integer(comment_id))
 
-  print("Done with API call ...")
+  cat("Done with API call. Remenber to get sentiment prediction from URL... \n")
 
   # rename the columns to make the data compatible with old data format currently in use
   final_df <- db_tidy %>%
@@ -209,22 +212,17 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
       fft = fft_score, category = labels,
       comment_txt = comment_text
     ) %>%
-    dplyr::select(-comment_id) %>%
     dplyr::mutate(
       hidden = 0
     )
-  
-  print("Doing final data tidy")
-  # set the starting value for the auto-incremented comment_id
-  # This will ensure that when we append the new data,
-  # the comment_id values will be sequential and there will be no gaps.
+
+  cat("Doing final data tidy \n")
   final_df <- final_df %>%
     dplyr::mutate(
-      comment_id = seq.int(max_id + 1, max_id + nrow(.)),
       comment_type = stringr::str_replace_all(.data$comment_type, "question", "comment")
     ) %>%
     # update the last upload date column with todays date
-    dplyr::mutate(last_upload_date = Sys.time()) %>%
+    dplyr::mutate(last_upload_date = last_upload_date) %>%
     #  assign the super categories
     tidyr::unnest(category) %>% # Unnest the category column into rows and columns
     dplyr::mutate(super_category = assign_highlevel_categories(category)) %>% # assign super categories
@@ -242,13 +240,13 @@ upload_data <- function(data, conn, trust_id, write_db = TRUE) {
   # throw error if comment_id is not unique
   stopifnot("values in 'comment ID' should be unique" = final_df$comment_id %>% duplicated() %>% sum() == 0)
   stopifnot("comment_id column should not be empty" = all(!is.na(final_df$comment_id) & final_df$comment_id != ""))
-  
+
   if (write_db) {
     cat("Just started appending ", nrow(final_df), " rows of data into database ... \n")
-    
+
     # write the processed data to database
-    DBI::dbWriteTable(conn, trust_id,  final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
-    
+    DBI::dbWriteTable(conn, trust_id, final_df, append = TRUE) # this doesn't throw error when data can't be read e.g dues to mismatch datatypes.
+
     print("Done appending to database ...")
   } else {
     return(final_df)

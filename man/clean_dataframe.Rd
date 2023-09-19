@@ -2,7 +2,7 @@
 % Please edit documentation in R/tidy_upload.R
 \name{clean_dataframe}
 \alias{clean_dataframe}
-\title{Clean an uploaded dataset from a user of the dashboard}
+\title{Clean the comment column of uploaded dataset from a user of the dashboard}
 \usage{
 clean_dataframe(data, comment_column)
 }
@@ -12,7 +12,7 @@ clean_dataframe(data, comment_column)
 \item{comment_column}{a string for the name of the column for the comment text}
 }
 \value{
-dataframe with cleaned text
+dataframe with cleaned comment_column
 }
 \description{
 uploaded data will often have garbage in the comments
