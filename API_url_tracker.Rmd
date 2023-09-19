@@ -22,8 +22,8 @@ library(dplyr)
 
 ## load the api job table from the database
 
-```{r cars}
-pool <- odbc::dbConnect(
+```{r}
+conn <- odbc::dbConnect(
   drv = odbc::odbc(),
   driver = Sys.getenv("odbc_driver"),
   server = Sys.getenv("HOST_NAME"),
@@ -33,26 +33,27 @@ pool <- odbc::dbConnect(
   Port = 3306
 )
 
-api_trackers <- dplyr::tbl(
-  pool,
+pending_jobs <- dplyr::tbl(
+  conn,
   dbplyr::in_schema(
     "TEXT_MINING",
     "api_jobs"
   )
 ) |>
+  filter(status == "submitted") |>
   dplyr::collect()
 
-api_tracker <- api_trackers |>
-  filter(status == "submitted")
 ```
 
 ## GET THE PREDICTION
 ```{r track job}
-Sys.sleep(2) # sleep for 5 seconds to give time for any pending job to start in the API
-if (nrow(api_tracker) > 0) {
-  api_tracker |>
+Sys.sleep(2) # Sleep for 5 seconds to allow any pending tasks to start in the API.
+
+# check the url of each submitted job and update the sentiment column of the main database table if the prediction is ready 
+if (nrow(pending_jobs) > 0) {
+  pending_jobs |>
     apply(1, track_api_job,
-      conn = pool, write_db = T
+      conn = conn, write_db = TRUE
     )
 } else {
   paste("No pending job")
