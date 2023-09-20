@@ -37,13 +37,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
-      selected_columns = c(
-        "comment_id", "date", "location_1", "location_2", "location_3",
-        "comment_type", "comment_txt", "category", "super_category", "fft", "sex",
-        "gender", "age", "ethnicity", "sexuality", "disability", "religion",
-        "extra_variable_1", "extra_variable_2", "extra_variable_3",
-        "pt_id"
-      ),
       complex_comments = data.frame(),
       display_column_name = list(
         "comment_id" = "Comment ID",
@@ -53,9 +46,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         "location_3" = get_golem_config("location_3"),
         "comment_type" = "Question Type",
         "comment_txt" = "Comment",
+        "fft" = "FFT Score",
         "category" = "Sub-Category",
         "super_category" = "Category",
-        "fft" = "FFT Score",
+        "sentiment" = "Comment Sentiment",
         "sex" = "Sex",
         "gender" = "Gender",
         "age" = "Age Group",
@@ -78,9 +72,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       )
 
       isolate({
-        dt_out$data <- dm_data(
+        dt_out$data <- prepare_data_management_data(
           filter_data()$filter_data,
-          column_names = dt_out$selected_columns,
+          column_names = names(dt_out$display_column_name),
+          comment_column = "comment_txt",
           comment_1 = get_golem_config("comment_1"),
           comment_2 = get_golem_config("comment_2")
         )
@@ -134,6 +129,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
     # render the data table ####
     output$pat_table <- DT::renderDT({
+      
+      colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE)
+      stopifnot('lenght of display column name is not the same as number of columns in the data' = length(names(dt_out$data)) == length(colnames))
+      
       DT::datatable(
         dt_out$data,
         selection = "multiple",
@@ -148,7 +147,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         # ),
         filter = "top",
         class = "display cell-border compact",
-        colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE),
+        colnames = colnames,
         options = list(
           pageLength = 10,
           lengthMenu = c(10, 30, 50),
