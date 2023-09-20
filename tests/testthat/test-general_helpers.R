@@ -5,7 +5,7 @@ test_that("prep_data_for_comment_table works", {
 
   expect_true(inherits(test$`Sub-Category`, "character"))
   expect_true(inherits(test$`Category`, "character"))
-  expect_identical(names(test), c("Date", "FFT Question", "FFT Score", "Sentiment", "FFT Answer", "Sub-Category", "Category"))
+  expect_identical(names(test), c("Date", "FFT Question", "FFT Score", "Comment Sentiment", "FFT Answer", "Sub-Category", "Category"))
 
   test2 <- phase_2_db_data %>%
     get_tidy_filter_data(TRUE) %>%
@@ -13,7 +13,7 @@ test_that("prep_data_for_comment_table works", {
 
   expect_true(inherits(test2$`Sub-Category`, "character"))
   expect_true(inherits(test2$`Category`, "character"))
-  expect_identical(names(test2), c("Date", "FFT Question", "FFT Score", "Sentiment", "FFT Answer", "Sub-Category", "Category"))
+  expect_identical(names(test2), c("Date", "FFT Question", "FFT Score", "Comment Sentiment", "FFT Answer", "Sub-Category", "Category"))
 
   test3 <- prep_data_for_comment_table(phase_2_db_data, in_tidy_format = TRUE)
   expect_identical(nrow(test), nrow(test2), nrow(test3))
@@ -169,9 +169,9 @@ test_that("get_sentiment_text works", {
   codes = c(1,2,3,3,5,6)
   test <- get_sentiment_text(codes)
   
-  expect_equal(get_sentiment_text(c(5, 2,6, 9)), c("Very Negative", "Positive", NA, NA))
+  expect_equal(get_sentiment_text(c(5, 2,6, 9)), c("Negative", "Positive", NA, NA))
   
-  expect_equal(test, c('Very Positive', 'Positive', 'Neutral', 'Neutral', 'Very Negative', NA))
+  expect_equal(test, c('Positive', 'Positive', 'Neutral/Mixed', 'Neutral/Mixed', 'Negative', NA))
   
   expect_equal(length(test), length(codes))
 })
@@ -218,9 +218,9 @@ test_that("transform_sentiment works and return expected result", {
   
   expect_true(inherits(result$sentiment, 'factor'))
   
-  expect_equal(levels(result$sentiment),  c("Very Positive", "Positive", "Neutral", "Negative", "Very Negative"))
+  expect_equal(levels(result$sentiment),  c("Positive", "Neutral/Mixed", "Negative"))
  
-  expect_equal(as.character(result$sentiment), c("Very Negative", "Positive", NA, NA))
+  expect_equal(as.character(result$sentiment), c("Negative", "Positive", NA, NA))
    
   expect_equal(nrow(df), nrow(result))
 })

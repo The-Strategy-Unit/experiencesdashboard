@@ -33,7 +33,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   }
   
   colnames(data) <- c(
-    "Date", "FFT Question", "FFT Score", "Sentiment",
+    "Date", "FFT Question", "FFT Score", "Comment Sentiment",
     "FFT Answer", "Sub-Category", "Category"
   )
   
