@@ -73,12 +73,15 @@ tidy_trust_nth <- function(db_tidy) {
 #' @export
 clean_dataframe <- function(data, comment_column) {
   data %>%
-    dplyr::mutate(across(all_of(comment_column), \(.x) stringr::str_replace_all(.x, "[^[:alnum:][:punct:]]+", " "))) %>% # remove non-graphical characters, ‘⁠[:graph:  is not reliable⁠’
     dplyr::mutate(
+      dplyr::across(
+        where(is.character), 
+        \(.x) stringr::str_replace_all(.x, "[^[:alnum:][:punct:]]+", " ") # remove non-graphical characters from all character columns, ‘⁠[:graph:  is not reliable⁠’
+        ),
       dplyr::across(
         where(is.character), ~ dplyr::case_when(
           grepl("^[?]+$", .) ~ NA_character_, # remove multiple question marks
-          . %in% c("NULL", "#NAME?", "") ~ NA_character_,
+          . %in% c("NULL", "#NAME?", "NA", "N/A", "", " ") ~ NA_character_,  
           TRUE ~ .
         )
       )
@@ -86,7 +89,7 @@ clean_dataframe <- function(data, comment_column) {
     dplyr::filter(
       !is.na(.data[[comment_column]]),
       !is.null(.data[[comment_column]]),
-      !.data[[comment_column]] %in% c(" ", "NULL", "NA", "N/A", "Did not answer")
+      !.data[[comment_column]] %in% c("Did not answer")
     )
 }
 
