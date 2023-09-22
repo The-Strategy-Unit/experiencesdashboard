@@ -5,7 +5,6 @@
 #' @return a formatted datatable
 #' @noRd
 prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
-  data <- comment_data
 
   if (in_tidy_format) {
     comment_data <- comment_data %>%
