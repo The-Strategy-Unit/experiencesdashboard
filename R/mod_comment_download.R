@@ -18,11 +18,11 @@ mod_comment_download_server <- function(id, return_data, filepath) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
+    memoised_render_comment_table <- memoise::memoise(render_comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
 
     ## the comments tables - sub category ----
     output$dynamic_comment_table <- DT::renderDT({
-      memoised_comment_table(return_data)
+      memoised_render_comment_table(return_data)
     })
 
     # Download the data ----

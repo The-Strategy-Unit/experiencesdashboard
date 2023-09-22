@@ -28,8 +28,6 @@ mod_search_text_server <- function(id, filter_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
-
     output$dynamic_comment_ui <- renderUI({
       req(text_search())
       req(return_data())

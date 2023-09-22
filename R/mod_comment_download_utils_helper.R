@@ -1,5 +1,5 @@
 
-#' Internal function for preparing data for the `comment_table()`function
+#' Internal function for preparing data for the `render_comment_table()`function
 #'
 #' @param comment_data a dataframe
 #' @param in_tidy_format boolean if the data was in single labeled (or multilabeled format)
@@ -9,13 +9,13 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   data <- comment_data
   
   if (in_tidy_format) {
-    data <- data %>%
+    comment_data <- comment_data %>%
       single_to_multi_label()
   }
   
-  stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = data$comment_id %>% duplicated() %>% sum() == 0)
+  stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = comment_data$comment_id %>% duplicated() %>% sum() == 0)
   
-  data <- data %>%
+  comment_data <- comment_data %>%
     dplyr::select(date, comment_type, fft, sentiment, comment_txt, category, super_category) %>%
     dplyr::mutate(
       dplyr::across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = FALSE))
@@ -26,20 +26,20 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
     dplyr::arrange(date)
   
   if (isTruthy(get_golem_config("comment_2"))) {
-    data <- data %>%
+    comment_data <- comment_data %>%
       dplyr::mutate(
         comment_type = stringr::str_replace_all(comment_type, "comment_2", get_golem_config("comment_2"))
       )
   }
   
-  colnames(data) <- c(
+  colnames(comment_data) <- c(
     "Date", "FFT Question", "FFT Score", "Comment Sentiment",
     "FFT Answer", "Sub-Category", "Category"
   )
   
-  cat("Rows in comment table:", nrow(data), " \n") # for debugging
+  cat("Rows in comment table:", nrow(comment_data), " \n") # for debugging
   
-  return(data)
+  return(comment_data)
 }
 
 #' Internal function for the comment datatable
@@ -48,7 +48,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
 #' @return a formatted datatable
 #'
 #' @noRd
-comment_table <- function(data) {
+render_comment_table <- function(data) {
   # add NHS blue color to the table header
   initcomplete <- DT::JS(
     "function(settings, json) {",
@@ -59,12 +59,9 @@ comment_table <- function(data) {
   return(
     DT::datatable(
       data,
-      extensions = "Buttons", # required to show the download buttons and groups
       options = list(
         dom = "ipt",
-        buttons = c("csv", "excel", "pdf"),
-        # autoWidth = TRUE,            # required for width option for columns to  work
-        # columnDefs = list(list(width = '500px', targets = c(3))),
+        columnDefs = list(list(width = '500px', targets = c(4))), # ensure the comment column is wider on bigger screen 
         initComplete = initcomplete,
         pageLength = 50,
         scrollX = TRUE,
