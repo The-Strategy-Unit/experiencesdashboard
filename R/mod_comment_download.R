@@ -20,7 +20,7 @@ mod_comment_download_server <- function(id, return_data, filepath) {
 
     memoised_render_comment_table <- memoise::memoise(render_comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
 
-    ## the comments tables - sub category ----
+    ## the comments tables ----
     output$dynamic_comment_table <- DT::renderDT({
       memoised_render_comment_table(return_data)
     })
