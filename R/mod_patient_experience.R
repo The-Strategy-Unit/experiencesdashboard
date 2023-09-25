@@ -64,11 +64,23 @@ mod_patient_experience_server <- function(id) {
         list(
           tabPanel(
             "What people are telling us about",
-            mod_category_criticality_ui("category_criticality_ui_1")
+            mod_click_tables_ui("click_tables_ui")
           )
         )
       )
-
+      
+      # Sentiment tab
+      
+      ui_list <- c(
+        ui_list,
+        list(
+          tabPanel(
+            "Sentiment Analysis",
+            mod_sentiment_ui("sentiment_1")
+          )
+        )
+      )
+      
       # Comment search tab (key tab to show)
 
       ui_list <- c(

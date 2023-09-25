@@ -128,13 +128,14 @@ to_string <- function(x) {
 #' @param column_name The name of the column holding the comma separated labels
 #' @param n_labels maximum number of labels assigned to any row
 #'
-#' @return A dataframe with a row per comment per comment type
+#' @return A dataframe with a row per comment per comment type. columns returned are 
+#' "comment_id", "comment_type", "date", "comment_txt", "fft", "sentiment", "category", "super_category"
 #' @noRd
 single_to_multi_label <- function(sl_data) {
   mt_data <- sl_data %>%
     dplyr::group_by(comment_id, comment_type) %>%
     dplyr::summarise(
-      across(c(date, comment_txt, fft), unique),
+      across(c(date, comment_txt, fft, sentiment), unique),
       across(c(category, super_category), \(x) list(unique(x))), # remove duplicated
     ) %>%
     dplyr::ungroup() %>%
@@ -328,84 +329,6 @@ one_hot_labels <- function(df, column) {
     )
 }
 
-#' Internal function for preparing data for the `comment_table()`function
-#'
-#' @param comment_data a dataframe
-#' @param in_tidy_format boolean if the data was in single labeled (or multilabeled format)
-#' @return a formatted datatable
-#' @noRd
-prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
-  data <- comment_data
-
-  if (in_tidy_format) {
-    data <- data %>%
-      single_to_multi_label()
-  }
-
-  stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = data$comment_id %>% duplicated() %>% sum() == 0)
-
-  data <- data %>%
-    dplyr::select(date, comment_type, fft, comment_txt, category, super_category) %>%
-    dplyr::mutate(
-      dplyr::across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = FALSE))
-    ) %>%
-    dplyr::mutate(
-      comment_type = stringr::str_replace_all(comment_type, "comment_1", get_golem_config("comment_1"))
-    ) %>%
-    dplyr::arrange(date)
-
-  if (isTruthy(get_golem_config("comment_2"))) {
-    data <- data %>%
-      dplyr::mutate(
-        comment_type = stringr::str_replace_all(comment_type, "comment_2", get_golem_config("comment_2"))
-      )
-  }
-
-  colnames(data) <- c(
-    "Date", "FFT Question", "FFT Score",
-    "FFT Answer", "Sub-Category", "Category"
-  )
-
-  cat("Rows in comment table:", nrow(data), " \n") # for debugging
-
-  return(data)
-}
-
-#' Internal function for the comment datatable
-#'
-#' @param data a dataframe
-#' @return a formatted datatable
-#'
-#' @noRd
-comment_table <- function(data) {
-  # add NHS blue color to the table header
-  initcomplete <- DT::JS(
-    "function(settings, json) {",
-    "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-    "}"
-  )
-
-  return(
-    DT::datatable(
-      data,
-      extensions = "Buttons", # required to show the download buttons and groups
-      options = list(
-        dom = "ipt",
-        buttons = c("csv", "excel", "pdf"),
-        # autoWidth = TRUE,            # required for width option for columns to  work
-        # columnDefs = list(list(width = '500px', targets = c(3))),
-        initComplete = initcomplete,
-        pageLength = 50,
-        scrollX = TRUE,
-        selection = "single"
-      ),
-      filter = "top",
-      rownames = FALSE,
-      class = "display cell-border compact stripe",
-    )
-  )
-}
-
 #' Find high level categories of sub categories
 #'
 #' @description
@@ -424,4 +347,48 @@ assign_highlevel_categories <- function(sub_cats) {
   },
   simplify = TRUE, USE.NAMES = FALSE
   )
+}
+
+#' Attempt to parse a date column from character to date 
+#'
+#' @param data a dataframe
+#' @param date_column the name of the date column (default to 'date')
+#'
+#' @return dataframe
+#'
+#' @noRd
+parse_date <- function(data, date_column = "date") {
+  
+  if (inherits(data$date, "character")) {
+    
+    data <- data %>% 
+      dplyr::filter(date != ' ',
+                    date !='',
+                    !is.na(date))
+    
+    suppressWarnings({
+      parsed_data <- data %>%
+        dplyr::mutate(
+          date = lubridate::as_date(.data$date, format = c("%d-%m-%y", "%d/%m/%y", "%d-%m-%Y", "%d/%m/%Y", "%d %m %y", "%d %m %Y"))
+        )
+      
+      # try this if the dates are not well parsed (i.e. if the column contain NA)
+      # parse it automatically
+      if (any(is.na(parsed_data$date))) {
+        parsed_data <- data %>%
+          dplyr::mutate(
+            date = lubridate::as_date(.data$date)
+          )
+      }
+    })
+    
+    stopifnot("date column can't be parse" = !any(is.na(parsed_data$date)))
+    return(parsed_data)
+  } else {
+    data %>%
+      dplyr::filter(!is.na(date)) %>%
+      dplyr::mutate(
+        date = lubridate::as_date(.data$date)
+      )
+  }
 }

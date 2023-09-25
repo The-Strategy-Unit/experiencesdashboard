@@ -107,17 +107,18 @@ This package uses data from a database to populate the dashboard. The [`get_pool
 1. Clone the repo. [cloning-a-repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
 
 2. Connect your data either  
-    a. _**Via Database Connection**_: Set the environmental variables needed to establish a Database connection (see [`get_pool()`](R/fct_app_server-helpers.R)) 
+    a. _**Via Database Connection**_: Set the environmental variables needed to establish a Database connection (see [`get_pool()`](R/fct_app_server-helpers.R))
+   
     b. _**Via Local file**_: Read in your data into the `db_data` object in the [`app_server.R`](R/app_server.R) by replacing `db_data <- get_db_data(pool, get_golem_config("trust_name")))` with e.g. `db_data <- read.csv(''my_data_path.csv)`. With this you can safely ignore the preceding codes that creates the db connection.
 
-3. Set up your data/app configuration: If you need to use this app locally, then you will need to set up a configuration for your use case in the [`golem-config.yml`](inst/golem-config.yml) ([get help here](https://engineering-shiny.org/golem.html#golem-config))
+4. Set up your data/app configuration: If you need to use this app locally, then you will need to set up a configuration for your use case in the [`golem-config.yml`](inst/golem-config.yml) ([get help here](https://engineering-shiny.org/golem.html#golem-config))
 
 5. choose your configuration: run `Sys.setenv("R_CONFIG_ACTIVE" = "my_config")` and run the app with `run_app()`. please see sample code in the [`run_dev.R`](dev/run_dev.R)
 
 
 #### Format your data for the app
 
-Your data type must follow the schema in [Database table schema](data-raw\phase_2_schema.csv) before you can load the data into the app in step 2 above. Though not all the columns are required but to ignore any will depend on your configuration in step 3 above. 
+Your data type must follow the schema in [Database table schema](data-raw/phase_2_schema.csv) before you can load the data into the app in step 2 above. Though not all the columns are required but to ignore any will depend on your configuration in step 3 above. 
 
   i. You can safely ignore these columns without any modification:  `'extra_variable_1', 'extra_variable_2', 'extra_variable_3'`
   

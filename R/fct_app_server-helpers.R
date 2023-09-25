@@ -8,8 +8,8 @@ set_trust_config <- function(groups) {
     stringr::str_subset("^experiencedashboard-(?!admins)") %>%
     stringr::str_remove("^experiencedashboard-")
 
-  # should we be killing the session if for some reason the user is a member of
-  # multiple groups?
+  # kill the session if for some reason the user is a
+  # member of multiple groups or has no group
   stopifnot("member of multiple groups" = length(dashboard_groups) <= 1)
   stopifnot("Not a member of any group" = isTruthy(dashboard_groups))
 
@@ -98,5 +98,5 @@ get_db_data <- function(pool, trust_name) {
       trust_name
     )
   ) %>%
-    tidy_all_trusts() 
+    tidy_all_trusts()
 }

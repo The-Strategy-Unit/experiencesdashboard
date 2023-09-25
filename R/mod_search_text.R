@@ -31,23 +31,28 @@ mod_search_text_server <- function(id, filter_data) {
     memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
 
     output$dynamic_comment_ui <- renderUI({
-      req(input$text_search)
+      req(text_search())
       req(return_data())
 
       tagList(
-        downloadButton(ns("search_download_data"), "Download data",
-          icon = icon("download")
-        ),
-        DT::DTOutput(ns("comment_output"))
+        uiOutput(ns("comment_output"))
       )
     })
 
+    text_search <- reactive({
+      if (is.null(input$text_search)) {
+        NULL
+      } else {
+        input$text_search
+      }
+    }) %>% debounce(1000)
+
     return_data <- reactive({
-      req(input$text_search)
+      req(text_search())
 
       return_search_text(
         text_data = filter_data()$filter_data,
-        filter_text = input$text_search,
+        filter_text = text_search(),
         comment_type_filter = NULL, search_type = "and"
       ) %>%
         dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
@@ -57,26 +62,20 @@ mod_search_text_server <- function(id, filter_data) {
         prep_data_for_comment_table(in_tidy_format = FALSE)
     })
 
-    output$comment_output <- DT::renderDT({
-      validate(
-        need(input$text_search, "Please enter a search term")
-      )
-      memoised_comment_table(return_data())
-    })
 
-    # Download the data ####
-    output$search_download_data <- downloadHandler(
-      filename = reactive({
-        sanitized_search_strings(input$text_search) %>%
-          paste(collapse = ", ") %>%
-          paste0("-", Sys.Date(), ".xlsx")
-      }),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data(), file)
-          incProgress(1)
-        })
-      }
-    )
+    ## the comments tables ----
+    output$comment_output <- renderUI({
+      validate(
+        need(text_search(), "Please enter a search term")
+      )
+
+      mod_comment_download_server(
+        ns("comment_download_1"),
+        return_data(),
+        filepath = sanitized_search_strings(text_search()) %>%
+          paste(collapse = "_") %>%
+          paste0("-")
+      )
+    })
   })
 }
