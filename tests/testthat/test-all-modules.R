@@ -814,7 +814,7 @@ test_that("module server works well if given corrent arguements", {
                )
                
                # download file is named correctly
-               expect_true(grepl("test-data-2023-09-22.xlsx", output$download_comments))
+               expect_true(grepl("(test-data-.).+(.xlsx)$", output$download_comments))
                
                # returned value is class shiny.tag.list
                golem::expect_shinytaglist(session$returned)
