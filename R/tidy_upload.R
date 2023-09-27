@@ -89,7 +89,8 @@ clean_dataframe <- function(data, comment_column) {
     dplyr::filter(
       !is.na(.data[[comment_column]]),
       !is.null(.data[[comment_column]]),
-      !.data[[comment_column]] %in% c("Did not answer")
+      !.data[[comment_column]] %in% c("Did not answer"),
+      nchar(.data[[comment_column]]) > 1
     )
 }
 
