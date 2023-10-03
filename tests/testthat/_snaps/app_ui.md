@@ -53,17 +53,6 @@
           </aside>
           <div class="content-wrapper">
             <section class="content">
-              <style type="text/css">.btn {
-        color: #fff; background-color: #005EB8; 
-        border: none; 
-        border-radius: 10px;
-        min-height:30px; 
-      }
-      
-      .btn:hover {
-        color:#fff;
-        background-color:#003087; 
-      }</style>
               <a href="https://github.com/CDU-data-science-team/experiencesdashboard"
                    class="github-corner" aria-label="View source on GitHub"><svg width="80"
                    height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position:
