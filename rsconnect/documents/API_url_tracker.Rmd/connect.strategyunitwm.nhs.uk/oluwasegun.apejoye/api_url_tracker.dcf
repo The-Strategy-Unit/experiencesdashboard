@@ -1,0 +1,12 @@
+name: api_url_tracker
+title: API_url_tracker
+username: oluwasegun.apejoye
+account: oluwasegun.apejoye
+server: connect.strategyunitwm.nhs.uk
+hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
+appId: 149
+bundleId: 804
+url: https://connect.strategyunitwm.nhs.uk/content/59831ba7-6866-46ba-9544-9c6f2d159603/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
