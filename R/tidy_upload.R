@@ -75,13 +75,13 @@ clean_dataframe <- function(data, comment_column) {
   data %>%
     dplyr::mutate(
       dplyr::across(
-        where(is.character), 
+        where(is.character),
         \(.x) stringr::str_replace_all(.x, "[^[:alnum:][:punct:]]+", " ") # remove non-graphical characters from all character columns, ‘⁠[:graph:  is not reliable⁠’
-        ),
+      ),
       dplyr::across(
         where(is.character), ~ dplyr::case_when(
           grepl("^[?]+$", .) ~ NA_character_, # remove multiple question marks
-          . %in% c("NULL", "#NAME?", "NA", "N/A", "", " ") ~ NA_character_,  
+          . %in% c("NULL", "#NAME?", "NA", "N/A", "", " ") ~ NA_character_,
           TRUE ~ .
         )
       )
@@ -106,9 +106,9 @@ clean_dataframe <- function(data, comment_column) {
 upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   # throw error if for any reason the trust_id is not same a trust name
   stopifnot("trust_id should be same as trust_name" = get_golem_config("trust_name") == trust_id)
-  
-  last_upload_date = Sys.time() # to track when the data upload started. to be used in the api job table and the main table
-  
+
+  last_upload_date <- Sys.time() # to track when the data upload started. to be used in the api job table and the main table
+
   # reformat and clean the uploaded data ----
   required_cols <- c(
     "date", "pt_id", "location_1", "location_2", "location_3",
@@ -134,9 +134,9 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   # parse the date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded).
   data <- parse_date(data)
   stopifnot("Start year should reasonably be after year 2000" = lubridate::year(min(data$date)) > 2000)
-  
+
   db_tidy <- data %>%
-    dplyr::arrange(date) %>% 
+    dplyr::arrange(date) %>%
     dplyr::mutate(pt_id = seq.int(max_ptid + 1, max_ptid + nrow(.))) %>% # to uniquely identify individual responder
     tidyr::pivot_longer(
       cols = dplyr::starts_with("question"),
@@ -146,8 +146,8 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     dplyr::select(dplyr::any_of(required_cols)) %>%
     clean_dataframe("comment_text") %>%
     dplyr::mutate(
-      comment_id = seq.int(max_id + 1, max_id + nrow(.))
-    ) # to uniquely identify individual comment
+      comment_id = seq.int(max_id + 1, max_id + nrow(.)) # to uniquely identify individual comment
+    ) 
 
   # do trust specific data cleaning ----
   if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
@@ -155,8 +155,7 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   if (trust_id == "trust_NTH") db_tidy <- db_tidy %>% tidy_trust_nth()
 
   # call API for predictions ----
-
-  # prepare the data for the API
+  ## prepare the data for the API ----
   tidy_data <- db_tidy |>
     dplyr::mutate(question_type = comment_type) |>
     dplyr::mutate(
@@ -181,15 +180,15 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
       dplyr::filter(question_type == api_question_code(get_golem_config("comment_1")))
   }
 
-  ## sentiment prediction ----
-  cat("Making sentiment predictions for", nrow(db_tidy), "comments from pxtextming API \n")
+  ## get prediction url ----
+  cat("Making sentiment and label predictions for", nrow(db_tidy), "comments from pxtextming API \n")
   api_result <- get_api_pred_url(tidy_data, Sys.getenv("API_key"))
 
+  ## update api job table ----
   # get the maximum job id from the api job table
   max_job_id <- DBI::dbGetQuery(conn, paste0("SELECT MAX(job_id) FROM api_jobs"))$`MAX(job_id)`
   max_job_id <- if (is.na(max_job_id)) 0 else max_job_id
 
-  # update api job table ----
   job_table <- dplyr::tibble(
     job_id = max_job_id + 1,
     date = last_upload_date,
@@ -202,43 +201,21 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
 
   DBI::dbWriteTable(conn, "api_jobs", job_table, append = TRUE)
 
-  ## label prediction ----
-  cat("\nMaking label predictions for", nrow(db_tidy), "comments from pxtextming API \n")
-  preds <- batch_predict(tidy_data) %>%
-    dplyr::mutate(comment_id = as.integer(comment_id))
+  cat("Done with API call. Remember to get prediction from URL... \n")
 
-  cat("Done with API call. Remenber to get sentiment prediction from URL... \n")
-
-  # rename the columns to make the data compatible with old data format currently in use
+  # final data tidy ----
+  cat("Doing final data tidy \n")
   final_df <- db_tidy %>%
-    dplyr::left_join(preds, by = c("comment_id", "comment_text")) %>%
+    # rename the columns to make the data compatible with old data format currently in use
     dplyr::rename(
-      fft = fft_score, category = labels,
+      fft = fft_score,
       comment_txt = comment_text
     ) %>%
     dplyr::mutate(
-      hidden = 0
+      hidden = 0,
+      comment_type = stringr::str_replace_all(.data$comment_type, "question", "comment"),
+      last_upload_date = last_upload_date # update the last upload date column with todays date
     )
-  # final data tidy ----
-  cat("Doing final data tidy \n")
-  final_df <- final_df %>%
-    dplyr::mutate(
-      comment_type = stringr::str_replace_all(.data$comment_type, "question", "comment")
-    ) %>%
-    # update the last upload date column with todays date
-    dplyr::mutate(last_upload_date = last_upload_date) %>%
-    #  assign the super categories
-    tidyr::unnest(category) %>% # Unnest the category column into rows and columns
-    dplyr::mutate(super_category = assign_highlevel_categories(category)) %>% # assign super categories
-    dplyr::group_by(comment_id, comment_type) %>%
-    dplyr::summarise(
-      across(-tidyselect::all_of(c("category", "super_category")), unique),
-      across(c(category, super_category), list) # duplicate super category value is preserved. This will allow easy manipulation later. for ex. see get_tidy_filter_data()
-    ) %>%
-    dplyr::ungroup() %>%
-    # convert the category and super category column to raw json before loading into the database
-    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) %>%
-    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, charToRaw)))
 
   # Do a final check on the data before loading to db ----
   # throw error if comment_id is not unique

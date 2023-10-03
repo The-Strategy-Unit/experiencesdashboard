@@ -62,6 +62,34 @@ get_pred_from_url <- function(api_url) {
   }
 }
 
+#' convert the API prediction into a format that is suitable for the database
+#'
+#' @param prediction dataframe, prediction from the pxtextmining api with column "comment_id","labels" and "sentiment"
+#'
+#' @return dataframe, transform prediction data
+#' @noRd
+transform_prediction_for_database <- function(prediction) {
+  stopifnot('"comment_id","labels" and "sentiment" columns are required' = all(c("comment_id", "labels", "sentiment") %in% names(prediction)))
+
+  prediction |>
+    dplyr::rename(
+      category = labels
+    ) |>
+    dplyr::mutate(dplyr::across(c(comment_id, sentiment), as.integer)) |>
+    #  assign the super categories
+    tidyr::unnest(category) |> # Unnest the category column into rows and columns
+    dplyr::mutate(super_category = assign_highlevel_categories(category)) |> # assign super categories
+    dplyr::group_by(comment_id) %>%
+    dplyr::summarise(
+      across(-tidyselect::all_of(c("category", "super_category")), unique),
+      across(c(category, super_category), list) # duplicate super category value is preserved. This will allow easy manipulation later. for ex. see get_tidy_filter_data()
+    ) |>
+    dplyr::ungroup() |>
+    # convert the category and super category column to raw json before loading into the database
+    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) |>
+    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, charToRaw)))
+}
+
 #' Track the API job table. If prediction is done, it writes it to the main table and delete the job from the api job table
 #'
 #' @param job an instance of the api job table
@@ -91,18 +119,18 @@ track_api_job <- function(job, conn, write_db = TRUE) {
   if (is.data.frame(prediction)) {
     cat("Job", job_id, "is done \n")
 
-    prediction <- prediction |>
-      dplyr::mutate(dplyr::across(dplyr::everything(), as.integer))
-
     # update the job status as complete (Prediction has been returned)
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='completed' WHERE job_id =", job_id))
 
     if (!write_db) {
       # update the job status as uploaded (successfully write prediction to main table)
       DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
-      
+
       return(prediction)
     }
+
+    prediction <- prediction |>
+      transform_prediction_for_database()
 
     # update the main table
     dplyr::rows_update(
@@ -192,8 +220,8 @@ api_question_code <- function(value) {
 #' @param pool database connection
 #' @param trust_id string, the trust id
 #' @param schedule_time integer, number of mins used in the Rmarkdown schedule that tracks the api job table.
-#' default is 15mins. its only needed to guess how long users might have to wait for the prediction to complete 
-#' 
+#' default is 15mins. it's only needed to guess how long users might have to wait for the prediction to complete
+#'
 #' @return list of latest_time and estimated_wait_time (in mins)
 #' @noRd
 check_api_job <- function(pool, trust_id = get_golem_config("trust_name"), schedule_time = 15) {
@@ -207,7 +235,7 @@ check_api_job <- function(pool, trust_id = get_golem_config("trust_name"), sched
     dplyr::filter(
       trust_id == !!trust_id,
       status %in% c("submitted", "completed")
-    ) 
+    )
 
   if (data |>
     dplyr::tally() |>
@@ -215,7 +243,7 @@ check_api_job <- function(pool, trust_id = get_golem_config("trust_name"), sched
     return(list("latest_time" = NULL, "estimated_wait_time" = 0))
   } else {
     data <- data |>
-    dplyr::filter(date == max(date, na.rm = TRUE))
+      dplyr::filter(date == max(date, na.rm = TRUE))
   }
 
   latest_time <- data |>
