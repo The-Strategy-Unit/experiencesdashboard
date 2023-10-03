@@ -1,9 +1,10 @@
 # select Trust
 Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_demo")
-# Sys.setenv("R_CONFIG_ACTIVE" = "trust_NTH")
+# Sys.setenv("R_CONFIG_ACTIVE" = "trust_LPT")
 
 # Set options here
 options(golem.app.prod = FALSE) # TRUE = production mode, FALSE = development mode
+options(shiny.launch.browser = T) # lunch in browser by default
 
 # Detach all loaded packages and clean your environment
 golem::detach_all_attached()

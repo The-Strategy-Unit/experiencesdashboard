@@ -42,7 +42,7 @@ get_api_pred_url <- function(data, api_key) {
 
 #' Get the prediction from the URL returned from the pxtextmining API
 #'
-#' @param api_url the url return from `api_pred_url()` where you can get the prediction data when its ready
+#' @param api_url the url return from `get_api_pred_url()` where you can get the prediction data when its ready
 #'
 #' @return a dataframe or string depending on whether the API is done prediction or not
 #' @export

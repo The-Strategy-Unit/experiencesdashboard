@@ -17,6 +17,7 @@
 "religion","text","YES","",NA,""
 "category","text","YES","",NA,""
 "super_category","text","YES","",NA,""
+"sentiment","int","YES","",NA,""
 "last_upload_date","datetime","NO","",NA,""
 "last_edit_date","datetime","YES","",NA,""
 "extra_variable_1","text","YES","",NA,""

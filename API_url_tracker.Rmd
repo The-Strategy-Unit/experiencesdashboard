@@ -8,13 +8,13 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-# install api branch from experience dashboard
-# remotes::install_github("CDU-data-science-team/experiencesdashboard@latest_api_interface")
-# library(experiencesdashboard)
+# install experience dashboard if not already install
+if ("experiencesdashboard" %in% installed.packages()) {
+  if ("remotes" %in% installed.packages()) install.packages("remotes", repos = "http://cran.r-project.org")
+  remotes::install_github("CDU-data-science-team/experiencesdashboard", upgrade = "never", quiet = TRUE)
+}
 
-# temporarily import the required function from the experiencesdashboard package
-source("https://raw.githubusercontent.com/CDU-data-science-team/experiencesdashboard/latest_api_interface/R/fct_api_pred.R")
-
+library(experiencesdashboard)
 library(dplyr)
 ```
 
@@ -42,14 +42,13 @@ pending_jobs <- dplyr::tbl(
 ) |>
   filter(status == "submitted") |>
   dplyr::collect()
-
 ```
 
 ## GET THE PREDICTION
 ```{r track job}
 Sys.sleep(2) # Sleep for 5 seconds to allow any pending tasks to start in the API.
 
-# check the url of each submitted job and update the sentiment column of the main database table if the prediction is ready 
+# check the url of each submitted job and update the sentiment column of the main database table if the prediction is ready
 if (nrow(pending_jobs) > 0) {
   pending_jobs |>
     apply(1, track_api_job,

@@ -24,7 +24,8 @@ jobs:
         # file required by Connect for deploying content programmatically.
       - name: Generate manifest.json
         run: Rscript dev/generate_manifest.R
-
+        
+        # deploy the app to Connect
       - name: Publish Connect content
         uses: rstudio/actions/connect-publish@main
         with:
