@@ -17,7 +17,7 @@ mod_documentation_page_ui <- function(id) {
     own set of sub-categories. The category groups similar topics together in a meaningful way to help users navigate the framework
     more easily. The sub-categories are the actual topics that better reflect the underlying data.
     A high-level visual of the categories and sub-categories is displayed below:"),
-    img(src = "www/framework_v5.png", width = "100%"),
+    img(src = "www/framework_MVP_version.png", width = "100%"),
     hr(),
     p("To see detailed description of the sub-categories, please expand the categories below"),
     DT::DTOutput(ns("framework_table")),

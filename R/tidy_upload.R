@@ -219,7 +219,7 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     dplyr::mutate(
       hidden = 0
     )
-
+  # final data tidy ----
   cat("Doing final data tidy \n")
   final_df <- final_df %>%
     dplyr::mutate(
@@ -240,7 +240,7 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) %>%
     dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, charToRaw)))
 
-  # Do a final check on the data before loading to db
+  # Do a final check on the data before loading to db ----
   # throw error if comment_id is not unique
   stopifnot("values in 'comment ID' should be unique" = final_df$comment_id %>% duplicated() %>% sum() == 0)
   stopifnot("comment_id column should not be empty" = all(!is.na(final_df$comment_id) & final_df$comment_id != ""))
