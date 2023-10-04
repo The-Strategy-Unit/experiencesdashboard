@@ -34,3 +34,23 @@ create_trust_table <- function(pool, set_trust_id, drop_table = FALSE) {
                   `comment_id` INT(10) UNSIGNED AUTO_INCREMENT FIRST")
   DBI::dbExecute(pool, query)
 }
+
+#' create the api job table (api_jobs) in the database
+#'
+#' @param conn database connection
+#' @noRd
+create_job_table <- function(conn) {
+  query <- "CREATE TABLE api_jobs (
+      job_id int NOT NULL AUTO_INCREMENT,
+      date datetime NOT NULL,
+      no_comments int NOT NULL,
+      url text NOT NULL,
+      trust_id tinytext NOT NULL,
+      user tinytext NOT NULL,
+      email tinytext,
+      status tinytext NOT NULL CHECK (status IN ('submitted', 'completed', 'failed', 'uploaded')),
+      PRIMARY KEY (job_id)
+  )"
+  
+  DBI::dbExecute(conn, query)
+}

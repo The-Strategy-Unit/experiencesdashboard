@@ -62,23 +62,6 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       )
     })
 
-    output$download_data_ui <- renderUI({
-      req(
-        check_cat_selection(
-          c(
-            input$select_category1,
-            input$select_category2,
-            input$select_category3
-          )
-        )
-      )
-      req(nrow(return_data()) > 0)
-
-      downloadButton(ns("overlap_download_data"), "Download data",
-        icon = icon("download")
-      )
-    })
-
     # overlap tab UI ----
     output$dynamic_select_category_ui <- renderUI({
       validate(
@@ -215,9 +198,8 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       return(prep_data_for_comment_table(data))
     })
 
-    # create a session-level cacheable version of comment_table()
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache)
-    output$overlap_table <- DT::renderDT({
+    ## the comments tables ----
+    output$overlap_table <- renderUI({
       # only run when at least 2 categories are selected
       req(
         check_cat_selection(
@@ -229,19 +211,9 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
         )
       )
       req(length(global$selected_cats) > 1)
-      memoised_comment_table(return_data())
-    })
 
-    ## Download the data ----
-    output$overlap_download_data <- downloadHandler(
-      filename = paste0("sub-category relatioship-", Sys.Date(), ".xlsx"),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data(), file)
-          incProgress(1)
-        })
-      }
-    )
+      mod_comment_download_server(ns("comment_download_1"), return_data(), filepath = "sub-category relatioship-")
+    })
 
     return(
       tagList(
@@ -259,8 +231,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
             hr(),
             uiOutput(ns("trendUI_2")),
             uiOutput(ns("dynamic_select_category_ui")),
-            uiOutput(ns("download_data_ui")),
-            DT::DTOutput(ns("overlap_table"))
+            uiOutput(ns("overlap_table"))
           )
         )
       )

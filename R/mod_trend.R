@@ -23,8 +23,6 @@ mod_trend_server <- function(id, filter_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    memoised_comment_table <- memoise::memoise(comment_table, cache = session$cache) # create a session-level cacheable version of comment_table()
-
     # Super UI ----
     output$dynamic_trendUI <- renderUI({
       # Only show module contents if the data from the database is not empty
@@ -48,10 +46,10 @@ mod_trend_server <- function(id, filter_data, data_exists) {
             plotly::plotlyOutput(ns("super_category_trend_plot")) %>%
               shinycssloaders::withSpinner(),
             hr(),
-            downloadButton(ns("super_category_download_data"), "Download data",
-              icon = icon("download")
-            ),
-            DT::DTOutput(ns("dynamic_super_category_table"))
+            # downloadButton(ns("super_category_download_data"), "Download data",
+            #   icon = icon("download")
+            # ),
+            uiOutput(ns("dynamic_super_category_table"))
           ),
 
           # A Sub-tab
@@ -63,10 +61,10 @@ mod_trend_server <- function(id, filter_data, data_exists) {
                 plotly::plotlyOutput(ns("sub_category_trend_plot")) %>%
                   shinycssloaders::withSpinner(),
                 hr(),
-                downloadButton(ns("sub_category_download_data"), "Download data",
-                  icon = icon("download")
-                ),
-                DT::DTOutput(ns("dynamic_sub_category_table"))
+                # downloadButton(ns("sub_category_download_data"), "Download data",
+                #   icon = icon("download")
+                # ),
+                uiOutput(ns("dynamic_sub_category_table"))
               )
             )
           )
@@ -119,7 +117,6 @@ mod_trend_server <- function(id, filter_data, data_exists) {
     })
 
     ## the comments tables - super category ----
-
     return_data <- reactive({
       data <- filter_data()$single_labeled_filter_data
 
@@ -141,21 +138,11 @@ mod_trend_server <- function(id, filter_data, data_exists) {
       return(prep_data_for_comment_table(data))
     })
 
-    output$dynamic_super_category_table <- DT::renderDT({
-      memoised_comment_table(return_data())
+    output$dynamic_super_category_table <- renderUI({
+      mod_comment_download_server(ns("comment_download_1"), return_data(), filepath = "super_category-trend-")
     })
 
-    # Download the data ####
-    output$super_category_download_data <- downloadHandler(
-      filename = paste0("super_category-trend-", Sys.Date(), ".xlsx"),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data(), file)
-          incProgress(1)
-        })
-      }
-    )
-
+    ## the comments tables - sub category ----
     return_data2 <- reactive({
       data <- filter_data()$single_labeled_filter_data
 
@@ -177,20 +164,8 @@ mod_trend_server <- function(id, filter_data, data_exists) {
       return(prep_data_for_comment_table(data))
     })
 
-    ## the comments tables - sub category ----
-    output$dynamic_sub_category_table <- DT::renderDT({
-      memoised_comment_table(return_data2())
+    output$dynamic_sub_category_table <- renderUI({
+      mod_comment_download_server(ns("comment_download_2"), return_data2(), filepath = "sub_category-trend-")
     })
-
-    # Download the data ####
-    output$sub_category_download_data <- downloadHandler(
-      filename = paste0("sub_category-trend-", Sys.Date(), ".xlsx"),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(return_data2(), file)
-          incProgress(1)
-        })
-      }
-    )
   })
 }

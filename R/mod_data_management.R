@@ -29,7 +29,7 @@ mod_data_management_ui <- function(id) {
 #' data_management Server Functions
 #'
 #' @noRd
-mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
+mod_data_management_server <- function(id, db_conn, filter_data, data_exists, user) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -37,13 +37,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
-      selected_columns = c(
-        "comment_id", "date", "location_1", "location_2", "location_3",
-        "comment_type", "comment_txt", "category", "super_category", "fft", "sex",
-        "gender", "age", "ethnicity", "sexuality", "disability", "religion",
-        "extra_variable_1", "extra_variable_2", "extra_variable_3",
-        "pt_id"
-      ),
       complex_comments = data.frame(),
       display_column_name = list(
         "comment_id" = "Comment ID",
@@ -53,9 +46,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         "location_3" = get_golem_config("location_3"),
         "comment_type" = "Question Type",
         "comment_txt" = "Comment",
+        "fft" = "FFT Score",
         "category" = "Sub-Category",
         "super_category" = "Category",
-        "fft" = "FFT Score",
+        "sentiment" = "Comment Sentiment",
         "sex" = "Sex",
         "gender" = "Gender",
         "age" = "Age Group",
@@ -78,9 +72,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
       )
 
       isolate({
-        dt_out$data <- dm_data(
+        dt_out$data <- prepare_data_management_data(
           filter_data()$filter_data,
-          column_names = dt_out$selected_columns,
+          column_names = names(dt_out$display_column_name),
+          comment_column = "comment_txt",
           comment_1 = get_golem_config("comment_1"),
           comment_2 = get_golem_config("comment_2")
         )
@@ -134,6 +129,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
     # render the data table ####
     output$pat_table <- DT::renderDT({
+      
+      colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE)
+      stopifnot('lenght of display column name is not the same as number of columns in the data' = length(names(dt_out$data)) == length(colnames))
+      
       DT::datatable(
         dt_out$data,
         selection = "multiple",
@@ -148,7 +147,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
         # ),
         filter = "top",
         class = "display cell-border compact",
-        colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE),
+        colnames = colnames,
         options = list(
           pageLength = 10,
           lengthMenu = c(10, 30, 50),
@@ -233,17 +232,17 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
       rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] %>% unlist(use.name = FALSE)
 
-      # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows). 
+      # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows).
       # Only rows with hidden == 0 are loaded into the dashboard. By doing this the data can be recovered if needed
       query <- glue::glue_sql(
         "UPDATE {`get_golem_config('trust_name')`} SET hidden = 1 WHERE comment_id IN ({ids*})",
         ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
-      
-      # Update the edit date for the deleted rows 
+
+      # Update the edit date for the deleted rows
       query <- glue::glue_sql("UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
-                              ids = rowselected, .con = db_conn
+        ids = rowselected, .con = db_conn
       )
       DBI::dbExecute(db_conn, query)
 
@@ -296,8 +295,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
     })
 
     # Save (write edited data to source) ####
-    ### The save functionalities doesn't work for now. The handling of the list columns 
-    ### (category and super_category) after users press ENTER is causing the issue 
+    ### The save functionalities doesn't work for now. The handling of the list columns
+    ### (category and super_category) after users press ENTER is causing the issue
     ### This will need revisiting if we need this data editing functionality
 
     observeEvent(input$save_to_db, {
@@ -330,8 +329,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
           dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)),
             by = "comment_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
           )
-          
-          # Update the edit date for the edited rows 
+
+          # Update the edit date for the edited rows
           query2 <- glue::glue_sql(
             "UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
             ids = unlist(dt_out$index, use.names = FALSE), .con = db_conn
@@ -376,7 +375,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
       # complex comments ----
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
 
-      if ((nrow(dt_out$complex_comments) > 1)) {
+      if (nrow(dt_out$complex_comments) > 1) {
         n_complex_comments <- dt_out$complex_comments |>
           dplyr::pull(comment_txt) |>
           length()
@@ -401,15 +400,33 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
     # data upload module ----
 
-    observeEvent(input$upload_new_data, {
-      # create an upload interface
+    observe({
+      
+      # guess the wait time for sentiment prediction
+      api_jobs <- check_api_job(db_conn)
+      latest_time <- api_jobs$latest_time
+      wait_time <- api_jobs$estimated_wait_time
 
-      datamods::import_modal(
-        id = session$ns("myid"),
-        from = "file",
-        title = "Import data to be used in Dashboard"
-      )
-    })
+      if (!is.null(latest_time)) {
+        showModal(
+          modalDialog(
+            title = "Existing Upload!",
+            HTML(paste(
+              "Sorry, a data upload started at", latest_time, "(GMT) is still uploading. Please allow it to finish uploading (in about",
+              wait_time, "mins time) before starting a new upload"
+            ))
+          )
+        )
+      } else {
+        # create an upload interface
+        datamods::import_modal(
+          id = session$ns("myid"),
+          from = "file",
+          title = "Import data to be used in Dashboard"
+        )
+      }
+    }) |>
+      bindEvent(input$upload_new_data)
 
     # Get the imported data as tibble
 
@@ -443,16 +460,21 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists) {
 
           withProgress(message = "Processing data. This may take a while.
                      Please wait...", value = 0, {
-            upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"))
+            upload_data(data = raw_df, conn = db_conn, trust_id = get_golem_config("trust_name"), user = user)
             incProgress(1)
           })
 
+          # guess the wait time for sentiment prediction
+          api_jobs <- check_api_job(db_conn)
+          wait_time <- api_jobs$estimated_wait_time
 
           showModal(modalDialog(
-            title = "Success!",
-            paste0(nrow(raw_df), " records successfully imported. Please refresh
-             your browser to access the new data"),
-            easyClose = TRUE
+            title = strong("Success!"),
+            HTML(paste(
+              h5(paste(nrow(raw_df), "records successfully imported. The new data is not ready yet, the dashboard is busy predicting the sentiment score.")),
+              h4(strong(em(paste("Please check back or refresh your browser in about", wait_time, "mins to access the new data"))))
+            )),
+            easyClose = FALSE
           ))
         },
         error = function(e) {

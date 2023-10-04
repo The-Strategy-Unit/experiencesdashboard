@@ -3,11 +3,6 @@ test_that("app_ui works", {
   expect_snapshot(app_ui("id"))
 })
 
-# mod_category_criticality_ui ----
-test_that("mod_category_criticality_ui works", {
-  expect_snapshot(mod_category_criticality_ui("id"))
-})
-
 # mod_click_tables_ui ----
 test_that("mod_click_tables_ui works", {
   expect_snapshot(mod_click_tables_ui("id"))
@@ -61,4 +56,18 @@ test_that("mod_summary_record_ui works", {
 # mod_summary_ui ----
 test_that("mod_summary_ui works", {
   expect_snapshot(mod_summary_ui("id"))
+})
+
+# mod_comment_download_ui ----
+test_that("mod_comment_download_ui works", {
+  ui <- mod_comment_download_ui(id = "test")
+  # `ui` has class function not a shiny taglist
+  expect_true(
+    inherits(ui, "function")
+  )
+  # Check that formals have not been removed
+  fmls <- formals(mod_comment_download_ui)
+  for (i in c("id")) {
+    expect_true(i %in% names(fmls))
+  }
 })

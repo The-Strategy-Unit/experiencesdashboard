@@ -7,7 +7,10 @@
 get_pred_from_url(api_url)
 }
 \arguments{
-\item{api_url}{the url return from `api_pred_url()` where you can get the prediction data when its ready}
+\item{api_url}{the url return from `get_api_pred_url()` where you can get the prediction data when its ready}
+}
+\value{
+a dataframe or string depending on whether the API is done prediction or not
 }
 \description{
 Get the prediction from the URL returned from the pxtextmining API

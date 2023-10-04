@@ -18,3 +18,7 @@ phase_2_db_data <- readRDS(here::here("tests/p2_db_data_template.rds")) %>%
 
 unique_data <- phase_2_db_data %>%
   dplyr::distinct(pt_id, .keep_all = TRUE)
+
+single_labeled_filter_data = phase_2_db_data |> 
+  head(100) |> 
+  get_tidy_filter_data(TRUE)

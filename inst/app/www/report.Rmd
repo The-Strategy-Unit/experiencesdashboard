@@ -66,7 +66,7 @@ if("category_table" %in% params$options){
   
   cat("  \n")
   
-  if(isTruthy(params$inputs$comment_2)){
+  if(isTruthy(params$comment_2)){
     
     cat("###", params$comment_2,  "  \n")
     

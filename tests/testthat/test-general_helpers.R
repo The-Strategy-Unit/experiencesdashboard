@@ -5,7 +5,7 @@ test_that("prep_data_for_comment_table works", {
 
   expect_true(inherits(test$`Sub-Category`, "character"))
   expect_true(inherits(test$`Category`, "character"))
-  expect_identical(names(test), c("Date", "FFT Question", "FFT Score", "Sentiment", "FFT Answer", "Sub-Category", "Category"))
+  expect_identical(names(test), c("Date", "FFT Question", "FFT Score", "Comment Sentiment", "FFT Answer", "Sub-Category", "Category"))
 
   test2 <- phase_2_db_data %>%
     get_tidy_filter_data(TRUE) %>%
@@ -13,7 +13,7 @@ test_that("prep_data_for_comment_table works", {
 
   expect_true(inherits(test2$`Sub-Category`, "character"))
   expect_true(inherits(test2$`Category`, "character"))
-  expect_identical(names(test2), c("Date", "FFT Question", "FFT Score", "Sentiment", "FFT Answer", "Sub-Category", "Category"))
+  expect_identical(names(test2), c("Date", "FFT Question", "FFT Score", "Comment Sentiment", "FFT Answer", "Sub-Category", "Category"))
 
   test3 <- prep_data_for_comment_table(phase_2_db_data, in_tidy_format = TRUE)
   expect_identical(nrow(test), nrow(test2), nrow(test3))
@@ -37,8 +37,8 @@ test_that("single_to_multi_label works", {
 })
 
 
-test_that("comment_table works", {
-  test <- comment_table(phase_2_upload_data)
+test_that("render_comment_table works", {
+  test <- render_comment_table(phase_2_upload_data)
   expect_no_error(test)
   expect_true(inherits(test, "datatables"))
 })
@@ -169,10 +169,14 @@ test_that("get_sentiment_text works", {
   codes = c(1,2,3,3,5,6)
   test <- get_sentiment_text(codes)
   
-  expect_equal(test, c('Very Negative', 'Negative', 'Neutral', 'Neutral', 'Very Positive', NA))
+  expect_equal(get_sentiment_text(c(5, 2,6, 9)), c("Negative", "Positive", NA, NA))
+  
+  expect_equal(test, c('Positive', 'Positive', 'Neutral/Mixed', 'Neutral/Mixed', 'Negative', NA))
   
   expect_equal(length(test), length(codes))
 })
+
+# mod_sentiment_utils_helper ----
 
 test_that("plot_sentiment_trend works", {
   
@@ -200,4 +204,23 @@ test_that("plot_sentiment_trend works", {
   )
   
   expect_true(inherits(plot, 'plotly'))
+})
+
+test_that("transform_sentiment works and return expected result", {
+  
+  comment_id <- c("1", "2", "3", '4')
+  sentiment <- c(5, 2,6, 9)
+  df <- data.frame(comment_id, sentiment)
+  
+  result <- transform_sentiment(df)
+  
+  expect_true(inherits(result, 'data.frame'))
+  
+  expect_true(inherits(result$sentiment, 'factor'))
+  
+  expect_equal(levels(result$sentiment),  c("Positive", "Neutral/Mixed", "Negative"))
+ 
+  expect_equal(as.character(result$sentiment), c("Negative", "Positive", NA, NA))
+   
+  expect_equal(nrow(df), nrow(result))
 })
