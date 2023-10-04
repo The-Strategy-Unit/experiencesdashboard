@@ -21,46 +21,46 @@ test_that("api_pred and batch_predict is working...", {
   expect_equal(sum(is.na(preds$labels)), 0)
 })
 
-# test_that("assign_highlevel_categories function is working and API vs Framework are in sync", {
-#
-#   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-#
-#   text_data <- phase_2_db_data %>%
-#     head(100) %>%
-#     dplyr::mutate(comment_text = comment_txt,
-#            question_type = comment_type) %>%
-#     dplyr::select(comment_id, comment_text, question_type) %>%
-#     dplyr::mutate(
-#       question_type = stringr::str_replace_all(
-#         question_type, "comment_1",
-#         api_question_code(get_golem_config("comment_1"))
-#       )
-#     ) |>
-#     dplyr::mutate(
-#       question_type = stringr::str_replace_all(
-#         question_type, "comment_2",
-#         api_question_code(get_golem_config("comment_2"))
-#       )
-#     )
-#
-#   preds <- text_data |>
-#     batch_predict()
-#
-#   # assign the super category
-#   preds <- preds %>%
-#     rename(category = labels) %>%
-#     tidyr::unnest(category) %>%
-#     dplyr::mutate(super_category = assign_highlevel_categories(category))
-#
-#   not_in_framewk <- preds %>%
-#     filter(super_category == "Unknown Category") %>%
-#     pull(category) %>%
-#     unique()
-#
-#   # all assigned labels must be in framework
-#   expect_true(all(preds$category %in% framework$`Sub-category`))
-#   expect_true(length(not_in_framewk) == 0)
-# })
+test_that("assign_highlevel_categories function is working and API vs Framework are in sync", {
+
+  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
+
+  text_data <- phase_2_db_data %>%
+    head(100) %>%
+    dplyr::mutate(comment_text = comment_txt,
+           question_type = comment_type) %>%
+    dplyr::select(comment_id, comment_text, question_type) %>%
+    dplyr::mutate(
+      question_type = stringr::str_replace_all(
+        question_type, "comment_1",
+        api_question_code(get_golem_config("comment_1"))
+      )
+    ) |>
+    dplyr::mutate(
+      question_type = stringr::str_replace_all(
+        question_type, "comment_2",
+        api_question_code(get_golem_config("comment_2"))
+      )
+    )
+
+  preds <- text_data |>
+    batch_predict()
+
+  # assign the super category
+  preds <- preds %>%
+    rename(category = labels) %>%
+    tidyr::unnest(category) %>%
+    dplyr::mutate(super_category = assign_highlevel_categories(category))
+
+  not_in_framewk <- preds %>%
+    filter(super_category == "Unknown Category") %>%
+    pull(category) %>%
+    unique()
+
+  # all assigned labels must be in framework
+  expect_true(all(preds$category %in% framework$`Sub-category`))
+  expect_true(length(not_in_framewk) == 0)
+})
 
 test_that("api_question_code works", {
   expect_equal(api_question_code("What did we do well"), "what_good")
