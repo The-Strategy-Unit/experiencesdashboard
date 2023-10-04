@@ -1,5 +1,5 @@
 # select Trust
-Sys.setenv("R_CONFIG_ACTIVE" = "phase_2_demo")
+Sys.setenv("R_CONFIG_ACTIVE" = "public_view")
 # Sys.setenv("R_CONFIG_ACTIVE" = "trust_LPT")
 
 # Set options here

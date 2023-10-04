@@ -148,3 +148,15 @@ trust_NEAS:
   demography_1: ethnicity
   demography_2: disability
   demography_3: sexuality
+public_view:
+  trust_name: public_view
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
+  question_1: fft
+  location_1: Division
+  location_2: Specialty
+  location_3: Team
+  demography_1: age
+  demography_2: sex
+  demography_3: ethnicity
+  
