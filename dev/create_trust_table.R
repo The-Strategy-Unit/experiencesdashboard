@@ -13,16 +13,23 @@
 #' @examples create_trust_table(pool, set_trust_id = "trust_a_bk")
 #' @noRd
 create_trust_table <- function(pool, set_trust_id, drop_table = FALSE) {
-  if (drop_table) {
-    DBI::dbExecute(pool, paste0("DROP TABLE IF EXISTS ", set_trust_id))
-  } else {
-    stop("Table already exist")
-  }
+  tryCatch(
+    {
+      query <- paste0("CREATE TABLE ", set_trust_id, " AS (SELECT * FROM phase_2_demo WHERE 1=2)")
+      DBI::dbExecute(pool, query)
+    },
+    error = function(e) {
+      if (drop_table) {
+        DBI::dbExecute(pool, paste0("DROP TABLE IF EXISTS ", set_trust_id))
+        query <- paste0("CREATE TABLE ", set_trust_id, " AS (SELECT * FROM phase_2_demo WHERE 1=2)")
+        DBI::dbExecute(pool, query)
+      } else {
+        stop("Table already exist")
+      }
+    }
+  )
 
-  query <- paste0("CREATE TABLE ", set_trust_id, " AS (SELECT * FROM phase_2_demo WHERE 1=2)")
-  DBI::dbExecute(pool, query)
   DBI::dbExecute(pool, paste0("ALTER TABLE ", set_trust_id, " ADD PRIMARY KEY (comment_id)"))
-
   query <- paste0("ALTER TABLE ", set_trust_id, " MODIFY COLUMN
                   `comment_id` INT(10) UNSIGNED AUTO_INCREMENT FIRST")
   DBI::dbExecute(pool, query)
@@ -44,6 +51,6 @@ create_job_table <- function(conn) {
       status tinytext NOT NULL CHECK (status IN ('submitted', 'completed', 'failed', 'uploaded')),
       PRIMARY KEY (job_id)
   )"
-
+  
   DBI::dbExecute(conn, query)
 }

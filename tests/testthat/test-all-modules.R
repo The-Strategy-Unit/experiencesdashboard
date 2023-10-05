@@ -81,7 +81,7 @@ test_that("mod_data_management_server work correctly", {
     # act/assert
     expect_no_error(output$data_management_UI)
     expect_equal(nrow(dt_out$data), 100)
-    expect_equal(ncol(dt_out$data), 18)
+    expect_equal(ncol(dt_out$data), 19)
     expect_equal(class(dt_out$data$category), "list")
     expect_no_error(output$pat_table)
     expect_equal(class(proxy), "dataTableProxy")
@@ -751,7 +751,6 @@ test_that("mod_overlap_1_server works correctly when given some inputs", {
   })
 })
 
-
 # mod_sentiment_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_sentiment_server work correctly", {
   test_that("mod_sentiment_server work correctly", {
@@ -789,4 +788,46 @@ test_that("mod_sentiment_server work correctly", {
     # prep_data_for_comment_table is called only once
     expect_called(m, 1)
   })
+})
+
+# mod_comment_download_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_that("module server works well if given corrent arguements", {
+  testServer(mod_comment_download_server,
+             args = list(head(phase_2_db_data, 100), "test-data-"), {
+               ns <- session$ns
+               expect_true(
+                 inherits(ns, "function")
+               )
+               expect_true(
+                 grepl(id, ns(""))
+               )
+               expect_true(
+                 grepl("test", ns("test"))
+               )
+               
+               # the return data is accessible
+               expect_identical(return_data, head(phase_2_db_data, 100))
+               
+               # shows the comment table
+               expect_true(
+                 inherits(output$dynamic_comment_table, "json")
+               )
+               
+               # download file is named correctly
+               expect_true(grepl("(test-data-.).+(.xlsx)$", output$download_comments))
+               
+               # returned value is class shiny.tag.list
+               golem::expect_shinytaglist(session$returned)
+               expect_snapshot(session$returned)
+             }
+  )
+})
+
+test_that("module server works well if passed data is empty", {
+  # throw error when there is no data in the database
+  testServer(mod_comment_download_server, 
+             args = list(data.frame(), "test-data-"), {
+               # show expected result
+               expect_true(grepl("No data to show", session$returned))
+             })
 })

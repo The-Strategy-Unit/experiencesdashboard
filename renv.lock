@@ -9,6 +9,13 @@
     ]
   },
   "Packages": {
+    "AsioHeaders": {
+      "Package": "AsioHeaders",
+      "Version": "1.22.1-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "85bf3bd8fa58da21a22d84fd4f4ef0a8"
+    },
     "BH": {
       "Package": "BH",
       "Version": "1.81.0-1",
@@ -128,6 +135,45 @@
         "utils"
       ],
       "Hash": "94b0a21c13933f61cf6272a192964624"
+    },
+    "R.methodsS3": {
+      "Package": "R.methodsS3",
+      "Version": "1.8.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "utils"
+      ],
+      "Hash": "278c286fd6e9e75d0c2e8f731ea445c8"
+    },
+    "R.oo": {
+      "Package": "R.oo",
+      "Version": "1.25.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "R.methodsS3",
+        "methods",
+        "utils"
+      ],
+      "Hash": "a0900a114f4f0194cf4aa8cd4a700681"
+    },
+    "R.utils": {
+      "Package": "R.utils",
+      "Version": "2.12.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "R.methodsS3",
+        "R.oo",
+        "methods",
+        "tools",
+        "utils"
+      ],
+      "Hash": "325f01db13da12c04d8f6e7be36ff514"
     },
     "R6": {
       "Package": "R6",
@@ -722,13 +768,13 @@
       "Package": "experiencesdashboard",
       "Version": "0.7.0",
       "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteUsername": "CDU-data-science-team",
-      "RemoteRepo": "experiencesdashboard",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "59deaeeae38947cbdd22a50f3712b18ec9451259",
-      "RemoteHost": "api.github.com",
       "Remotes": "nhs-r-community/NHSRtheme",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "experiencesdashboard",
+      "RemoteUsername": "CDU-data-science-team",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "d66c471fa48cbfeaa38c620b75de73dea0995645",
       "Requirements": [
         "ComplexUpset",
         "DBI",
@@ -768,7 +814,7 @@
         "writexl",
         "xml2"
       ],
-      "Hash": "03c41d338a30f34a6eb58bd784f767c3"
+      "Hash": "6fd034f3941b2fd3ede91240d233bc2c"
     },
     "fansi": {
       "Package": "fansi",
@@ -1372,30 +1418,13 @@
     },
     "openssl": {
       "Package": "openssl",
-      "Version": "2.1.0",
+      "Version": "2.1.1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "askpass"
       ],
-      "Hash": "273a6bb4a9844c296a459d2176673270"
-    },
-    "openxlsx": {
-      "Package": "openxlsx",
-      "Version": "4.2.5.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "grDevices",
-        "methods",
-        "stats",
-        "stringi",
-        "utils",
-        "zip"
-      ],
-      "Hash": "c03b4c18d42da881fb8e15a085c2b9d6"
+      "Hash": "2a0dc8c6adfb6f032e4d4af82d258ab5"
     },
     "packrat": {
       "Package": "packrat",
@@ -1615,10 +1644,13 @@
     },
     "prettyunits": {
       "Package": "prettyunits",
-      "Version": "1.1.1",
+      "Version": "1.2.0",
       "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "95ef9167b75dde9d2ccc3c7528393e7e"
+      "Repository": "RSPM",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "6b01fc98b1e86c4f705ce9dcfd2f57c7"
     },
     "processx": {
       "Package": "processx",
@@ -1663,18 +1695,19 @@
     },
     "promises": {
       "Package": "promises",
-      "Version": "1.2.0.1",
+      "Version": "1.2.1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R6",
         "Rcpp",
+        "fastmap",
         "later",
         "magrittr",
         "rlang",
         "stats"
       ],
-      "Hash": "4ab2c43adb4d4699cf3690acd378d75d"
+      "Hash": "0d8a15c9d000970ada1ab21405387dee"
     },
     "ps": {
       "Package": "ps",
@@ -1891,23 +1924,26 @@
     },
     "rio": {
       "Package": "rio",
-      "Version": "0.5.30",
+      "Version": "1.0.1",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
+        "R.utils",
         "curl",
         "data.table",
         "foreign",
         "haven",
-        "openxlsx",
+        "lifecycle",
         "readxl",
         "stats",
+        "stringi",
         "tibble",
         "tools",
-        "utils"
+        "utils",
+        "writexl"
       ],
-      "Hash": "3edda5d19282f97c655cb0d4c0c57ac2"
+      "Hash": "8e63a1ebe85848713226eb395cba420b"
     },
     "rlang": {
       "Package": "rlang",
@@ -1922,7 +1958,7 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.24",
+      "Version": "2.25",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1942,7 +1978,7 @@
         "xfun",
         "yaml"
       ],
-      "Hash": "3854c37590717c08c32ec8542a2e0a35"
+      "Hash": "d65e35823c817f09f4de424fcdfa812a"
     },
     "roxygen2": {
       "Package": "roxygen2",
@@ -2178,6 +2214,30 @@
       ],
       "Hash": "e418b532e9bb4eb22a714b9a9f1acee7"
     },
+    "shinyloadtest": {
+      "Package": "shinyloadtest",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "R6",
+        "curl",
+        "dplyr",
+        "ggplot2",
+        "httpuv",
+        "jsonlite",
+        "magrittr",
+        "rlang",
+        "scales",
+        "stringr",
+        "svglite",
+        "vroom",
+        "websocket",
+        "xml2"
+      ],
+      "Hash": "eeba2e2da392ca67c10b450da87d2ed0"
+    },
     "slam": {
       "Package": "slam",
       "Version": "0.1-50",
@@ -2241,6 +2301,18 @@
         "vctrs"
       ],
       "Hash": "671a4d384ae9d32fc47a14e98bfa3dc8"
+    },
+    "svglite": {
+      "Package": "svglite",
+      "Version": "2.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cpp11",
+        "systemfonts"
+      ],
+      "Hash": "29442899581643411facb66f4add846a"
     },
     "sys": {
       "Package": "sys",
@@ -2543,6 +2615,19 @@
         "tibble"
       ],
       "Hash": "2c993415154cdb94649d99ae138ff5e5"
+    },
+    "websocket": {
+      "Package": "websocket",
+      "Version": "1.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "AsioHeaders",
+        "R6",
+        "cpp11",
+        "later"
+      ],
+      "Hash": "76e0d400757e318cca33def29ccebbc2"
     },
     "whisker": {
       "Package": "whisker",

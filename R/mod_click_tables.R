@@ -39,10 +39,6 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
           shinycssloaders::withSpinner(),
         hr(),
         h5("Please select a Sub-category from the table above in other to drill down the table below"),
-        # add button for editing the table
-        downloadButton(ns("click_table_download_data"), "Download data",
-          icon = icon("download")
-        ),
         uiOutput(ns("comment_table"))
       )
     })
