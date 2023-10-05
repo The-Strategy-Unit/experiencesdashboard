@@ -313,8 +313,6 @@ app_server <- function(input, output, session) {
 
   mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists, user)
 
-  mod_sentiment_server("sentiment_1", filter_data, data_exists)
-
   mod_fft_server("fft_ui_1", filter_data = filter_data)
 
   mod_report_builder_server(
