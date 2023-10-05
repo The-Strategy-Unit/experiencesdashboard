@@ -5,4 +5,5 @@ pkgload::load_all(export_all = FALSE,
                   helpers = FALSE,
                   attach_testthat = FALSE)
 options( "golem.app.prod" = TRUE)
+Sys.setenv("R_CONFIG_ACTIVE" = "public_view")
 experiencesdashboard::run_app() # add parameters here (if any)
