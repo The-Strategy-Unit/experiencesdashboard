@@ -356,21 +356,18 @@ test_that("mod_patient_experience_server work correctly", {
   stub(mod_patient_experience_server, "mod_click_tables_ui", m5)
 
   m6 <- mock()
-  stub(mod_patient_experience_server, "mod_sentiment_ui", m6)
+  stub(mod_patient_experience_server, "mod_search_text_ui", m6)
 
   m7 <- mock()
-  stub(mod_patient_experience_server, "mod_search_text_ui", m7)
-
-  m8 <- mock()
-  stub(mod_patient_experience_server, "mod_summary_ui", m8)
+  stub(mod_patient_experience_server, "mod_summary_ui", m7)
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "random_config")
-  m9 <- mock()
-  stub(mod_patient_experience_server, "mod_demographics_ui", m9)
+  m8 <- mock()
+  stub(mod_patient_experience_server, "mod_demographics_ui", m8)
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "trust_NUH")
-  m10 <- mock()
-  stub(mod_patient_experience_server, "mod_demographics_ui", m10)
+  m9 <- mock()
+  stub(mod_patient_experience_server, "mod_demographics_ui", m9)
 
   # there is data in the database
   testServer(mod_patient_experience_server, {
@@ -386,11 +383,10 @@ test_that("mod_patient_experience_server work correctly", {
     expect_called(m5, 1)
     expect_called(m6, 1)
     expect_called(m7, 1)
-    expect_called(m8, 1)
-    expect_called(m10, 1)
+    expect_called(m9, 1)
 
     # modules not called when no demographic feature in config
-    expect_called(m9, 0)
+    expect_called(m8, 0)
   })
 })
 
@@ -748,45 +744,6 @@ test_that("mod_overlap_1_server works correctly when given some inputs", {
     expect_equal(nrow(return_data()), 0)
     expect_error(output$download_data_ui)
     expect_no_error(output$overlap_table)
-  })
-})
-
-# mod_sentiment_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_that("mod_sentiment_server work correctly", {
-  test_that("mod_sentiment_server work correctly", {
-    # throw error when there is no data in the database
-    testServer(mod_sentiment_server, args = list(reactiveVal(), FALSE), {
-      # assert
-      expect_error(output$dynamic_sentiment_UI)
-    })
-  })
-
-  # all variables can be accessed when the right data is give
-
-  # arrange
-  data <- head(phase_2_db_data, 100)
-
-  # mock prep_data_for_comment_table to almays return empty dataframe
-  m <- mock(data.frame())
-  stub(mod_sentiment_server, "prep_data_for_comment_table", m)
-  testServer(mod_sentiment_server, args = list(reactiveVal(), TRUE), {
-    filter_data(
-      list(
-        filter_data = data
-      )
-    )
-
-    # assert
-    expect_identical(sentiment_data(), data)
-    expect_equal(timeframe(), "month")
-    expect_no_error(clicked_data())
-    expect_no_error(return_data())
-    expect_no_error(output$dynamic_sentiment_UI)
-    expect_no_error(output$sentiment_plot)
-    expect_no_error(output$sentiment_comment)
-
-    # prep_data_for_comment_table is called only once
-    expect_called(m, 1)
   })
 })
 
