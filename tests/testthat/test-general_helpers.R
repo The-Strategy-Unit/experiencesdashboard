@@ -165,6 +165,7 @@ test_that("parse_date works as expected", {
   ) |> expect_true()
 })
 
+# sentiment_helpers ----
 test_that("get_sentiment_text works", {
   codes = c(1,2,3,3,5,6)
   test <- get_sentiment_text(codes)
@@ -174,36 +175,6 @@ test_that("get_sentiment_text works", {
   expect_equal(test, c('Positive', 'Positive', 'Neutral/Mixed', 'Neutral/Mixed', 'Negative', NA))
   
   expect_equal(length(test), length(codes))
-})
-
-# mod_sentiment_utils_helper ----
-
-test_that("plot_sentiment_trend works", {
-  
-  data <- phase_2_db_data %>% 
-    head(20) %>%
-    dplyr::mutate(
-      sentiment = sample(1:5, nrow(.), replace = T)
-    ) |>
-    dplyr::mutate(date = as.Date(cut(date, "month"))) |>
-    multigroup_calculated_data("date", "sentiment") %>%
-    dplyr::mutate(sentiment = as.factor(sentiment))
-  
-  
-  expect_no_error(
-    plot <- data %>%
-      plot_sentiment_trend(
-        x = ~date,
-        y = ~percent,
-        colors = c("#DA291C", "#FAE100", "#009639"),
-        event_id = 'event_id',
-        plot_title = "Sentiment score over time",
-        xaxis_title = "Date (Month)",
-        yaxis_title = "% contribution",
-      )
-  )
-  
-  expect_true(inherits(plot, 'plotly'))
 })
 
 test_that("transform_sentiment works and return expected result", {

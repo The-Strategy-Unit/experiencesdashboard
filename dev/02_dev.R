@@ -64,7 +64,6 @@ attachment::att_amend_desc()
 
 ## Add modules ----
 ## Create a module infrastructure in R/
-golem::add_module(name = "sentiment") # Name of the module
 golem::add_module(name = "patient_experience") # Name of the module
 golem::add_module(name = "category_criticality") # Name of the module
 golem::add_module(name = "fft") # Name of the module
@@ -82,7 +81,6 @@ golem::add_module(name = "documentation_page") # Name of the module
 golem::add_module(name = "trend", utils = "helper") # Name of the module
 golem::add_module(name = "header_message") # Name of the module
 golem::add_module(name = "overlap_1") # Name of the module
-golem::add_module(name = "sentiment", utils = "helper") # Name of the module
 golem::add_module(name = "comment_download", utils = "helper") # Name of the module
 
 ## Add helper functions ----
@@ -119,7 +117,6 @@ covr::zero_coverage(covr::package_coverage())
 
 ## Add one line by test you want to create
 usethis::use_test("fft")
-usethis::use_test("sentiment_tidy")
 usethis::use_test("show_text")
 usethis::use_test("search_text")
 usethis::use_test("calculate_table")
