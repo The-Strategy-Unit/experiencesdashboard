@@ -1,6 +1,6 @@
 default:
   golem_name: experiencesdashboard
-  golem_version: 0.7.0
+  golem_version: 0.8.1
   app_prod: no
   open: yes
 production:
