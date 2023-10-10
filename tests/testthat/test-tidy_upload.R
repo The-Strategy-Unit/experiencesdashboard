@@ -133,7 +133,7 @@ test_that("uploaded data works", {
     conn = NULL,
     trust_id = get_golem_config("trust_name"),
     user = "test user",
-    write_db = F
+    write_db = FALSE
   )
 
   expect_called(m, 1)
@@ -145,7 +145,7 @@ test_that("uploaded data works", {
       conn = NULL,
       trust_id = get_golem_config("trust_name"),
       user = "test user",
-      write_db = T
+      write_db = TRUE
     )
   )
 })

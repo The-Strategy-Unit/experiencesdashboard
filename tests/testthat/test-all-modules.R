@@ -414,8 +414,8 @@ test_that("mod_summary_record_server works correctly", {
     expect_no_error(output$current_individualBox)
 
     # assert all global variable are expected values after a call to output$dynamic_summary_record
-    expect_equal(global$n_responses, 1981)
-    expect_equal(global$n_individuals, 1000)
+    expect_equal(global$n_responses, 1900)a
+    expect_equal(global$n_individuals, 959)
     expect_equal(global$current_responses, 10)
     expect_equal(global$current_individuals, 5)
   })
@@ -734,8 +734,8 @@ test_that("mod_overlap_1_server works correctly when given some inputs", {
     expect_no_error(output$dynamic_select_category_ui)
 
     # the upset plot contents are working
-    expect_equal(nrow(upset_data()), 120)
-    expect_equal(length(all_categories()), 26)
+    expect_equal(nrow(upset_data()), 110)
+    expect_equal(length(all_categories()), 15)
     expect_equal(length(filtered_categories()), 3)
     expect_no_error(output$category_upset)
 

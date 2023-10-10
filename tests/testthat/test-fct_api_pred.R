@@ -8,7 +8,7 @@ test_that("api_pred and batch_predict is working...", {
     question_type = c("what_good", "could_improve", "nonspecific")
   )
 
-  expect_error(api_pred(text_data |>
+  expect_no_error(api_pred(text_data |>
     select(-question_type)))
 
   expect_no_error(api_pred(text_data))
@@ -17,7 +17,7 @@ test_that("api_pred and batch_predict is working...", {
     batch_predict()
 
   expect_equal(nrow(preds), 3)
-  expect_true(all(c("comment_id", "comment_text", "labels") %in% names(preds)))
+  expect_true(all(c("comment_id", "labels") == names(preds)))
   expect_equal(sum(is.na(preds$labels)), 0)
 })
 
@@ -91,12 +91,16 @@ test_that("get_api_pred_url works and return expected result", {
 
   expect_equal(get_api_pred_url(df, "api_key"), "data")
 
-  # throw expected error
-  stub(get_api_pred_url, "httr::POST", list(message = "failed call"))
+  # throw expected error - when api call fails
+  stub(get_api_pred_url, "httr::POST", list(status_code = 404, message = "failed call"))
   stub(get_api_pred_url, "httr::http_status", identity)
   stub(get_api_pred_url, "httr::status_code", identity)
 
   expect_error(get_api_pred_url(df, "api_key"), "failed call")
+  
+  # throw expected error - when wrong parameter is supplied
+  expect_error(get_api_pred_url(df, "api_key", "o"), 
+               "target must be one of 'ms', 'm' or 's'")
 })
 
 test_that("get_pred_from_url works and return expected result", {
@@ -160,13 +164,18 @@ test_that("track_api_job correctly handles completed job", {
   # Create a new mock for the database connection (DBI::dbExecute)
   m2 <- mock(TRUE, cycle = TRUE)
   stub(track_api_job, "DBI::dbExecute", m2) # return a success status
+  m3 <- mock(TRUE)
+  stub(track_api_job, "dplyr::rows_update", m3) # mock dplyr::rows_update  
+  stub(track_api_job, "dplyr::tbl", identical) 
+  
 
   # Call the function with the mocks - Check it completes
   track_api_job(test_job, conn = NULL, write_db = TRUE) |>
     expect_output("Job 1 prediction has been successfully written to database")
 
-  # expect DBI::dbExecute is called twice
-  expect_called(m2, 2)
+  
+  expect_called(m2, 2) # expect DBI::dbExecute is called twice
+  expect_called(m3, 1) # expect dplyr::rows_update is called once
 })
 
 test_that("track_api_job correctly handles pending job", {

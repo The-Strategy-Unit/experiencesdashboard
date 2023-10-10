@@ -10,6 +10,9 @@
 get_api_pred_url <- function(data, api_key, target = "ms") {
   endpoint <- "https://pxtextmining-docker-api.azurewebsites.net/api/StartContainerInstance"
 
+  # validate the target argument
+  stopifnot("target must be one of 'ms', 'm' or 's'" = target %in% c("ms", "m", "s"))
+  
   # convert the dataframe to nested list
   json_data <- data |>
     purrr::array_tree()

@@ -4,12 +4,15 @@
 \alias{get_api_pred_url}
 \title{Get the prediction URL or the data from the `pxtextmining API`}
 \usage{
-get_api_pred_url(data, api_key)
+get_api_pred_url(data, api_key, target = "ms")
 }
 \arguments{
 \item{data}{Dataframe with column `comment_id`, `comment_text` and `question_type`}
 
 \item{api_key}{api key to access the api}
+
+\item{target}{to determine the type of prediction, the options are `m` for multilabel,
+`s` for sentiment or `ms` for both. default to `ms`}
 }
 \value{
 a dataframe or a url to get the data
