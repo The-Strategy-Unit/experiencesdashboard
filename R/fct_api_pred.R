@@ -3,9 +3,11 @@
 #'
 #' @param data Dataframe with column `comment_id`, `comment_text` and `question_type`
 #' @param api_key api key to access the api
+#' @param target to determine the type of prediction, the options are `m` for multilabel,
+#' `s` for sentiment or `ms` for both. default to `ms`
 #' @return a dataframe or a url to get the data
 #' @export
-get_api_pred_url <- function(data, api_key) {
+get_api_pred_url <- function(data, api_key, target = "ms") {
   endpoint <- "https://pxtextmining-docker-api.azurewebsites.net/api/StartContainerInstance"
 
   # convert the dataframe to nested list
@@ -15,7 +17,7 @@ get_api_pred_url <- function(data, api_key) {
   r <- httr::POST(
     endpoint,
     body = json_data,
-    query = list(code = api_key),
+    query = list(code = api_key, target = target),
     encode = "json"
   )
 
