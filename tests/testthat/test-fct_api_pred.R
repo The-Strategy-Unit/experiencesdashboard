@@ -1,16 +1,3 @@
-test_that("API and Framework are in sync", {
-  single_filter_data <- phase_2_db_data %>%
-    dplyr::mutate(across(category, ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list
-    tidyr::unnest(category) %>% # Unnest the category column into rows and columns
-    dplyr::mutate(super_category = assign_highlevel_categories(category))
-
-  not_in_framewk <- single_filter_data %>%
-    filter(super_category == "Other Category") %>%
-    pull(category) %>%
-    unique()
-  expect_true(all(not_in_framewk == c("Labelling not possible", "Admission")))
-})
-
 test_that("api_pred and batch_predict is working...", {
   text_data <- data.frame(
     comment_id = c(1, 2, 3),
@@ -32,6 +19,47 @@ test_that("api_pred and batch_predict is working...", {
   expect_equal(nrow(preds), 3)
   expect_true(all(c("comment_id", "comment_text", "labels") %in% names(preds)))
   expect_equal(sum(is.na(preds$labels)), 0)
+})
+
+test_that("assign_highlevel_categories function is working and API vs Framework are in sync", {
+
+  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
+
+  text_data <- phase_2_db_data %>%
+    head(100) %>%
+    dplyr::mutate(comment_text = comment_txt,
+           question_type = comment_type) %>%
+    dplyr::select(comment_id, comment_text, question_type) %>%
+    dplyr::mutate(
+      question_type = stringr::str_replace_all(
+        question_type, "comment_1",
+        api_question_code(get_golem_config("comment_1"))
+      )
+    ) |>
+    dplyr::mutate(
+      question_type = stringr::str_replace_all(
+        question_type, "comment_2",
+        api_question_code(get_golem_config("comment_2"))
+      )
+    )
+
+  preds <- text_data |>
+    batch_predict()
+
+  # assign the super category
+  preds <- preds %>%
+    rename(category = labels) %>%
+    tidyr::unnest(category) %>%
+    dplyr::mutate(super_category = assign_highlevel_categories(category))
+
+  not_in_framewk <- preds %>%
+    filter(super_category == "Unknown Category") %>%
+    pull(category) %>%
+    unique()
+
+  # all assigned labels must be in framework
+  expect_true(all(preds$category %in% framework$`Sub-category`))
+  expect_true(length(not_in_framewk) == 0)
 })
 
 test_that("api_question_code works", {
@@ -93,8 +121,22 @@ test_that("get_pred_from_url works and return expected result", {
   expect_error(get_pred_from_url(df), "can't reach server")
 })
 
+test_that("transform_prediction_for_database works and return expected result", {
+  prediction <- readRDS(here::here("tests/prediction.rds"))
+
+  result <- transform_prediction_for_database(prediction)
+
+  expect_true(nrow(result) == nrow(prediction))
+  expect_true(result$comment_id |> duplicated() |> sum() == 0)
+  expect_true(inherits(result$super_category, "list"))
+  expect_true(inherits(result$category, "list"))
+
+  # throw expected error
+  expect_error(transform_prediction_for_database(select(prediction, -sentiment)))
+})
+
 test_that("track_api_job correctly handles completed job", {
-  test_pred <- data.frame(comment_id = 1:5, prediction = 1:5)
+  test_pred <- readRDS(here::here("tests/prediction.rds"))
 
   # Create a mock for the `get_pred_from_url` function
   stub(track_api_job, "get_pred_from_url", test_pred) # return a test prediction dataframe
@@ -165,45 +207,47 @@ test_that("track_api_job correctly handles failed job", {
 
 
 test_that("check_api_job works and return expected result", {
-  
   api_table <- data.frame(
     job_id = 1,
     url = "url",
     date = as.POSIXct("2023-09-15 12:00:00", tz = "UTC"),
-    no_comments  = 5000,
+    no_comments = 5000,
     trist_id = "phase_2_demo",
     email = NA,
     user = NA,
     status = "uploaded"
   )
-  
+
   # mock lubridate::now to return a particular time (20mins from the job table time)
   stub(check_api_job, "lubridate::now", as.POSIXct("2023-09-15 12:20:00", tz = "UTC"))
-  
+
   # no pending job - status uploaded
   # mock database connection dplyr::tbl to return job table with status 'completed'
   stub(check_api_job, "dplyr::tbl", api_table)
-  result1 <- check_api_job('pool', 'phase_2_demo', schedule_time = 10)
+  result1 <- check_api_job("pool", "phase_2_demo", schedule_time = 10)
   expect_equal(result1, list("latest_time" = NULL, "estimated_wait_time" = 0))
-  
-  
+
+
   # still busy if job status is submitted
   # mock database connection dplyr::tbl to return job table with status 'submitted'
   stub(check_api_job, "dplyr::tbl", mutate(api_table, status = "submitted"))
-  
-  result2 <- check_api_job('pool', 'phase_2_demo', schedule_time = 10)
-  
-  expect_equal(result2, list("latest_time" = as.POSIXct("2023-09-15 12:00:00", tz = "UTC"),
-                             "estimated_wait_time" = 20))
-  
-  
+
+  result2 <- check_api_job("pool", "phase_2_demo", schedule_time = 10)
+
+  expect_equal(result2, list(
+    "latest_time" = as.POSIXct("2023-09-15 12:00:00", tz = "UTC"),
+    "estimated_wait_time" = 20
+  ))
+
+
   # still busy if job status is completed
   # mock database connection dplyr::tbl to return job table with status 'completed'
   stub(check_api_job, "dplyr::tbl", mutate(api_table, status = "submitted"))
-  
-  result3 <- check_api_job('pool', 'phase_2_demo', schedule_time = 10)
-  
-  expect_equal(result3, list("latest_time" = as.POSIXct("2023-09-15 12:00:00", tz = "UTC"),
-                             "estimated_wait_time" = 20))
-  
+
+  result3 <- check_api_job("pool", "phase_2_demo", schedule_time = 10)
+
+  expect_equal(result3, list(
+    "latest_time" = as.POSIXct("2023-09-15 12:00:00", tz = "UTC"),
+    "estimated_wait_time" = 20
+  ))
 })

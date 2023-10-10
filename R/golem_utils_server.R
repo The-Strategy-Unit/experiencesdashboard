@@ -343,7 +343,7 @@ assign_highlevel_categories <- function(sub_cats) {
     hl_cat <- framework %>%
       dplyr::filter(`Sub-category` == v) %>%
       dplyr::pull(Category)
-    return(if (length(hl_cat) != 0) hl_cat else "Other Category")
+    return(if (length(hl_cat) != 0) hl_cat else "Unknown Category")
   },
   simplify = TRUE, USE.NAMES = FALSE
   )

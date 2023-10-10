@@ -138,8 +138,6 @@ test_that("uploaded data works", {
 
   expect_called(m, 1)
   expect_true(inherits(test_upload, "data.frame"))
-  expect_true(inherits(test_upload$super_category, "list"))
-  expect_true(inherits(test_upload$category, "list"))
 
   expect_no_error(
     upload_data(

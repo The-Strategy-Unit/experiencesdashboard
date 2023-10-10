@@ -53,17 +53,6 @@
           </aside>
           <div class="content-wrapper">
             <section class="content">
-              <style type="text/css">.btn {
-        color: #fff; background-color: #005EB8; 
-        border: none; 
-        border-radius: 10px;
-        min-height:30px; 
-      }
-      
-      .btn:hover {
-        color:#fff;
-        background-color:#003087; 
-      }</style>
               <a href="https://github.com/CDU-data-science-team/experiencesdashboard"
                    class="github-corner" aria-label="View source on GitHub"><svg width="80"
                    height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position:
@@ -144,7 +133,7 @@
           own set of sub-categories. The category groups similar topics together in a meaningful way to help users navigate the framework
           more easily. The sub-categories are the actual topics that better reflect the underlying data.
           A high-level visual of the categories and sub-categories is displayed below:</p>
-      <img src="www/framework_v5.png" width="100%"/>
+      <img src="www/framework_MVP_version.png" width="100%"/>
       <hr/>
       <p>To see detailed description of the sub-categories, please expand the categories below</p>
       <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="id-framework_table" style="width:100%;height:auto;"></div>

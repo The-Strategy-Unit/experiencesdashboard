@@ -275,7 +275,7 @@ app_server <- function(input, output, session) {
         dplyr::arrange(date)
     }
 
-    # TRANSFORM THE SENTIMENT COLUMN
+    # Transform the sentiment column
     return_data <- return_data %>% 
       transform_sentiment()
     

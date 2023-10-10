@@ -9,17 +9,15 @@ mod_documentation_page_ui <- function(id) {
   ns <- NS(id)
   tagList(
     br(),
-    p("This dashboard uses a machine learning tool (pxtextmining API) to assign one or more sub-categories to free text comments.
-    The categories and subcategories developed in the Qualitative Data Categorisation (QDC) framework are used.
-    The visualisations and interactivity in this dashboard have been chosen to help users to engage with the comments and
-    not just quantify the data."),
-    p("The QDC framework is an evidence-based work that has been carefully designed. it has multiple categories, each with its
-    own set of sub-categories. The category groups similar topics together in a meaningful way to help users navigate the framework
-    more easily. The sub-categories are the actual topics that better reflect the underlying data.
-    A high-level visual of the categories and sub-categories is displayed below:"),
-    img(src = "www/framework_v5.png", width = "100%"),
+    p("This dashboard utilizes the pxtextmining API, a machine learning tool, to assign one or more subcategories to free-text comments
+      based on the Qualitative Data Categorization (QDC) framework. The QDC framework is an evidence-based work that has been designed
+      with several categories, each with its own set of subcategories. The categories group similar topics together to make it easier 
+      for users to navigate the framework, while the subcategories reflect the actual topics that better represent the underlying data."),
+    p("The dashboard's visualizations and intuitive interactivity are thoughtfully created to help users effectively engage with the 
+      comments and not merely quantify the data. Below is a high-level visual of the categories and subcategories:"),
+    img(src = "www/framework_MVP_version.jpeg", width = "100%"),
     hr(),
-    p("To see detailed description of the sub-categories, please expand the categories below"),
+    p("To see detailed description of the sub-categories, kindly click on the category to expand it."),
     DT::DTOutput(ns("framework_table")),
     hr(),
     tagList(

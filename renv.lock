@@ -575,9 +575,9 @@
     },
     "datamods": {
       "Package": "datamods",
-      "Version": "1.4.1",
+      "Version": "1.4.2",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "data.table",
@@ -595,13 +595,13 @@
         "tools",
         "writexl"
       ],
-      "Hash": "bfe71f2780b426763072e059457f7650"
+      "Hash": "4966dd81eb82568e17834efec656a9db"
     },
     "dbplyr": {
       "Package": "dbplyr",
-      "Version": "2.3.3",
+      "Version": "2.3.4",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "DBI",
         "R",
@@ -623,7 +623,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "d6fd1b1440c1cacc6623aaa4e9fe352b"
+      "Hash": "63534894354af6b2587b7aa518a5193a"
     },
     "desc": {
       "Package": "desc",
@@ -766,15 +766,15 @@
     },
     "experiencesdashboard": {
       "Package": "experiencesdashboard",
-      "Version": "0.7.0",
+      "Version": "0.8.1",
       "Source": "GitHub",
-      "Remotes": "nhs-r-community/NHSRtheme",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "experiencesdashboard",
       "RemoteUsername": "CDU-data-science-team",
+      "RemoteRepo": "experiencesdashboard",
       "RemoteRef": "HEAD",
-      "RemoteSha": "d66c471fa48cbfeaa38c620b75de73dea0995645",
+      "RemoteSha": "63cbae804d53b5bb0ddc05c7b28cfcdf8d9e32fc",
+      "RemoteHost": "api.github.com",
+      "Remotes": "nhs-r-community/NHSRtheme",
       "Requirements": [
         "ComplexUpset",
         "DBI",
@@ -814,7 +814,7 @@
         "writexl",
         "xml2"
       ],
-      "Hash": "6fd034f3941b2fd3ede91240d233bc2c"
+      "Hash": "d93ef40ff6fd0d4bd88c26d502b3091c"
     },
     "fansi": {
       "Package": "fansi",
@@ -1293,16 +1293,16 @@
     },
     "lubridate": {
       "Package": "lubridate",
-      "Version": "1.9.2",
+      "Version": "1.9.3",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "generics",
         "methods",
         "timechange"
       ],
-      "Hash": "e25f18436e3efd42c7c590a1c4c15390"
+      "Hash": "680ad542fbcf801442c83a6ac5a2126c"
     },
     "magrittr": {
       "Package": "magrittr",
@@ -2650,16 +2650,16 @@
     },
     "withr": {
       "Package": "withr",
-      "Version": "2.5.0",
+      "Version": "2.5.1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "grDevices",
         "graphics",
         "stats"
       ],
-      "Hash": "c0e49a9760983e81e55cdd9be92e7182"
+      "Hash": "d77c6f74be05c33164e33fbc85540cae"
     },
     "writexl": {
       "Package": "writexl",
