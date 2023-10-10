@@ -11,7 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 # install experience dashboard if not already install
 if ("experiencesdashboard" %in% installed.packages()) {
   if ("remotes" %in% installed.packages()) install.packages("remotes", repos = "http://cran.r-project.org")
-  remotes::install_github("CDU-data-science-team/experiencesdashboard", upgrade = "never", quiet = TRUE)
+  remotes::install_github("CDU-data-science-team/experiencesdashboard",
+                          ref = "185-update-framework",
+                          upgrade = "never", quiet = TRUE)
 }
 
 library(experiencesdashboard)
