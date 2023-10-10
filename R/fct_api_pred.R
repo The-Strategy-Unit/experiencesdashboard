@@ -138,6 +138,8 @@ track_api_job <- function(job, conn, write_db = TRUE) {
       transform_prediction_for_database()
 
     # update the main table
+    cat("Updating database with prediction \n")
+    
     dplyr::rows_update(
       dplyr::tbl(conn, trust_id),
       prediction,
