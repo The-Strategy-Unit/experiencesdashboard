@@ -5,9 +5,9 @@ account: oluwasegun.apejoye
 server: connect.strategyunitwm.nhs.uk
 hostUrl: https://connect.strategyunitwm.nhs.uk/__api__
 appId: 153
-bundleId: 834
-url: https://connect.strategyunitwm.nhs.uk/content/8b36087f-a061-4fb4-9699-3728a78e9ba3/
+bundleId: 912
+url: https://connect.strategyunitwm.nhs.uk/qdc_public/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .github/workflows/deploy-dev.yaml|.github/workflows/deploy-prod.yaml|.github/workflows/R-CMD-check.yaml|.Rbuildignore|.RData|.Rprofile|API_url_tracker.Rmd|CODE_OF_CONDUCT.md|data-raw/New general trust template.xlsx|data-raw/phase_2_sample_data.csv|data-raw/phase_2_schema.csv|LICENSE|LICENSE.md|NEWS.md|README.md|shinylogs/scripts/report.html|shinylogs/scripts/script.qmd|shinylogs/scripts/shinyloadtest_report.html|vignettes/experiencesdashboard.Rmd|dev|secret|tests
+ignoredFiles: .github/workflows/deploy-dev.yaml|.github/workflows/deploy-prod.yaml|.github/workflows/R-CMD-check.yaml|.Rbuildignore|.RData|.Rprofile|API_url_tracker.html|API_url_tracker.Rmd|CODE_OF_CONDUCT.md|data-raw/New general trust template.xlsx|data-raw/phase_2_sample_data.R|data-raw/phase_2_schema.csv|LICENSE|LICENSE.md|NEWS.md|prediction.rds|README.md|shinylogs/scripts/report.html|shinylogs/scripts/script.qmd|shinylogs/scripts/shinyloadtest_report.html|vignettes/experiencesdashboard.Rmd|dev|secret|tests
