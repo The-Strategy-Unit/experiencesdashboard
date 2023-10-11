@@ -15,7 +15,7 @@ mod_data_management_ui <- function(id) {
       fluidRow(
         column(
           width = 1,
-          actionButton(ns("upload_new_data"), "Upload new data",
+          actionButton(ns("upload_new_data-disabled"), "Upload new data",
             icon = icon("person-circle-plus")
           )
         )
@@ -87,7 +87,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         fluidRow(
           column(
             width = 1,
-            actionButton(ns("del_pat"), "Delete",
+            actionButton(ns("del_pat-disabled"), "Delete",
               icon = icon("trash-can")
             ),
           ),
