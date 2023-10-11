@@ -271,5 +271,7 @@ check_api_job <- function(pool, trust_id = get_golem_config("trust_name"), sched
     TRUE ~ 120
   )
 
+  estimated_wait_time <- if (estimated_wait_time > 0) estimated_wait_time else 10
+  
   list("latest_time" = latest_time, "estimated_wait_time" = estimated_wait_time)
 }
