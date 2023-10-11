@@ -8,16 +8,15 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-# install experience dashboard if not already install
-if ("experiencesdashboard" %in% installed.packages()) {
-  if ("remotes" %in% installed.packages()) install.packages("remotes", repos = "http://cran.r-project.org")
-  remotes::install_github("CDU-data-science-team/experiencesdashboard",
-                          ref = "185-update-framework",
-                          upgrade = "never", quiet = TRUE)
-}
+# # install experience dashboard if not already install
+# if ("experiencesdashboard" %in% installed.packages()) {
+#   if ("remotes" %in% installed.packages()) install.packages("remotes", repos = "http://cran.r-project.org")
+#   remotes::install_github("CDU-data-science-team/experiencesdashboard",
+#                           ref = "185-update-framework",
+#                           upgrade = "never", quiet = TRUE)
+# }
 
 library(experiencesdashboard)
-library(dplyr)
 ```
 
 # Last rendered at `r round(Sys.time())`
@@ -42,7 +41,7 @@ pending_jobs <- dplyr::tbl(
     "api_jobs"
   )
 ) |>
-  filter(status == "submitted") |>
+  dplyr::filter(status == "submitted") |>
   dplyr::collect()
 ```
 

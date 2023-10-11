@@ -774,7 +774,7 @@
       "RemoteRepo": "experiencesdashboard",
       "RemoteUsername": "CDU-data-science-team",
       "RemoteRef": "185-update-framework",
-      "RemoteSha": "4daaef447bc2cbcb2247b26ef446729d1db8a497",
+      "RemoteSha": "69ffd2622db87ad51f295ed5492213f211b6f4ed",
       "Requirements": [
         "ComplexUpset",
         "DBI",
@@ -814,7 +814,7 @@
         "writexl",
         "xml2"
       ],
-      "Hash": "5a1d24043bc0826cdd3e4634ef58f495"
+      "Hash": "0aa7a4e8d9478ae62f5a417da2341e80"
     },
     "fansi": {
       "Package": "fansi",
