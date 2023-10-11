@@ -447,3 +447,34 @@ drop_na_for_col <- function(df, vars, negate = TRUE) {
   df %>% 
     dplyr::filter(rowSums(is.na(dplyr::select(., dplyr::all_of(vars)))) == length(vars))
 }
+
+#' Write the sentiment and category prediction to database in batches
+#'
+#' @param prediction dataframe, predicition from the API
+#' @param pool database connection
+#' @param trust_id trust name
+#' @param no_row number of rows in each batch
+#'
+#' @return NULL
+#' @noRd
+batch_write <- function(prediction, pool, trust_id, no_row = 1000) {
+  now_rows <- nrow(prediction)
+  batch_start <- c(seq(1, now_rows, by = no_row))
+  batch_end <- setdiff(unique(c(seq(0, now_rows, by = no_row), now_rows)), 0)
+  
+  for (i in 1:length(batch_start)) {
+    batch_prediction <- prediction[batch_start[i]:batch_end[i], ]
+    cat(paste0("Writing batch ", i, "/", length(batch_start)), " \n")
+    
+    # update the main table
+    dplyr::rows_update(
+      dplyr::tbl(pool, trust_id),
+      batch_prediction,
+      by = "comment_id",
+      unmatched = "ignore",
+      copy = TRUE,
+      in_place = TRUE
+    )
+  }
+  NULL
+}
