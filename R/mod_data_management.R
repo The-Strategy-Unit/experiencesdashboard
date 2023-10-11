@@ -471,7 +471,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
           showModal(modalDialog(
             title = strong("Success!"),
             HTML(paste(
-              h5(paste(nrow(raw_df), "records successfully imported. The new data is not ready yet, the dashboard is busy predicting the sentiment score.")),
+              h5(paste(nrow(raw_df), "records successfully imported. The dashboard is still processing data to predict category and sentiment")),
               h4(strong(em(paste("Please check back or refresh your browser in about", wait_time, "mins to access the new data"))))
             )),
             easyClose = FALSE

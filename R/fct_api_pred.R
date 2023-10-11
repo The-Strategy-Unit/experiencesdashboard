@@ -10,6 +10,9 @@
 get_api_pred_url <- function(data, api_key, target = "ms") {
   endpoint <- "https://pxtextmining-docker-api.azurewebsites.net/api/StartContainerInstance"
 
+  # validate the target argument
+  stopifnot("target must be one of 'ms', 'm' or 's'" = target %in% c("ms", "m", "s"))
+  
   # convert the dataframe to nested list
   json_data <- data |>
     purrr::array_tree()
@@ -135,6 +138,8 @@ track_api_job <- function(job, conn, write_db = TRUE) {
       transform_prediction_for_database()
 
     # update the main table
+    cat("Updating database with prediction \n")
+    
     dplyr::rows_update(
       dplyr::tbl(conn, trust_id),
       prediction,
@@ -266,5 +271,7 @@ check_api_job <- function(pool, trust_id = get_golem_config("trust_name"), sched
     TRUE ~ 120
   )
 
+  estimated_wait_time <- if (estimated_wait_time > 0) estimated_wait_time else 10
+  
   list("latest_time" = latest_time, "estimated_wait_time" = estimated_wait_time)
 }
