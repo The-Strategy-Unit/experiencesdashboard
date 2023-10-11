@@ -421,3 +421,29 @@ transform_sentiment <- function(data, sentiment_column = 'sentiment') {
       sentiment = factor(!!rlang::sym(sentiment_column), levels = c("Positive", "Neutral/Mixed", "Negative"))
     )
 }
+
+#' Find rows containing missing values in all specified 
+#' column while keeping rows where any contains values
+#'
+#' @param df A data frame
+#' @param vars list of strings containing the columns
+#' @param negate logical, whether to return the rows where the NA check is true or otherwise
+#' default is `TRUE`
+#'
+#' @return data frame
+#' @export
+drop_na_for_col <- function(df, vars, negate = TRUE) {
+  
+  diff <- setdiff(vars, names(df))
+  stopifnot("Some column doesn't exist in data" = length(diff) == 0)
+  
+  if (negate) {
+    return(
+      df %>% 
+        dplyr::filter(rowSums(is.na(dplyr::select(., dplyr::all_of(vars)))) != length(vars))
+    )
+  }
+  
+  df %>% 
+    dplyr::filter(rowSums(is.na(dplyr::select(., dplyr::all_of(vars)))) == length(vars))
+}

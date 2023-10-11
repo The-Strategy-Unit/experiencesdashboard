@@ -414,7 +414,7 @@ test_that("mod_summary_record_server works correctly", {
     expect_no_error(output$current_individualBox)
 
     # assert all global variable are expected values after a call to output$dynamic_summary_record
-    expect_equal(global$n_responses, 1900)a
+    expect_equal(global$n_responses, 1900)
     expect_equal(global$n_individuals, 959)
     expect_equal(global$current_responses, 10)
     expect_equal(global$current_individuals, 5)
