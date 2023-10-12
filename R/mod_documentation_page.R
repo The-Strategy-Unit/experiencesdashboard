@@ -21,15 +21,15 @@ mod_documentation_page_ui <- function(id) {
     DT::DTOutput(ns("framework_table")),
     tagList(
       h4(strong("Making best use of the qualitative comments"), style = "color : #005EB8;"),
-      HTML(paste(
+      HTML(paste0(
         "This dashboard should be used to facilitate initial exploration of your qualitative data, before
         drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
-        should read the good practice guidance on the ",
-        a(strong("documentation page"),
-          href = "https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework.html",
+        should read the good practice guidance on the documentation page: ",
+        a(strong("Good practice guidance."),
+          href = "https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html",
           target = "_blank"
         ),
-        ". This includes important
+        "This includes important
         information, tips, and advice to help you maximise your use of the categorised qualitative comments,
         whilst avoiding the risks around relying on the quantification of qualitative data."
       )),
