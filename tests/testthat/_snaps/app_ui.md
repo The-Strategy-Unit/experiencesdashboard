@@ -142,9 +142,9 @@
       </h4>
       This dashboard should be used to facilitate initial exploration of your qualitative data, before
               drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
-              should read the good practice guidance on the  <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework.html" target="_blank">
-        <strong>documentation page</strong>
-      </a> . This includes important
+              should read the good practice guidance on the documentation page: <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html" target="_blank">
+        <strong>Good practice guidance.</strong>
+      </a>This includes important
               information, tips, and advice to help you maximise your use of the categorised qualitative comments,
               whilst avoiding the risks around relying on the quantification of qualitative data.
       <br/> <br/>
