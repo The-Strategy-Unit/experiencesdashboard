@@ -66,7 +66,7 @@ hospital_data <- data.frame(
   mutate(comment_id = row_number())
 
 # Create comment and question data from public data 
-df = read_csv("https://raw.githubusercontent.com/CDU-data-science-team/pxtextmining/main/datasets/v6framework_230718.csv")
+df = read_csv("https://raw.githubusercontent.com/CDU-data-science-team/pxtextmining/main/datasets/v6framework_230831.csv")
 
 comment_data <- df |>
   filter(`FFT question` != 'What was good?') |>
