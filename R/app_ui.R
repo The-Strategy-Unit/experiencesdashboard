@@ -7,9 +7,6 @@
 #' @noRd
 app_ui <- function(request) {
   tagList(
-
-    # Leave this function for adding external resources
-    golem_add_external_resources(),
     # List the first level UI elements here
     dashboardPage(
       dashboardHeader(
@@ -37,12 +34,9 @@ app_ui <- function(request) {
       ),
       dashboardBody(
         ### Changing theme ----
-        fresh::use_theme(nhs_shiny_theme()), # <-- use fresh object theme to style the whole dashboard
-
-        #### Add css file for buttons ----
-        includeCSS(system.file("app/www/", "button-style.css",
-          package = "experiencesdashboard"
-        )),
+        fresh::use_theme(nhs_shiny_theme()), # use fresh object theme to style the whole dashboard
+        # Leave this function for adding external resources
+        golem_add_external_resources(),
         HTML('<a href="https://github.com/CDU-data-science-team/experiencesdashboard"
              class="github-corner" aria-label="View source on GitHub"><svg width="80"
              height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position:
@@ -69,7 +63,6 @@ app_ui <- function(request) {
         tabItems(
           tabItem(
             tabName = "experiences-user",
-            # h1("Service User Experiences"),
             mod_patient_experience_ui("patient_experience_ui_1")
           )
         )

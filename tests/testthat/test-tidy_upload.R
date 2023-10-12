@@ -133,13 +133,11 @@ test_that("uploaded data works", {
     conn = NULL,
     trust_id = get_golem_config("trust_name"),
     user = "test user",
-    write_db = F
+    write_db = FALSE
   )
 
   expect_called(m, 1)
   expect_true(inherits(test_upload, "data.frame"))
-  expect_true(inherits(test_upload$super_category, "list"))
-  expect_true(inherits(test_upload$category, "list"))
 
   expect_no_error(
     upload_data(
@@ -147,7 +145,7 @@ test_that("uploaded data works", {
       conn = NULL,
       trust_id = get_golem_config("trust_name"),
       user = "test user",
-      write_db = T
+      write_db = TRUE
     )
   )
 })

@@ -12,10 +12,9 @@ tidy_all_trusts <- function(data) {
       dplyr::filter(
         !is.na(comment_txt),
         !is.null(comment_txt),
-        comment_txt != "NA",
-        comment_txt != "NULL",
-        comment_txt != "",
-        comment_txt != " ",
+        !comment_txt %in% c("Did not answer", "NULL", 
+                            "#NAME?", "NA", "N/A", "", " "),
+        nchar(comment_txt) > 1,
         hidden == 0
       )
   } else {

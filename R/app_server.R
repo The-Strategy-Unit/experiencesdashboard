@@ -50,7 +50,6 @@ app_server <- function(input, output, session) {
   latest_time <- api_jobs$latest_time
   wait_time <- api_jobs$estimated_wait_time
 
-
   if (!is.null(latest_time) & data_exists) {
     # filter out all the unfinished rows(api job time is same as last_upload_date when doing data upload)
     db_data <- db_data %>%
@@ -275,9 +274,10 @@ app_server <- function(input, output, session) {
         dplyr::arrange(date)
     }
 
-    # TRANSFORM THE SENTIMENT COLUMN
+    # Transform the sentiment column
     return_data <- return_data %>% 
-      transform_sentiment()
+      transform_sentiment() %>% 
+      drop_na_for_col(c('category', 'super_category', 'sentiment'))
     
     # also return a dataset with unique individuals
     unique_data <- return_data %>%
