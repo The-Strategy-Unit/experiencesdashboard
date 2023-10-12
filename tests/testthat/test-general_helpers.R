@@ -195,3 +195,19 @@ test_that("transform_sentiment works and return expected result", {
    
   expect_equal(nrow(df), nrow(result))
 })
+
+test_that("drop_na_for_col works and return expected result", {
+  
+  df <- data.frame(id = 1:4, x = c(1, 2, NA, NA), y = c("a", NA, "b", NA),  z = c("a", NA, "b", NA))
+  vars <- c('x', 'y', 'z')
+  vars2 = c('z', 'y')
+  
+  result1 <- drop_na_for_col(df, vars)
+  result2 <- drop_na_for_col(df, vars2)
+  result3 <- drop_na_for_col(df, vars2, F)
+  
+  expect_identical(result1, filter(df, id != 4))
+  expect_identical(result2, filter(df, id %in% c(1,3)))
+  expect_identical(result3, filter(df, id %in% c(2,4)))
+  expect_identical(names(df), names(result1), names(result2), names(result3))
+})

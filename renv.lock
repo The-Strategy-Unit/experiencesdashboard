@@ -768,13 +768,13 @@
       "Package": "experiencesdashboard",
       "Version": "0.8.1",
       "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteUsername": "CDU-data-science-team",
-      "RemoteRepo": "experiencesdashboard",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "63cbae804d53b5bb0ddc05c7b28cfcdf8d9e32fc",
-      "RemoteHost": "api.github.com",
       "Remotes": "nhs-r-community/NHSRtheme",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "experiencesdashboard",
+      "RemoteUsername": "CDU-data-science-team",
+      "RemoteRef": "185-update-framework",
+      "RemoteSha": "d4c79c21ad34158029d28de30b19d4c28518ca57",
       "Requirements": [
         "ComplexUpset",
         "DBI",
@@ -814,7 +814,7 @@
         "writexl",
         "xml2"
       ],
-      "Hash": "d93ef40ff6fd0d4bd88c26d502b3091c"
+      "Hash": "fafe49bf06ef9aa3408c8e35c5d8f32d"
     },
     "fansi": {
       "Package": "fansi",

@@ -53,17 +53,6 @@
           </aside>
           <div class="content-wrapper">
             <section class="content">
-              <style type="text/css">.btn {
-        color: #fff; background-color: #005EB8; 
-        border: none; 
-        border-radius: 10px;
-        min-height:30px; 
-      }
-      
-      .btn:hover {
-        color:#fff;
-        background-color:#003087; 
-      }</style>
               <a href="https://github.com/CDU-data-science-team/experiencesdashboard"
                    class="github-corner" aria-label="View source on GitHub"><svg width="80"
                    height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position:
@@ -135,25 +124,34 @@
     Code
       mod_documentation_page_ui("id")
     Output
-      <br/>
-      <p>This dashboard uses a machine learning tool (pxtextmining API) to assign one or more sub-categories to free text comments.
-          The categories and subcategories developed in the Qualitative Data Categorisation (QDC) framework are used.
-          The visualisations and interactivity in this dashboard have been chosen to help users to engage with the comments and
-          not just quantify the data.</p>
-      <p>The QDC framework is an evidence-based work that has been carefully designed. it has multiple categories, each with its
-          own set of sub-categories. The category groups similar topics together in a meaningful way to help users navigate the framework
-          more easily. The sub-categories are the actual topics that better reflect the underlying data.
-          A high-level visual of the categories and sub-categories is displayed below:</p>
-      <img src="www/framework_v5.png" width="100%"/>
-      <hr/>
-      <p>To see detailed description of the sub-categories, please expand the categories below</p>
+      <h3 style="color : #005EB8;">
+        <strong>Introduction to the Data Categorisation Framework</strong>
+      </h3>
+      <p>This dashboard utilizes the pxtextmining API, a machine learning tool, to assign one or more subcategories to free-text comments
+            based on the Qualitative Data Categorization (QDC) framework. The QDC framework is an evidence-based work that has been designed
+            with several categories, each with its own set of subcategories. The categories group similar topics together to make it easier
+            for users to navigate the framework, while the subcategories reflect the actual topics that better represent the underlying data.</p>
+      <p>The dashboard's visualizations and intuitive interactivity are thoughtfully created to help users effectively engage with the
+            comments and not merely quantify the data. Below is a high-level visual of the categories and subcategories:</p>
+      <img src="www/framework_MVP_version.jpeg" width="100%"/>
+      <br/> <br/>
+      <p>To see detailed description of the sub-categories, kindly click on the category to expand it.</p>
       <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="id-framework_table" style="width:100%;height:auto;"></div>
-      <hr/>
-      <p>To get further detail about the data categorisation framework and the dashboard
+      <h4 style="color : #005EB8;">
+        <strong>Making best use of the qualitative comments</strong>
+      </h4>
+      This dashboard should be used to facilitate initial exploration of your qualitative data, before
+              drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
+              should read the good practice guidance on the documentation page: <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html" target="_blank">
+        <strong>Good practice guidance.</strong>
+      </a>This includes important
+              information, tips, and advice to help you maximise your use of the categorised qualitative comments,
+              whilst avoiding the risks around relying on the quantification of qualitative data.
+      <br/> <br/>
+      To get further detail about the data categorisation framework and the dashboard
               including some illustrative examples for each of the sub-categories.
-              Please see the</p>
-      <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework3.html" target="_blank">
-        <p>Patient Experience - QDC documentation Page</p>
+              Please see the <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework3.html" target="_blank">
+        <strong>Patient Experience - QDC documentation Page.</strong>
       </a>
 
 # mod_trend_overlap_ui works
