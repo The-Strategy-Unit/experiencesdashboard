@@ -124,19 +124,6 @@
     Code
       mod_documentation_page_ui("id")
     Output
-      <h3 style="color : #005EB8;">
-        <strong>Introduction to the Data Categorisation Framework</strong>
-      </h3>
-      <p>This dashboard utilizes the pxtextmining API, a machine learning tool, to assign one or more subcategories to free-text comments
-            based on the Qualitative Data Categorization (QDC) framework. The QDC framework is an evidence-based work that has been designed
-            with several categories, each with its own set of subcategories. The categories group similar topics together to make it easier
-            for users to navigate the framework, while the subcategories reflect the actual topics that better represent the underlying data.</p>
-      <p>The dashboard's visualizations and intuitive interactivity are thoughtfully created to help users effectively engage with the
-            comments and not merely quantify the data. Below is a high-level visual of the categories and subcategories:</p>
-      <img src="www/framework_MVP_version.jpeg" width="100%"/>
-      <br/> <br/>
-      <p>To see detailed description of the sub-categories, kindly click on the category to expand it.</p>
-      <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="id-framework_table" style="width:100%;height:auto;"></div>
       <h4 style="color : #005EB8;">
         <strong>Making best use of the qualitative comments</strong>
       </h4>
@@ -153,6 +140,19 @@
               Please see the <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework3.html" target="_blank">
         <strong>Patient Experience - QDC documentation Page.</strong>
       </a>
+      <h4 style="color : #005EB8;">
+        <strong>Introduction to the Data Categorisation Framework</strong>
+      </h4>
+      <p>This dashboard utilizes the pxtextmining API, a machine learning tool, to assign one or more subcategories to free-text comments
+            based on the Qualitative Data Categorization (QDC) framework. The QDC framework is an evidence-based work that has been designed
+            with several categories, each with its own set of subcategories. The categories group similar topics together to make it easier
+            for users to navigate the framework, while the subcategories reflect the actual topics that better represent the underlying data.</p>
+      <p>The dashboard's visualizations and intuitive interactivity are thoughtfully created to help users effectively engage with the
+            comments and not merely quantify the data. Below is a high-level visual of the categories and subcategories:</p>
+      <img src="www/framework_MVP_version.jpeg" width="100%"/>
+      <br/> <br/>
+      <p>To see detailed description of the sub-categories, kindly click on the category to expand it.</p>
+      <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="id-framework_table" style="width:100%;height:auto;"></div>
 
 # mod_trend_overlap_ui works
 
