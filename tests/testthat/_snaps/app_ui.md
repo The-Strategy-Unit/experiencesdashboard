@@ -124,9 +124,25 @@
     Code
       mod_documentation_page_ui("id")
     Output
-      <h3 style="color : #005EB8;">
+      <h4 style="color : #005EB8;">
+        <strong>Making best use of the qualitative comments</strong>
+      </h4>
+      This dashboard should be used to facilitate initial exploration of your qualitative data, before
+              drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
+              should read the good practice guidance on the documentation page: <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html" target="_blank">
+        <strong>Good practice guidance.</strong>
+      </a>This includes important
+              information, tips, and advice to help you maximise your use of the categorised qualitative comments,
+              whilst avoiding the risks around relying on the quantification of qualitative data.
+      <br/> <br/>
+      To get further detail about the data categorisation framework and the dashboard
+              including some illustrative examples for each of the sub-categories.
+              Please see the <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework3.html" target="_blank">
+        <strong>Patient Experience - QDC documentation Page.</strong>
+      </a>
+      <h4 style="color : #005EB8;">
         <strong>Introduction to the Data Categorisation Framework</strong>
-      </h3>
+      </h4>
       <p>This dashboard utilizes the pxtextmining API, a machine learning tool, to assign one or more subcategories to free-text comments
             based on the Qualitative Data Categorization (QDC) framework. The QDC framework is an evidence-based work that has been designed
             with several categories, each with its own set of subcategories. The categories group similar topics together to make it easier
@@ -137,22 +153,6 @@
       <br/> <br/>
       <p>To see detailed description of the sub-categories, kindly click on the category to expand it.</p>
       <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="id-framework_table" style="width:100%;height:auto;"></div>
-      <h4 style="color : #005EB8;">
-        <strong>Making best use of the qualitative comments</strong>
-      </h4>
-      This dashboard should be used to facilitate initial exploration of your qualitative data, before
-              drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
-              should read the good practice guidance on the  <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework.html" target="_blank">
-        <strong>documentation page</strong>
-      </a> . This includes important
-              information, tips, and advice to help you maximise your use of the categorised qualitative comments,
-              whilst avoiding the risks around relying on the quantification of qualitative data.
-      <br/> <br/>
-      To get further detail about the data categorisation framework and the dashboard
-              including some illustrative examples for each of the sub-categories.
-              Please see the <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/framework/framework3.html" target="_blank">
-        <strong>Patient Experience - QDC documentation Page.</strong>
-      </a>
 
 # mod_trend_overlap_ui works
 
