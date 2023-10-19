@@ -216,8 +216,8 @@ batch_predict <- function(df) {
 #' @examples api_question_code(get_golem_config("comment_1"))
 api_question_code <- function(value) {
   dplyr::case_when(
-    value == "What did we do well" ~ "what_good",
-    value == "What could be improved" ~ "could_improve",
+    value == "What did we do well?" ~ "what_good",
+    value == "What could be improved?" ~ "could_improve",
     TRUE ~ "nonspecific"
   )
 }
