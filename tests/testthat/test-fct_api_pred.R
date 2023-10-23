@@ -63,8 +63,8 @@ test_that("assign_highlevel_categories function is working and API vs Framework 
 })
 
 test_that("api_question_code works", {
-  expect_equal(api_question_code("What did we do well"), "what_good")
-  expect_equal(api_question_code("What could be improved"), "could_improve")
+  expect_equal(api_question_code("What did we do well?"), "what_good")
+  expect_equal(api_question_code("What could be improved?"), "could_improve")
   expect_equal(api_question_code("why that answer"), "nonspecific")
 })
 
