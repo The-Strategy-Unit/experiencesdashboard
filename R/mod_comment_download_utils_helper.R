@@ -50,20 +50,13 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
 #'
 #' @noRd
 render_comment_table <- function(data) {
-  # add NHS blue color to the table header
-  initcomplete <- DT::JS(
-    "function(settings, json) {",
-    "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-    "}"
-  )
-
   return(
     DT::datatable(
       data,
       options = list(
         dom = "ipt",
         columnDefs = list(list(width = "500px", targets = c(4))), # ensure the comment column is wider on bigger screen
-        initComplete = initcomplete,
+        initComplete = dt_nhs_header(),
         pageLength = 50,
         scrollX = TRUE,
         selection = "single"

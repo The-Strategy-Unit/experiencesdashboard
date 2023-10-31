@@ -21,13 +21,6 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # add NHS blue color to the Datatable header
-    initComplete <- DT::JS(
-      "function(settings, json) {",
-      "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-      "}"
-    )
-
     output$dynamic_click_tableUI <- renderUI({
       validate(
         need(data_exists, "Sub-Category Table will appear here")
@@ -64,7 +57,7 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
           lengthMenu = c(10, 15, 20, 50),
           dom = "Blfrtip",
           buttons = c("copy", "csv", "excel", "pdf", "print"),
-          initComplete = initComplete
+          initComplete = dt_nhs_header()
         )
       )
     })

@@ -447,3 +447,12 @@ drop_na_for_col <- function(df, vars, negate = TRUE) {
   df %>% 
     dplyr::filter(rowSums(is.na(dplyr::select(., dplyr::all_of(vars)))) == length(vars))
 }
+
+# add NHS blue color to the table header
+dt_nhs_header <- function(){
+  DT::JS(
+    "function(settings, json) {
+    $(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});
+    }"
+  )
+}
