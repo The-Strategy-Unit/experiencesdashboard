@@ -29,11 +29,14 @@ mod_search_text_server <- function(id, filter_data) {
     ns <- session$ns
 
     output$dynamic_comment_ui <- renderUI({
-      req(text_search())
+      validate(
+        need(text_search(), "Please enter a search term")
+      )
       req(return_data())
 
       tagList(
-        uiOutput(ns("comment_output"))
+        uiOutput(ns("comment_output")) %>%
+          shinycssloaders::withSpinner()
       )
     })
 
@@ -60,17 +63,12 @@ mod_search_text_server <- function(id, filter_data) {
         prep_data_for_comment_table(in_tidy_format = FALSE)
     })
 
-
     ## the comments tables ----
     output$comment_output <- renderUI({
-      validate(
-        need(text_search(), "Please enter a search term")
-      )
-
       mod_comment_download_server(
         ns("comment_download_1"),
         return_data(),
-        filepath = sanitized_search_strings(text_search()) %>%
+        filepath = input_sanitizer(text_search()) %>%
           paste(collapse = "_") %>%
           paste0("-")
       )
