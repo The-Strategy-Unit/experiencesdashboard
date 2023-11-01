@@ -211,3 +211,12 @@ test_that("drop_na_for_col works and return expected result", {
   expect_identical(result3, filter(df, id %in% c(2,4)))
   expect_identical(names(df), names(result1), names(result2), names(result3))
 })
+
+test_that("get_module_id works and return expected result", {
+  id <- 'table-1'
+  stub(get_module_id, "session$ns", "table-1-table-1")
+  result1 <- get_module_id(id, "session")
+  
+  expect_equal(result1, "table-1-")
+  expect_equal(grep("-$", result1), 1) # ends with -
+})

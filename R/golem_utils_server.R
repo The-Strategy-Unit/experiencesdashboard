@@ -448,7 +448,8 @@ drop_na_for_col <- function(df, vars, negate = TRUE) {
     dplyr::filter(rowSums(is.na(dplyr::select(., dplyr::all_of(vars)))) == length(vars))
 }
 
-# add NHS blue color to the table header
+#' add NHS blue color to the table header
+#' @noRd
 dt_nhs_header <- function(){
   DT::JS(
     "function(settings, json) {
@@ -456,3 +457,13 @@ dt_nhs_header <- function(){
     }"
   )
 }
+
+#' remove the duplicate id in namespace id 
+#'
+#' @param id ID object passed to the module serve
+#' @param session session object pass to the module server
+#'
+#' @noRd
+get_module_id <- function(id, session){
+  sub(paste0(id,"$"),'',session$ns(id))
+} 
