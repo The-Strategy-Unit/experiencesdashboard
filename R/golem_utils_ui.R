@@ -195,10 +195,13 @@ jq_hide <- function(id) {
 #' with_red_star("Enter your name here")
 #'
 #' @importFrom htmltools tags HTML
-with_red_star <- function(text) {
+with_red_stars <- function(text) {
   htmltools::tags$span(
     HTML(
       paste0(
+        htmltools::tags$span(
+          style = "color:red", "*"
+        ),
         text,
         htmltools::tags$span(
           style = "color:red", "*"

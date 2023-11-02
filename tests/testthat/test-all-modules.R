@@ -82,7 +82,7 @@ test_that("mod_data_management_server work correctly", {
     # act/assert
     expect_no_error(output$data_management_UI)
     expect_equal(nrow(dt_out$data), 100)
-    expect_equal(ncol(dt_out$data), 20)
+    expect_equal(ncol(dt_out$data), 21)
     expect_equal(class(dt_out$data$category), "list")
     expect_no_error(output$pat_table)
     expect_equal(class(proxy), "dataTableProxy")

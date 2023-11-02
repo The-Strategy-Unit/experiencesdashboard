@@ -62,6 +62,7 @@ clean_super_category <- function(data) {
 #' @noRd
 prepare_data_for_download <- function(data) {
   data %>%
+    dplyr::select(-any_of("checks")) %>% 
     # return the category, super_category columns as string
     dplyr::mutate(
       across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
