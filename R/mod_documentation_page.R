@@ -64,13 +64,18 @@ mod_documentation_page_server <- function(id) {
 
       DT::datatable(
         framework,
+        # rownames = FALSE, 
         extensions = c("RowGroup", "Buttons"), # required to show the download buttons and groups
         options = list(
           rowGroup = list(dataSrc = 1),
           dom = "Bt",
           buttons = c("csv", "excel", "pdf"),
           initComplete = dt_nhs_header(),
-          pageLength = 50
+          pageLength = 50,
+          columnDefs = list(
+            list("visible" = FALSE, targets = 0) # Hide the first column
+          ),
+          ordering = FALSE
         ),
         callback = callback_js,
         class = "display cell-border",

@@ -214,7 +214,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
     return(
       tagList(
         strong(p("This plot is meant to aid users to explore the relationships between the
-              sub-categories. Scrow down to select the sub-categories and view the return comments")),
+              sub-categories. Scroll down to select the sub-categories and view the return comments")),
         # br(),
         plotOutput(ns("category_upset")) %>%
           shinycssloaders::withSpinner(),

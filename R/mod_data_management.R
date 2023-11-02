@@ -39,7 +39,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       index = list(),
       complex_comments = data.frame(),
       display_column_name = list(
-        "checks" = "Flag comment",
+        "checks" = "Flag row",
         "comment_id" = "Comment ID",
         "date" = "Date",
         "location_1" = get_golem_config("location_1"),
@@ -108,7 +108,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
           column(12, uiOutput(ns("dynamic_complex_ui")))
         ),
         p(strong("To delete row(s): "), "Select the row(s) and click the delete button."),
-        p(strong(em("When you are done editting, you will need to refresh your browser to pull the editted data into other tabs of the dashboard"))),
+        p(strong(em("When you are done editing, you will need to refresh your browser to pull the edited data into other tabs of the dashboard"))),
 
         # display the table
         fluidRow(
@@ -137,6 +137,9 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         colnames = colnames,
         escape = FALSE, # ensures HTML entities in the table are properly rendered
         options = list(
+          columnDefs = list(
+            list("searchable" = FALSE, targets = 0)
+            ),
           pageLength = 10,
           lengthMenu = c(10, 30, 50),
           dom = "lrtip",
