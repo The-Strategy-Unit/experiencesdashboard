@@ -460,8 +460,10 @@ dt_nhs_header <- function(){
 
 #' remove the duplicate id in namespace id 
 #'
-#' @param id ID object passed to the module serve
-#' @param session session object pass to the module server
+#' @param id ID object passed to the module serve. 
+#' see `shiny::moduleServer()`
+#' @param session session object pass to the module server. 
+#' see `shiny::moduleServer()`
 #'
 #' @noRd
 get_module_id <- function(id, session){

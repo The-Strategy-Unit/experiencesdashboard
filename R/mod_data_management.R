@@ -39,6 +39,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       index = list(),
       complex_comments = data.frame(),
       display_column_name = list(
+        "checks" = "Flag comment",
         "comment_id" = "Comment ID",
         "date" = "Date",
         "location_1" = get_golem_config("location_1"),
@@ -74,6 +75,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       isolate({
         dt_out$data <- prepare_data_management_data(
           filter_data()$filter_data,
+          id, session,
           column_names = names(dt_out$display_column_name),
           comment_column = "comment_txt",
           comment_1 = get_golem_config("comment_1"),
@@ -123,7 +125,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     # render the data table ####
     output$pat_table <- DT::renderDT({
       
-      colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE)
+      colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.names = FALSE)
       stopifnot('lenght of display column name is not the same as number of columns in the data' = length(names(dt_out$data)) == length(colnames))
       
       DT::datatable(
@@ -133,12 +135,15 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         filter = "top",
         class = "display cell-border compact",
         colnames = colnames,
+        escape = FALSE, # ensures HTML entities in the table are properly rendered
         options = list(
           pageLength = 10,
           lengthMenu = c(10, 30, 50),
           dom = "lrtip",
           search = list(caseInsensitive = FALSE),
-          scrollX = TRUE
+          scrollX = TRUE,
+          #  to show processing indicator when the DataTable is busy doing some operation that would take some time
+          processing = TRUE 
         )
       )
     })
@@ -146,6 +151,54 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy("pat_table")
 
+    # Record flagged comments ----
+    
+    ## flag row ----
+    observeEvent(input$current_check_info, {
+      # only run when the id isn't null and one of the bad id is clicked
+      req(!is.null(input$current_check_info) & stringr::str_detect(input$current_check_info, pattern = "flag"))
+      
+      row <- sub("flag_", "", input$current_check_info["id"])
+      check_value <- ifelse(input$current_check_info["value"], 1, 0)
+      
+      # for logging
+      if(check_value){
+        cat("Comment '", row, "' flagged as interesting \n") 
+      }else{
+        cat("Comment '", row, "' unflagged as interesting \n")
+      }
+      
+      # Update the database
+      query <- glue::glue_sql(
+        "UPDATE {`get_golem_config('trust_name')`} SET flagged = {v*} WHERE comment_id IN ({ids*})",
+        v = check_value, ids = row, .con = db_conn
+      )
+      DBI::dbExecute(db_conn, query)
+    })
+    
+    ## bad row ----
+    observeEvent(input$current_check_info, {
+      # only run when the id isn't null and one of the bad id is clicked
+      req(!is.null(input$current_check_info) & stringr::str_detect(input$current_check_info, pattern = "bad"))
+      
+      row <- sub("bad_", "", input$current_check_info["id"])
+      check_value <- ifelse(input$current_check_info["value"], 1, 0)
+      
+      # for logging
+      if(check_value){
+        cat("Comment '", row, "' flagged as badly coded \n")
+      }else{
+        cat("Comment '", row, "' unflagged as badly coded \n")
+      }
+      
+      # Update the database
+      query <- glue::glue_sql(
+        "UPDATE {`get_golem_config('trust_name')`} SET bad_code = {v*} WHERE comment_id IN ({ids*})",
+        v = check_value, ids = row, .con = db_conn
+      )
+      DBI::dbExecute(db_conn, query)
+    })
+    
     # Delete data ####
 
     deleteData <- reactive({

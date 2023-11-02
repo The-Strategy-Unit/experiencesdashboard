@@ -31,7 +31,7 @@ create_trust_table <- function(pool, set_trust_id, drop_table = FALSE) {
 
   DBI::dbExecute(pool, paste0("ALTER TABLE ", set_trust_id, " ADD PRIMARY KEY (comment_id)"))
   query <- paste0("ALTER TABLE ", set_trust_id, " MODIFY COLUMN
-                  `comment_id` INT(10) UNSIGNED AUTO_INCREMENT FIRST")
+                  `comment_id` INT UNSIGNED AUTO_INCREMENT FIRST")
   DBI::dbExecute(pool, query)
 }
 

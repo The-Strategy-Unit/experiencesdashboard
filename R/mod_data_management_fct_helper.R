@@ -4,10 +4,16 @@
 #' @param column_names the names of all the columns to select from the data. Columns not present in the data are ignored
 #' @param comment_column name of the comment column. see `clean_dataframe()`
 #' @param comment_1 comment_1 value from config file ex. get_golem_config("comment_1")
+#' @param id see `get_module_id()`
+#' @param session see `get_module_id()`
 #' @param comment_2 comment_2 value from config file ex. get_golem_config("comment_2")
+#'
 #' @return dataframe
 #' @noRd
-prepare_data_management_data <- function(data, column_names, comment_column, comment_1, comment_2 = NULL) {
+prepare_data_management_data <- function(data, id, session, column_names, comment_column, comment_1, comment_2 = NULL) {
+  
+  module_id <- get_module_id(id, session)
+  
   if (isTruthy(comment_2)) {
     return_data <- data %>%
       dplyr::filter(comment_type %in% c("comment_1", "comment_2")) %>%
@@ -24,14 +30,17 @@ prepare_data_management_data <- function(data, column_names, comment_column, com
   }
   
   return_data %>%
-    dplyr::filter(hidden == 0) %>%
     clean_dataframe(comment_column) %>% 
+    dplyr::mutate(
+      checks = add_checkbox_buttons(comment_id, module_id, flagged, bad_code)
+    ) %>% 
     dplyr::select(dplyr::any_of(column_names)) %>%
     dplyr::mutate(date = as.character(date)) %>% # required so that date is not filtered out
     dplyr::select_if(~ !(all(is.na(.)) | all(. == ""))) %>% # delete all empty columns
     dplyr::mutate(date = as.Date(date)) %>%
     clean_super_category() %>% 
-    dplyr::arrange(comment_id)
+    dplyr::arrange(comment_id) %>% 
+    dplyr::select(checks, everything())
 }
 
 #' remove duplicate values from each super category row

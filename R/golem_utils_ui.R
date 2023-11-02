@@ -310,21 +310,54 @@ col_1 <- function(...) {
 #' #' @importFrom markdown markdownToHTML
 #' #' @importFrom htmltools HTML
 #' includeRMarkdown <- function(path){
+#' #'
+#' #'   md <- tempfile(fileext = '.md')
+#' #'
+#' #'   on.exit(unlink(md),add = TRUE)
+#' #'
+#' #'   rmarkdown::render(
+#' #'     path,
+#' #'     output_format = 'md_document',
+#' #'     output_dir = tempdir(),
+#' #'     output_file = md,quiet = TRUE
+#' #'     )
+#' #'
+#' #'   html <- markdown::markdownToHTML(md, fragment.only = TRUE)
+#' #'
+#' #'   Encoding(html) <- "UTF-8"
+#' #'
+#' #'   return(HTML(html))
+#' #' }
+
+#' Internal function to add check box to datatable  in the data-management tab
 #'
-#'   md <- tempfile(fileext = '.md')
+#' @param inputId input id to access the value
+#' @param module_id id used to call the module see `get_module_id()`
+#' @param flag_value logical, value from the flaggged column
+#' @param bad_value logical, value from the bad_code column
 #'
-#'   on.exit(unlink(md),add = TRUE)
-#'
-#'   rmarkdown::render(
-#'     path,
-#'     output_format = 'md_document',
-#'     output_dir = tempdir(),
-#'     output_file = md,quiet = TRUE
-#'     )
-#'
-#'   html <- markdown::markdownToHTML(md, fragment.only = TRUE)
-#'
-#'   Encoding(html) <- "UTF-8"
-#'
-#'   return(HTML(html))
-#' }
+#' @return string, A list of HTML elements
+#' @noRd
+add_checkbox_buttons <- function(inputId, module_id, flag_value, bad_value) {
+  flag_value <- ifelse(flag_value, "checked", "uncheck")
+  bad_value <- ifelse(bad_value, "checked", "uncheck")
+  
+  glue::glue('
+<div class="form-group">
+  <div class="checkbox">
+    <label>
+      <input id="flag_{inputId}" type="checkbox" class="shiny-input-checkbox"
+       {flag_value} onclick=get_check_info(this,"{module_id}")>
+       <span><i class="fa-solid fa-flag" style="color:green"></i></span>
+    </label>
+  </div>
+  <div class="checkbox">
+    <label>
+      <input id="bad_{inputId}" type="checkbox" class="shiny-input-checkbox"
+       {bad_value} onclick=get_check_info(this,"{module_id}")>
+       <span><i class="fa-solid fa-circle-xmark" style="color:red"></i></span>
+    </label>
+  </div>
+</div>
+')
+}

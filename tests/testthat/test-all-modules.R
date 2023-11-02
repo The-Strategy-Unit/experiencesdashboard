@@ -65,23 +65,24 @@ test_that("mod_click_tables_server works correctly - user input can be accessed"
 # mod_data_management_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_data_management_server work correctly", {
   # no data in the database
-  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), FALSE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), FALSE, "user"), {
     # act/assert
     expect_error(output$data_management_UI)
   })
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), TRUE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), TRUE, "user"), {
     filter_data(
       list(
-        filter_data = phase_2_db_data |> head(100)
+        filter_data = phase_2_db_data |> head(100) |>
+          mutate(flagged = 0, bad_code = 0)
       )
     )
 
     # act/assert
     expect_no_error(output$data_management_UI)
     expect_equal(nrow(dt_out$data), 100)
-    expect_equal(ncol(dt_out$data), 19)
+    expect_equal(ncol(dt_out$data), 20)
     expect_equal(class(dt_out$data$category), "list")
     expect_no_error(output$pat_table)
     expect_equal(class(proxy), "dataTableProxy")
