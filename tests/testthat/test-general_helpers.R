@@ -1,6 +1,6 @@
 test_that("prep_data_for_comment_table works", {
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-  
+
   test <- prep_data_for_comment_table(phase_2_db_data, in_tidy_format = FALSE)
 
   expect_true(inherits(test$`Sub-Category`, "character"))
@@ -31,9 +31,11 @@ test_that("single_to_multi_label works", {
     single_to_multi_label()
 
   expect(nrow(test), nrow(test2))
-  
-    expect_equal(c("comment_id", "comment_type", "date", "comment_txt", 
-                        "fft", "sentiment", "category", "super_category"), names(test2))
+
+  expect_equal(c(
+    "comment_id", "comment_type", "date", "comment_txt",
+    "fft", "sentiment", "category", "super_category"
+  ), names(test2))
 })
 
 
@@ -71,8 +73,14 @@ test_that("upset_plot works", {
 })
 
 test_that("get_unique_value works", {
-  phase_2_db_data %>%  head() %>% get_unique_value('sex') %>%  expect_no_error()
-  phase_2_db_data %>%  head() %>% get_unique_value('date') %>%  expect_no_error()
+  phase_2_db_data %>%
+    head() %>%
+    get_unique_value("sex") %>%
+    expect_no_error()
+  phase_2_db_data %>%
+    head() %>%
+    get_unique_value("date") %>%
+    expect_no_error()
 })
 
 test_that("parse_date works as expected", {
@@ -86,9 +94,9 @@ test_that("parse_date works as expected", {
       "29 06 2020"
     )
   )
-  
+
   date_s2 <- data.frame(
-    date = 
+    date =
       c(
         "2020 06 01",
         "2020 06 07",
@@ -98,7 +106,7 @@ test_that("parse_date works as expected", {
         "2020 06 29"
       )
   )
-  
+
   date_s3 <- data.frame(
     date = c(
       "2020/06/01",
@@ -109,7 +117,7 @@ test_that("parse_date works as expected", {
       "2020/06/29"
     )
   )
-  
+
   date1 <- data.frame(
     date = as.Date(
       c(
@@ -123,7 +131,7 @@ test_that("parse_date works as expected", {
       "%d/%m/%y"
     )
   )
-  
+
   date2 <- data.frame(
     date = as.Date(
       c(
@@ -136,15 +144,15 @@ test_that("parse_date works as expected", {
       )
     )
   )
-  
+
   all(
     parse_date(date_s1) == parse_date(date_s2),
     parse_date(date_s1) == parse_date(date_s3),
-    parse_date(date_s1) ==  parse_date(date1),
-    parse_date(date_s1) ==  parse_date(date2)
+    parse_date(date_s1) == parse_date(date1),
+    parse_date(date_s1) == parse_date(date2)
   ) |> expect_true()
-  
-  
+
+
   # rows without dates are removed
   date3 <- data.frame(
     date = as.Date(
@@ -159,64 +167,72 @@ test_that("parse_date works as expected", {
       )
     )
   )
-  
+
   all(
     parse_date(date_s1) == parse_date(date3)
   ) |> expect_true()
 })
 
-# sentiment_helpers ----
 test_that("get_sentiment_text works", {
-  codes = c(1,2,3,3,5,6)
+  codes <- c(1, 2, 3, 3, 5, 6)
   test <- get_sentiment_text(codes)
-  
-  expect_equal(get_sentiment_text(c(5, 2,6, 9)), c("Negative", "Positive", NA, NA))
-  
-  expect_equal(test, c('Positive', 'Positive', 'Neutral/Mixed', 'Neutral/Mixed', 'Negative', NA))
-  
+
+  expect_equal(get_sentiment_text(c(5, 2, 6, 9)), c("Negative", "Positive", NA, NA))
+
+  expect_equal(test, c("Positive", "Positive", "Neutral/Mixed", "Neutral/Mixed", "Negative", NA))
+
   expect_equal(length(test), length(codes))
 })
 
 test_that("transform_sentiment works and return expected result", {
-  
-  comment_id <- c("1", "2", "3", '4')
-  sentiment <- c(5, 2,6, 9)
+  comment_id <- c("1", "2", "3", "4")
+  sentiment <- c(5, 2, 6, 9)
   df <- data.frame(comment_id, sentiment)
-  
+
   result <- transform_sentiment(df)
-  
-  expect_true(inherits(result, 'data.frame'))
-  
-  expect_true(inherits(result$sentiment, 'factor'))
-  
-  expect_equal(levels(result$sentiment),  c("Positive", "Neutral/Mixed", "Negative"))
- 
+
+  expect_true(inherits(result, "data.frame"))
+
+  expect_true(inherits(result$sentiment, "factor"))
+
+  expect_equal(levels(result$sentiment), c("Positive", "Neutral/Mixed", "Negative"))
+
   expect_equal(as.character(result$sentiment), c("Negative", "Positive", NA, NA))
-   
+
   expect_equal(nrow(df), nrow(result))
 })
 
-test_that("drop_na_for_col works and return expected result", {
-  
-  df <- data.frame(id = 1:4, x = c(1, 2, NA, NA), y = c("a", NA, "b", NA),  z = c("a", NA, "b", NA))
-  vars <- c('x', 'y', 'z')
-  vars2 = c('z', 'y')
-  
-  result1 <- drop_na_for_col(df, vars)
-  result2 <- drop_na_for_col(df, vars2)
-  result3 <- drop_na_for_col(df, vars2, F)
-  
+test_that("drop_na_by_col works and return expected result", {
+  df <- data.frame(id = 1:4, x = c(1, 2, NA, NA), y = c("a", NA, "b", NA), z = c("a", NA, "b", NA))
+  vars <- c("x", "y", "z")
+  vars2 <- c("z", "y")
+
+  result1 <- drop_na_by_col(df, vars)
+  result2 <- drop_na_by_col(df, vars2)
+  result3 <- drop_na_by_col(df, vars2, F)
+
   expect_identical(result1, filter(df, id != 4))
-  expect_identical(result2, filter(df, id %in% c(1,3)))
-  expect_identical(result3, filter(df, id %in% c(2,4)))
+  expect_identical(result2, filter(df, id %in% c(1, 3)))
+  expect_identical(result3, filter(df, id %in% c(2, 4)))
   expect_identical(names(df), names(result1), names(result2), names(result3))
 })
 
 test_that("get_module_id works and return expected result", {
-  id <- 'table-1'
+  id <- "table-1"
   stub(get_module_id, "session$ns", "table-1-table-1")
   result1 <- get_module_id(id, "session")
-  
+
   expect_equal(result1, "table-1-")
   expect_equal(grep("-$", result1), 1) # ends with -
+})
+
+## UI elements ----
+
+test_that("add_checkbox_buttons return expected result", {
+  expect_snapshot(
+    add_checkbox_buttons(
+      "inputId", "module_id",
+      "flag_value", "bad_value"
+    )
+  )
 })

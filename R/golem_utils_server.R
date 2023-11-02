@@ -432,7 +432,7 @@ transform_sentiment <- function(data, sentiment_column = 'sentiment') {
 #'
 #' @return data frame
 #' @export
-drop_na_for_col <- function(df, vars, negate = TRUE) {
+drop_na_by_col <- function(df, vars, negate = TRUE) {
   
   diff <- setdiff(vars, names(df))
   stopifnot("Some column doesn't exist in data" = length(diff) == 0)
