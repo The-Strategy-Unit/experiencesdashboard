@@ -78,7 +78,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
           comment_column = "comment_txt",
           comment_1 = get_golem_config("comment_1"),
           comment_2 = get_golem_config("comment_2")
-        )
+        ) 
       })
 
       # UI ----
@@ -91,12 +91,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
               icon = icon("trash-can")
             ),
           ),
-          # column(
-          #   width = 1,
-          #   actionButton(ns("save_to_db"), "Save edit",
-          #     icon = icon("save"),
-          #   ),
-          # ),
           column(
             width = 1,
             downloadButton(ns("download1"), "Download data",
@@ -113,7 +107,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         ),
         p(strong("To delete row(s): "), "Select the row(s) and click the delete button."),
         p(strong(em("When you are done editting, you will need to refresh your browser to pull the editted data into other tabs of the dashboard"))),
-        # p(strong("To edit any row:"), "Double click the row, edit its value and press CTRL+ENTER to confirm"),
 
         # display the table
         fluidRow(
@@ -137,14 +130,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         dt_out$data,
         selection = "multiple",
         rownames = FALSE,
-        # editable = list(
-        #   "target" = "row",
-        #   disable = list(columns = c(
-        #     match("comment_id", names(dt_out$data)) - 1,
-        #     match("comment_type", names(dt_out$data)) - 1,
-        #     match("pt_id", names(dt_out$data)) - 1
-        #   )) # disable editing of comment_id (0), comment_type(5), n pat_id (last column) cols
-        # ),
         filter = "top",
         class = "display cell-border compact",
         colnames = colnames,
@@ -159,71 +144,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     })
 
     # create a proxy data to track the UI version of the table when edited
-    proxy <- DT::dataTableProxy(ns("pat_table"))
-
-    # Edit a row and effect it in the UI view ####
-    observeEvent(input$pat_table_cell_edit, {
-      info <- input$pat_table_cell_edit # get the edited row information
-
-      info$value <- sapply(info$value, html_decoder, USE.NAMES = FALSE) # decode any html character introduced to the values
-
-      old_dt <- dt_out$data # Track the initial state of the data before recording user changes
-
-      tryCatch(
-        {
-          dt_out$data <- DT::editData(dt_out$data, info, rownames = FALSE)
-
-          # Data Validation
-          check_list <- list()
-          dont_check_columns <- c("comment_id", "date", "comment_type", "comment_txt", "pt_id")
-          column_to_check <- setdiff(names(dt_out$data), dont_check_columns)
-
-          # check if the value entered for each column in column_to_check is part of the existing unique values
-          # of that column  or empty string
-          for (i in column_to_check) {
-            index <- match(i, names(dt_out$data))
-            check <- info$value[index] %in% c(unique(dplyr::pull(db_data, i)), "")
-            check_list <- check_list %>% append(check)
-          }
-
-          check_list <- unlist(check_list)
-          error_columns <- column_to_check[!check_list]
-
-          # Ignore changes if enter value in some columns are not part of the  existing unique values in its column
-          if (!all(check_list)) {
-            cat("columns with error in edited row: ", error_columns, " \n") # for debugging
-
-            dt_out$data <- old_dt
-
-            showModal(modalDialog(
-              title = "Error!",
-              paste("Value(s) entered in", paste(error_columns, collapse = " and "), "column(s) is not part of existing values in that column(s)"),
-              easyClose = TRUE
-            ))
-          }
-
-          # if any allowed changes was made to the data then update the UI data
-          cat("\n is UI and server data identical?", identical(old_dt, dt_out$data), "\n")
-
-          if (!identical(old_dt, dt_out$data)) {
-            DT::replaceData(proxy, dt_out$data, rownames = FALSE, resetPaging = FALSE)
-
-            # track edits
-            dt_out$index <- unique(dt_out$index %>% append((info$value[1]))) # track row ids that has been edited
-
-            cat("Edited rows: ", unlist(dt_out$index), " \n") # for debugging
-            print(dt_out$data %>% dplyr::filter(comment_id == dt_out$index))
-          }
-        },
-        error = function(e) {
-          showModal(modalDialog(
-            title = "Error!",
-            paste(e, "\n\nPlease correct your changes"),
-            easyClose = TRUE
-          ))
-        }
-      )
-    })
+    proxy <- DT::dataTableProxy("pat_table")
 
     # Delete data ####
 
@@ -294,69 +215,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       )
     })
 
-    # Save (write edited data to source) ####
-    ### The save functionalities doesn't work for now. The handling of the list columns
-    ### (category and super_category) after users press ENTER is causing the issue
-    ### This will need revisiting if we need this data editing functionality
-
-    observeEvent(input$save_to_db, {
-      if (length(dt_out$index) < 1) {
-        showModal(modalDialog(
-          title = "Error!",
-          "There is not edited changes to be save",
-          easyClose = TRUE
-        ))
-      } else {
-        showModal(
-          modalDialog(
-            title = "Save data to database!",
-            HTML(paste("Are you sure you want to update", length(dt_out$index), "record(s) of data?")),
-            easyClose = TRUE,
-            footer = tagList(
-              modalButton("Cancel"),
-              actionButton(ns("update_source"), "Update", icon = icon("database")),
-            )
-          )
-        )
-      }
-    })
-
-    observeEvent(input$update_source, {
-      tryCatch(
-        {
-          # update the database
-          trust_db <- dplyr::tbl(db_conn, get_golem_config("trust_name"))
-          dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)),
-            by = "comment_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
-          )
-
-          # Update the edit date for the edited rows
-          query2 <- glue::glue_sql(
-            "UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
-            ids = unlist(dt_out$index, use.names = FALSE), .con = db_conn
-          )
-          DBI::dbExecute(db_conn, query2)
-
-          showModal(modalDialog(
-            title = "Success!",
-            p(paste("Record of", length(dt_out$index), "Responder(s) have been successfully updated.")),
-            em("Please refresh your browser to visualise the update"),
-            easyClose = TRUE
-          ))
-
-          dt_out$index <- list()
-        },
-        error = function(e) {
-          showModal(modalDialog(
-            title = "Error!",
-            paste("There was a problem accessing the database. Please try again"),
-            easyClose = TRUE
-          ))
-          print(e)
-        }
-      )
-    })
-
     # Download the data ####
 
     output$download1 <- downloadHandler(
@@ -372,7 +230,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     # complex comments ----
 
     output$dynamic_complex_ui <- renderUI({
-      # complex comments ----
       dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
 
       if (nrow(dt_out$complex_comments) > 1) {
@@ -420,7 +277,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       } else {
         # create an upload interface
         datamods::import_modal(
-          id = session$ns("myid"),
+          id = ns("myid"),
           from = "file",
           title = "Import data to be used in Dashboard"
         )
