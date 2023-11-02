@@ -2,7 +2,7 @@
 % Please edit documentation in R/golem_utils_server.R
 \name{drop_na_by_col}
 \alias{drop_na_by_col}
-\title{Find rows containing missing values in all specified 
+\title{Find rows containing missing values in all specified
 column while keeping rows where any contains values}
 \usage{
 drop_na_by_col(df, vars, negate = TRUE)
@@ -19,6 +19,6 @@ default is `TRUE`}
 data frame
 }
 \description{
-Find rows containing missing values in all specified 
+Find rows containing missing values in all specified
 column while keeping rows where any contains values
 }

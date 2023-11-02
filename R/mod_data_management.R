@@ -151,20 +151,25 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     # create a proxy data to track the UI version of the table when edited
     proxy <- DT::dataTableProxy("pat_table")
 
-    # Record flagged comments ----
+    # flagged comments ----
+    
+    # `input$current_check_info` is from the 
+    # JavaScript function `get_check_info` (see js_script.js) 
+    # used in the `add_checkbox_buttons()` function
     
     ## flag row ----
     observeEvent(input$current_check_info, {
-      # only run when the id isn't null and one of the bad id is clicked
+      # only run when the id isn't null and one of the flagged box is clicked
       req(!is.null(input$current_check_info) & stringr::str_detect(input$current_check_info, pattern = "flag"))
       
+      # extracted the comment_id and TRUE/FALSE value from the checkbox
       row <- sub("flag_", "", input$current_check_info["id"])
       check_value <- ifelse(input$current_check_info["value"], 1, 0)
       
       # for logging
-      if(check_value){
+      if (check_value) {
         cat("Comment '", row, "' flagged as interesting \n") 
-      }else{
+      } else {
         cat("Comment '", row, "' unflagged as interesting \n")
       }
       
@@ -178,16 +183,17 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     
     ## bad row ----
     observeEvent(input$current_check_info, {
-      # only run when the id isn't null and one of the bad id is clicked
+      # only run when the id isn't null and one of the bad box is clicked
       req(!is.null(input$current_check_info) & stringr::str_detect(input$current_check_info, pattern = "bad"))
       
+      # extracted the comment_id and TRUE/FALSE value from the checkbox
       row <- sub("bad_", "", input$current_check_info["id"])
       check_value <- ifelse(input$current_check_info["value"], 1, 0)
       
       # for logging
-      if(check_value){
+      if (check_value) {
         cat("Comment '", row, "' flagged as badly coded \n")
-      }else{
+      } else {
         cat("Comment '", row, "' unflagged as badly coded \n")
       }
       

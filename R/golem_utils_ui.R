@@ -329,19 +329,22 @@ col_1 <- function(...) {
 #' #'   return(HTML(html))
 #' #' }
 
-#' Internal function to add check box to datatable  in the data-management tab
+#' Internal function to add 2 group of checkboxs to a datatable
+#' in a sub-module based on values from two columns within the data
 #'
-#' @param inputId input id to access the value
-#' @param module_id id used to call the module see `get_module_id()`
-#' @param flag_value logical, value from the flaggged column
-#' @param bad_value logical, value from the bad_code column
+#' @param inputId unique input id to access the box
+#' @param module_id id used to call the module, see `get_module_id()`
+#' @param flag_value integer, value 1 or 0 (from a column containing 1, 0)
+#' used to check (1) or uncheck (0) the box when the table loads
+#' @param bad_value integer, value 1 or 0 from the (from a column containing
+#'  1, 0) used to check (1) or uncheck (0) the box when the table loads
 #'
 #' @return string, A list of HTML elements
 #' @noRd
 add_checkbox_buttons <- function(inputId, module_id, flag_value, bad_value) {
   flag_value <- ifelse(flag_value, "checked", "uncheck")
   bad_value <- ifelse(bad_value, "checked", "uncheck")
-  
+
   glue::glue('
 <div class="form-group">
   <div class="checkbox">
