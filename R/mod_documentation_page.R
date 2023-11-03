@@ -63,8 +63,7 @@ mod_documentation_page_server <- function(id) {
       )
 
       DT::datatable(
-        framework,
-        # rownames = FALSE, 
+        dplyr::select(framework, -color),
         extensions = c("RowGroup", "Buttons"), # required to show the download buttons and groups
         options = list(
           rowGroup = list(dataSrc = 1),
