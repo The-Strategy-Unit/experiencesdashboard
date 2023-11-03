@@ -277,7 +277,7 @@ app_server <- function(input, output, session) {
     # Transform the sentiment column
     return_data <- return_data %>% 
       transform_sentiment() %>% 
-      drop_na_for_col(c('category', 'super_category', 'sentiment'))
+      drop_na_by_col(c('category', 'super_category', 'sentiment'))
     
     # also return a dataset with unique individuals
     unique_data <- return_data %>%

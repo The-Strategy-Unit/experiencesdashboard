@@ -62,22 +62,20 @@ mod_documentation_page_server <- function(id) {
         "table.one('init', () => $('.dtrg-group').trigger('click'))"
       )
 
-      # add NHS blue color to the table header
-      initComplete <- DT::JS(
-        "function(settings, json) {",
-        "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-        "}"
-      )
-
       DT::datatable(
         framework,
+        # rownames = FALSE, 
         extensions = c("RowGroup", "Buttons"), # required to show the download buttons and groups
         options = list(
           rowGroup = list(dataSrc = 1),
           dom = "Bt",
           buttons = c("csv", "excel", "pdf"),
-          initComplete = initComplete,
-          pageLength = 50
+          initComplete = dt_nhs_header(),
+          pageLength = 50,
+          columnDefs = list(
+            list("visible" = FALSE, targets = 0) # Hide the first column
+          ),
+          ordering = FALSE
         ),
         callback = callback_js,
         class = "display cell-border",

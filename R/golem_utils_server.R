@@ -128,7 +128,7 @@ to_string <- function(x) {
 #' @param column_name The name of the column holding the comma separated labels
 #' @param n_labels maximum number of labels assigned to any row
 #'
-#' @return A dataframe with a row per comment per comment type. columns returned are 
+#' @return A dataframe with a row per comment per comment type. columns returned are
 #' "comment_id", "comment_type", "date", "comment_txt", "fft", "sentiment", "category", "super_category"
 #' @noRd
 single_to_multi_label <- function(sl_data) {
@@ -349,7 +349,7 @@ assign_highlevel_categories <- function(sub_cats) {
   )
 }
 
-#' Attempt to parse a date column from character to date 
+#' Attempt to parse a date column from character to date
 #'
 #' @param data a dataframe
 #' @param date_column the name of the date column (default to 'date')
@@ -358,20 +358,20 @@ assign_highlevel_categories <- function(sub_cats) {
 #'
 #' @noRd
 parse_date <- function(data, date_column = "date") {
-  
   if (inherits(data$date, "character")) {
-    
-    data <- data %>% 
-      dplyr::filter(date != ' ',
-                    date !='',
-                    !is.na(date))
-    
+    data <- data %>%
+      dplyr::filter(
+        date != " ",
+        date != "",
+        !is.na(date)
+      )
+
     suppressWarnings({
       parsed_data <- data %>%
         dplyr::mutate(
           date = lubridate::as_date(.data$date, format = c("%d-%m-%y", "%d/%m/%y", "%d-%m-%Y", "%d/%m/%Y", "%d %m %y", "%d %m %Y"))
         )
-      
+
       # try this if the dates are not well parsed (i.e. if the column contain NA)
       # parse it automatically
       if (any(is.na(parsed_data$date))) {
@@ -381,7 +381,7 @@ parse_date <- function(data, date_column = "date") {
           )
       }
     })
-    
+
     stopifnot("date column can't be parse" = !any(is.na(parsed_data$date)))
     return(parsed_data)
   } else {
@@ -414,7 +414,7 @@ get_sentiment_text <- function(value) {
 #' @param sentiment_column string, name of the sentiment column
 #'
 #' @noRd
-transform_sentiment <- function(data, sentiment_column = 'sentiment') {
+transform_sentiment <- function(data, sentiment_column = "sentiment") {
   data %>%
     dplyr::mutate(sentiment = get_sentiment_text(!!rlang::sym(sentiment_column))) %>%
     dplyr::mutate(
@@ -422,7 +422,7 @@ transform_sentiment <- function(data, sentiment_column = 'sentiment') {
     )
 }
 
-#' Find rows containing missing values in all specified 
+#' Find rows containing missing values in all specified
 #' column while keeping rows where any contains values
 #'
 #' @param df A data frame
@@ -432,18 +432,39 @@ transform_sentiment <- function(data, sentiment_column = 'sentiment') {
 #'
 #' @return data frame
 #' @export
-drop_na_for_col <- function(df, vars, negate = TRUE) {
-  
+drop_na_by_col <- function(df, vars, negate = TRUE) {
   diff <- setdiff(vars, names(df))
   stopifnot("Some column doesn't exist in data" = length(diff) == 0)
-  
+
   if (negate) {
     return(
-      df %>% 
+      df %>%
         dplyr::filter(rowSums(is.na(dplyr::select(., dplyr::all_of(vars)))) != length(vars))
     )
   }
-  
-  df %>% 
+
+  df %>%
     dplyr::filter(rowSums(is.na(dplyr::select(., dplyr::all_of(vars)))) == length(vars))
+}
+
+#' add NHS blue color to the table header
+#' @noRd
+dt_nhs_header <- function() {
+  DT::JS(
+    "function(settings, json) {
+    $(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});
+    }"
+  )
+}
+
+#' remove the duplicate id in namespace id of sub modules
+#'
+#' @param id ID object passed to the module serve.
+#' see `shiny::moduleServer()`
+#' @param session session object pass to the module server.
+#' see `shiny::moduleServer()`
+#'
+#' @noRd
+get_module_id <- function(id, session) {
+  sub(paste0(id, "$"), "", session$ns(id))
 }

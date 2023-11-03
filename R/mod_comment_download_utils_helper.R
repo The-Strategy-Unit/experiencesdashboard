@@ -5,7 +5,6 @@
 #' @return a formatted datatable
 #' @noRd
 prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
-
   if (in_tidy_format) {
     comment_data <- comment_data %>%
       single_to_multi_label()
@@ -13,7 +12,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
 
   stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = comment_data$comment_id %>% duplicated() %>% sum() == 0)
 
-  # Select the important column and format the "category", "super_category", and "comment_type" to be more user friendly 
+  # Select the important column and format the "category", "super_category", and "comment_type" to be more user friendly
   comment_data <- comment_data %>%
     dplyr::select(date, comment_type, fft, sentiment, comment_txt, category, super_category) %>%
     dplyr::mutate(
@@ -50,20 +49,13 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
 #'
 #' @noRd
 render_comment_table <- function(data) {
-  # add NHS blue color to the table header
-  initcomplete <- DT::JS(
-    "function(settings, json) {",
-    "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-    "}"
-  )
-
   return(
     DT::datatable(
       data,
       options = list(
         dom = "ipt",
         columnDefs = list(list(width = "500px", targets = c(4))), # ensure the comment column is wider on bigger screen
-        initComplete = initcomplete,
+        initComplete = dt_nhs_header(),
         pageLength = 50,
         scrollX = TRUE,
         selection = "single"
