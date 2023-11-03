@@ -42,13 +42,23 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   return(comment_data)
 }
 
+# internal function to color code the sentiment
+sentiment_color_code <- function() {
+  c(
+    Positive = "#009639",
+    `Neutral/Mixed` = "#E8EDEE",
+    Negative = "#DA291C"
+  )
+}
+
 #' Internal function for the comment datatable
 #'
-#' @param data a dataframe
+#' @param data a dataframe, preferable data from `prep_data_for_comment_table()`
+#' @param sentiment_column string, name of the sentiment column in the data
 #' @return a formatted datatable
 #'
 #' @noRd
-render_comment_table <- function(data) {
+render_comment_table <- function(data, sentiment_column = "Comment Sentiment") {
   return(
     DT::datatable(
       data,
@@ -63,6 +73,14 @@ render_comment_table <- function(data) {
       filter = "top",
       rownames = FALSE,
       class = "display cell-border compact stripe",
-    )
+    ) |>
+      DT::formatStyle(
+        columns = sentiment_column,
+        backgroundColor = DT::styleEqual(
+          names(sentiment_color_code()),
+          sentiment_color_code()
+        )
+      )
   )
 }
+
