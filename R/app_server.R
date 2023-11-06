@@ -12,6 +12,15 @@ app_server <- function(input, output, session) {
     Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups))
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
+  
+  # determine if user has admin right - if to show the data-management tab
+  if (!isTRUE(getOption('golem.app.prod'))) {
+    admin_user <- TRUE # set to true in development env
+  } else{
+    # get from session data of Connect environment - in production env
+    admin_user <- is_admin_user(session$groups)
+  }
+  cat("Admin right:", admin_user, " \n")
 
   # Create  DB connection pool
   pool <- get_pool()
@@ -299,7 +308,7 @@ app_server <- function(input, output, session) {
   mod_header_message_server("messageMenu", pool, db_data, data_exists)
 
   ## combine ALL sub-modules----
-  mod_patient_experience_server("patient_experience_ui_1")
+  mod_patient_experience_server("patient_experience_ui_1", admin_user)
 
   ## sub-modules
 

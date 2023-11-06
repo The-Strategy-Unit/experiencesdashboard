@@ -16,7 +16,7 @@ mod_patient_experience_ui <- function(id) {
 #' patient_experience Server Functions
 #'
 #' @noRd
-mod_patient_experience_server <- function(id) {
+mod_patient_experience_server <- function(id, admin_user) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -29,13 +29,6 @@ mod_patient_experience_server <- function(id) {
         tabPanel(
           "Data categorisation framework",
           mod_documentation_page_ui("documentation_page")
-        ),
-
-        # Data management tab
-
-        tabPanel(
-          "Data upload and management",
-          mod_data_management_ui("data_management_1")
         ),
 
         # summary tab
@@ -96,7 +89,20 @@ mod_patient_experience_server <- function(id) {
           )
         )
       }
-
+      
+      # Data management tab
+      
+      if (admin_user) {
+        ui_list <- c(
+          ui_list,
+          list(
+            tabPanel(
+              "Data upload and management",
+              mod_data_management_ui("data_management_1")
+            )
+          )
+        )
+      }
 
       # summary tab
       ui_list <- c(
