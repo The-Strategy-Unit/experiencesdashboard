@@ -87,6 +87,16 @@ header_links <- function() {
       ),
       class = "dropdown"
     ),
+    tags$li(
+      a(
+        onclick = "onclick =window.open('https://github.com/CDU-data-science-team/experiencesdashboard')",
+        href = NULL,
+        icon("github", prefer_type = "solid"),
+        title = "Visit project GitHub page",
+        style = "cursor: pointer;"
+      ),
+      class = "dropdown"
+    ),
     class = "dropdown"
   )
 }
