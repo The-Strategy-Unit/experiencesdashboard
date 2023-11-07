@@ -21,48 +21,42 @@ mod_patient_experience_server <- function(id, admin_user) {
     ns <- session$ns
 
     output$dynamicUI <- renderUI({
-      # Summary and Report tab (key tabs to show)
+      
+      # key tabs to show
 
       ui_list <- list(
 
         # documentation tab
         tabPanel(
-          "Data categorisation framework",
+          "Understanding the categories",
           mod_documentation_page_ui("documentation_page")
         ),
 
         # summary tab
         tabPanel(
-          "Distribution of comments over time",
+          "Categorised comments over time",
           mod_trend_ui("trend_ui_1")
+        ),
+        
+        # Theme categories
+        tabPanel(
+          "Sub-categories people are telling us about",
+          mod_click_tables_ui("click_tables_ui")
         )
       )
-
-      # Theme Trend and overlap tab
       
+      # complex comment tab
       ui_list <- c(
         ui_list,
         list(
           tabPanel(
-            "Inter-relationship between sub-categories",
-            mod_trend_overlap_ui("trend_overlap_ui")
-          )
-        )
-      )
-
-      # Theme categories
-
-      ui_list <- c(
-        ui_list,
-        list(
-          tabPanel(
-            "What people are telling us about",
-            mod_click_tables_ui("click_tables_ui")
+            "Complex comments",
+            mod_complex_comments_ui("complex_comments_1")
           )
         )
       )
       
-      # Comment search tab (key tab to show)
+      # Comment search tab
 
       ui_list <- c(
         ui_list,
@@ -73,6 +67,20 @@ mod_patient_experience_server <- function(id, admin_user) {
           )
         )
       )
+
+      # Theme Trend and overlap tab
+      
+      if (admin_user) {
+        ui_list <- c(
+          ui_list,
+          list(
+            tabPanel(
+              "Inter-relationship between sub-categories",
+              mod_trend_overlap_ui("trend_overlap_ui")
+            )
+          )
+        )
+      }
 
       # Demographics tab
 
@@ -103,17 +111,6 @@ mod_patient_experience_server <- function(id, admin_user) {
           )
         )
       }
-
-      # summary tab
-      ui_list <- c(
-        ui_list,
-        list(
-          tabPanel(
-            "Summary/Report builder",
-            mod_summary_ui("summary_ui_1")
-          )
-        )
-      )
 
       do.call(tabsetPanel, ui_list)
     })
