@@ -12,7 +12,7 @@ make_trend_data <- function(data, selected_super_category = NULL) {
       dplyr::group_by(date, super_category) %>%
       dplyr::summarize(n_comments = length(unique(comment_id))) %>%
       dplyr::left_join(
-        dplyr::select(framework, Category, color) |>
+        dplyr::select(framework, Category, color) %>% 
           dplyr::distinct(),
         by = dplyr::join_by(super_category == Category)
       )
@@ -23,7 +23,7 @@ make_trend_data <- function(data, selected_super_category = NULL) {
       dplyr::group_by(date, category) %>%
       dplyr::summarize(n_comments = length(unique(comment_id))) %>%
       dplyr::left_join(
-        dplyr::select(framework, `Sub-category`, color) |>
+        dplyr::select(framework, `Sub-category`, color) %>% 
           dplyr::distinct(),
         by = dplyr::join_by(category == `Sub-category`)
       )
@@ -88,7 +88,7 @@ plot_trend <- function(data, category_column, source, super_category = NULL) {
       ) %>%
       plotly::layout(
         xaxis = list(title = ""),
-        yaxis = list(title = "Sub Categorie")
+        yaxis = list(title = "Sub Categories")
       )
   }
 }
