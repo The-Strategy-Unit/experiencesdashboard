@@ -41,7 +41,8 @@ mod_documentation_page_ui <- function(id) {
     img(src = "www/framework_MVP_version.jpeg", width = "100%"),
     rep_br(2),
     p("To see detailed description of the sub-categories, kindly click on the category to expand it."),
-    DT::DTOutput(ns("framework_table"))
+    DT::DTOutput(ns("framework_table")) |>
+      shinycssloaders::withSpinner()
   )
 }
 

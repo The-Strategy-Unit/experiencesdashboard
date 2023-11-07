@@ -6,7 +6,8 @@ framework <- readxl::read_excel(
     "FFT-QDC_Framework_MVP_version_20230925.xlsx"
   ),
   sheet = 2
-)
+) |>
+  dplyr::select(Category,	`Sub-category`, `Sub-category description`,	Examples)
 
 # Assign the color to use for plotting members of each Category
 # inline with the color used in the framework document
