@@ -13,6 +13,10 @@ mod_data_management_ui <- function(id) {
     fluidPage(
       tags$br(),
       fluidRow(
+        p("
+        This page is for users who wants to upload new data or amend the 
+        existing data in the dashboard
+          "),
         column(
           width = 1,
           actionButton(ns("upload_new_data"), "Upload new data",
@@ -21,7 +25,9 @@ mod_data_management_ui <- function(id) {
         )
       ),
       tags$hr(),
-      uiOutput(ns("data_management_UI"))
+      uiOutput(ns("data_management_UI")) |>
+        shinycssloaders::withSpinner()
+        
     )
   )
 }
@@ -111,9 +117,9 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         ),
 
         # hint UI
-        p(with_red_stars(strong("To delete row(s): ")), "  Select the row(s) and click the delete button."),
-        p(strong(em("When you are done editing, you will need to refresh your browser to
-                    pull the edited data into other tabs of the dashboard."))),
+        p(HTML(paste0(with_red_stars(strong("To delete row(s): ")), "  Select the row(s) and click the delete button.",
+        strong(em(" When you are done editing, you will need to refresh your browser to
+                    pull the edited data into other tabs of the dashboard."))))),
         sprintf(
           'Use  %s  checkbox to flag a row as "interesting" and 
             %s to flag it as "wrongly categorised".',
