@@ -9,10 +9,13 @@ mod_documentation_page_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h4(strong("Making best use of the qualitative comments"), style = "color : #005EB8;"),
-    HTML(paste0(
-      "This dashboard should be used to facilitate initial exploration of your qualitative data, before
-        drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
-        should read the good practice guidance on the documentation page: ",
+    HTML(paste0("
+      The key feature of this dashboard is the categorisation of large volumes
+      of qualitative comments, it should be used to facilitate initial
+      exploration of your qualitative data, before drawing fuller insight
+      from the underlying qualitative comments within the sub-categories.
+      Before using the dashboard, you should read the good practice guidance
+      on the documentation page: ",
       a(strong("Good practice guidance."),
         href = "https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html",
         target = "_blank"
