@@ -31,7 +31,16 @@ mod_trend_server <- function(id, filter_data, data_exists) {
       )
 
       fluidPage(
-        br(),
+        p(HTML(paste0("
+        This page provides a timeline visual to show when comments have been 
+        received for the different categories and sub-categories, it is intended
+        to help with identifying patterns within this, before you drill down 
+        into the underling comments. To get further detail about how to use the
+        timeline visual, please see the ",
+        enurl("https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/#distribution-of-comments-over-time",
+              "Patient Experience – QDC documentation page.")
+        ))),
+        strong("Click on a box to see the comments for that month on the table below."),
         fluidRow(
           uiOutput(ns("category_selectionUI"))
         ),

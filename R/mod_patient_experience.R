@@ -75,7 +75,7 @@ mod_patient_experience_server <- function(id, admin_user) {
           ui_list,
           list(
             tabPanel(
-              "Inter-relationship between sub-categories",
+              "Additional data exploration tools",
               mod_trend_overlap_ui("trend_overlap_ui")
             )
           )

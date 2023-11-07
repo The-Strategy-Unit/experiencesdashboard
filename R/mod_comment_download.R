@@ -47,7 +47,7 @@ mod_comment_download_server <- function(id, return_data, filepath) {
     return(
       tagList(
         fluidRow(
-          downloadButton(ns("download_comments"), "Download data",
+          downloadButton(ns("download_comments"), "Download data from table",
             icon = icon("download")
           ),
           DT::DTOutput(ns("dynamic_comment_table"))

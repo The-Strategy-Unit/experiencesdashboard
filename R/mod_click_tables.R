@@ -27,7 +27,9 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
       )
 
       fluidPage(
-        h5("Click a row to see comments related to that sub-category"),
+        p("This page shows how many comments there are for each 
+          sub-category before you drill down into the underlying comments."),
+        strong("Please click a row to see comments related to that sub-category"),
         DT::DTOutput(ns("table")) %>%
           shinycssloaders::withSpinner(),
         hr(),

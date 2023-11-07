@@ -261,7 +261,7 @@ rep_br <- function(times = 1) {
 #'
 #' @importFrom htmltools tags
 enurl <- function(url, text) {
-  tags$a(href = url, text)
+  tags$a(href = url, text, target = "_blank")
 }
 
 #' Columns wrappers

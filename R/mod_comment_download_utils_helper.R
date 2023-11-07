@@ -31,6 +31,11 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
       )
   }
 
+  comment_data <- comment_data  %>%
+    dplyr::mutate(
+      across(any_of(c("comment_type", "fft")), as.factor)
+    )
+  
   # rename the column name to be more user friendly
   colnames(comment_data) <- c(
     "Date", "FFT Question", "FFT Score", "Comment Sentiment",
@@ -64,7 +69,10 @@ render_comment_table <- function(data, sentiment_column = "Comment Sentiment") {
       data,
       options = list(
         dom = "ipt",
-        columnDefs = list(list(width = "500px", targets = c(4))), # ensure the comment column is wider on bigger screen
+        columnDefs = list(
+          list(width = "500px", targets = c(4)), # ensure the comment column is wider on bigger screen
+          list(searchable = FALSE, targets = 0) # remove filtering feature from the first column
+        ),
         initComplete = dt_nhs_header(),
         pageLength = 50,
         scrollX = TRUE,
@@ -83,4 +91,3 @@ render_comment_table <- function(data, sentiment_column = "Comment Sentiment") {
       )
   )
 }
-

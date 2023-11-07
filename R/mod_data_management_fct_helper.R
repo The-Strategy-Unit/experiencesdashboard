@@ -12,7 +12,10 @@
 #' @noRd
 prepare_data_management_data <- function(data, id, session, column_names, comment_column, comment_1, comment_2 = NULL) {
   module_id <- get_module_id(id, session)
-
+  factor_columns <- c('location_1', 'location_2', 'location_3', "comment_type" , 
+                      'fft', 'gender', 'sex', 'age', 'religion', "ethnicity", 
+                      "sexuality", "disability")
+  
   if (isTruthy(comment_2)) {
     return_data <- data %>%
       dplyr::filter(comment_type %in% c("comment_1", "comment_2")) %>%
@@ -38,6 +41,9 @@ prepare_data_management_data <- function(data, id, session, column_names, commen
       dplyr::where(~ !all(is.na(.)))
     ) %>% # delete all empty columns
     clean_super_category() %>%
+    dplyr::mutate(
+      across(any_of(factor_columns), as.factor)
+    ) %>% 
     dplyr::arrange(comment_id) %>%
     dplyr::select(checks, everything())
 }
