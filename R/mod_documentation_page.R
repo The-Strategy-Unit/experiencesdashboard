@@ -17,7 +17,7 @@ mod_documentation_page_ui <- function(id) {
       Before using the dashboard, you should read the good practice guidance
       on the documentation page: ",
       a(strong("Good practice guidance."),
-        href = "https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html",
+        href = "https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard_good_practice.html",
         target = "_blank"
       ),
       "This includes important
