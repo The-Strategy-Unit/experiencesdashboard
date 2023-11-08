@@ -14,12 +14,7 @@ app_server <- function(input, output, session) {
   cat("Trust name:", get_golem_config("trust_name"), " \n")
   
   # determine if user has admin right - if to show the data-management tab
-  if (!isTRUE(getOption('golem.app.prod'))) {
-    admin_user <- TRUE # set to true in development env
-  } else{
-    # get from session data of Connect environment - in production env
-    admin_user <- is_admin_user(session$groups)
-  }
+  admin_user <- TRUE # set to true for all user
   cat("Admin right:", admin_user, " \n")
 
   # Create  DB connection pool
