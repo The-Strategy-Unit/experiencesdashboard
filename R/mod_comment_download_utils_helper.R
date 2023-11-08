@@ -8,6 +8,9 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   if (in_tidy_format) {
     comment_data <- comment_data %>%
       single_to_multi_label()
+  } else{
+    comment_data <- comment_data %>%
+      clean_super_category()
   }
 
   stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = comment_data$comment_id %>% duplicated() %>% sum() == 0)

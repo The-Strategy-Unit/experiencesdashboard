@@ -316,22 +316,12 @@ app_server <- function(input, output, session) {
 
   mod_trend_server("trend_ui_1", filter_data, data_exists)
 
-  mod_summary_server("summary_ui_1", data_exists)
-
   mod_summary_record_server("summary_record_1", db_data, filter_data)
 
-  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists, user)
-
-  mod_fft_server("fft_ui_1", filter_data = filter_data)
-
-  mod_report_builder_server(
-    "report_builder_ui_1",
-    filter_data = filter_data,
-    all_inputs = all_inputs,
-    data_exists = data_exists
-  )
-
-  mod_click_tables_server("click_tables_ui", filter_data = filter_data, data_exists = data_exists)
+  mod_click_tables_server("click_tables_ui", filter_data = filter_data,
+                          data_exists = data_exists)
+  
+  mod_complex_comments_server("complex_comments_1", filter_data, data_exists)
 
   mod_search_text_server("search_text_ui_1", filter_data = filter_data)
 
@@ -339,4 +329,7 @@ app_server <- function(input, output, session) {
 
   mod_demographics_server("demographics_ui_1", filter_data, data_exists
   )
+
+  mod_data_management_server("data_management_1", db_conn = pool, 
+                             filter_data, data_exists, user)
 }
