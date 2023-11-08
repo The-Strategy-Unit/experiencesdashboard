@@ -1,0 +1,49 @@
+name: "Test and Connect Publish (public)"
+on:
+  push:
+  branches: [public-view]
+pull_request:
+  branches: [public-view]
+
+jobs:
+  connect-publish-dev:
+  name: "Test and Connect Publish (public)"
+runs-on: ubuntu-latest
+env:
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+steps:
+  - uses: actions/checkout@v3
+
+- uses: r-lib/actions/setup-pandoc@v2
+
+- uses: r-lib/actions/setup-r@v2
+with:
+  use-public-rspm: true
+
+# install dependency from renv.lock
+- name: Install dependencies 
+uses: r-lib/actions/setup-renv@v2
+
+# Run a check and the unit test
+- uses: r-lib/actions/check-r-package@v2
+with:
+  upload-snapshots: true
+error-on: '"error"'
+env: 
+  _R_CHECK_EXCESSIVE_IMPORTS_: 0
+
+# file required by Connect for deploying content programmatically.
+- name: Generate manifest.json 
+run: Rscript dev/generate_manifest.R
+
+# deploy the app to Connect
+- name: Publish Connect content
+uses: rstudio/actions/connect-publish@main
+with:
+  url: ${{ secrets.RSCONNECT_URL }}   # URL of the Connect server
+api-key: ${{ secrets.RSCONNECT_API_KEY }}   # Connect API key, which can be acquired from your Connect profile
+access-type: acl    # accessible to specific users and groups managed within Connect
+force: true
+dir: .:/-qdc_public  # the second part specifies the URL of the deployed app 
+namespace: experiencesdashboard 
