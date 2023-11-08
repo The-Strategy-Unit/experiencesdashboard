@@ -123,7 +123,7 @@
               existing data in the dashboard
                 </p>
           <div class="col-sm-1">
-            <button id="id-upload_new_data" type="button" class="btn btn-default action-button">
+            <button id="id-upload_new_data-disabled" type="button" class="btn btn-default action-button">
               <i class="fas fa-person-circle-plus" role="presentation" aria-label="person-circle-plus icon"></i>
               Upload new data
             </button>
