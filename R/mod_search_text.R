@@ -71,10 +71,6 @@ mod_search_text_server <- function(id, filter_data) {
         filter_text = text_search(),
         comment_type_filter = NULL, search_type = "and"
       ) |>
-        dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
-          super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
-          across(c(category, super_category), ~ purrr::map(.x, to_string))
-        ) |>
         prep_data_for_comment_table(in_tidy_format = FALSE)
     })
 
