@@ -12,7 +12,8 @@ mod_trend_ui <- function(id) {
 
   tagList(
     br(),
-    uiOutput(ns("dynamic_trendUI"))
+    uiOutput(ns("dynamic_trendUI")) |>
+      shinycssloaders::withSpinner()
   )
 }
 
@@ -55,9 +56,6 @@ mod_trend_server <- function(id, filter_data, data_exists) {
             plotly::plotlyOutput(ns("super_category_trend_plot")) %>%
               shinycssloaders::withSpinner(),
             hr(),
-            # downloadButton(ns("super_category_download_data"), "Download data",
-            #   icon = icon("download")
-            # ),
             uiOutput(ns("dynamic_super_category_table"))
           ),
 
@@ -70,16 +68,11 @@ mod_trend_server <- function(id, filter_data, data_exists) {
                 plotly::plotlyOutput(ns("sub_category_trend_plot")) %>%
                   shinycssloaders::withSpinner(),
                 hr(),
-                # downloadButton(ns("sub_category_download_data"), "Download data",
-                #   icon = icon("download")
-                # ),
                 uiOutput(ns("dynamic_sub_category_table"))
               )
             )
           )
         )
-        # hr(),
-        # DT::DTOutput(ns("dynamic_super_category_table"))
       )
     })
 

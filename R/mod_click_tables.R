@@ -10,7 +10,8 @@
 mod_click_tables_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    uiOutput(ns("dynamic_click_tableUI"))
+    uiOutput(ns("dynamic_click_tableUI")) |>
+      shinycssloaders::withSpinner()
   )
 }
 
@@ -39,7 +40,8 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
           shinycssloaders::withSpinner(),
         hr(),
         h5("Please select a Sub-category from the table above in other to drill down the table below"),
-        uiOutput(ns("comment_table"))
+        uiOutput(ns("comment_table")) |>
+          shinycssloaders::withSpinner()
       )
     })
 
