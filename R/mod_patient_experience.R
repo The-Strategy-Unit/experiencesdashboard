@@ -91,7 +91,7 @@ mod_patient_experience_server <- function(id, admin_user) {
           ui_list,
           list(
             tabPanel(
-              "Who we are hearing from",
+              "Respondent demographics",
               mod_demographics_ui("demographics_ui_1")
             )
           )
