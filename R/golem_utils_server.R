@@ -415,7 +415,7 @@ get_sentiment_text <- function(value) {
     value == 3 ~ "Neutral/Mixed",
     value == 4 ~ "Negative",
     value == 5 ~ "Negative",
-    TRUE ~ NA
+    TRUE ~ NA_character_
   )
 }
 
