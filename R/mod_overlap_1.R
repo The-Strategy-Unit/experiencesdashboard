@@ -178,11 +178,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       },
       height = function() {
         # get the plot specific info.
-        if (!is.null(input_select_super_category)) {
-          session$clientData$`output_trend_overlap_ui-trend_overlap_ui-overlap_UI-category_upset_height` * session$clientData$pixelratio * 1.01
-        } else {
-          session$clientData$`output_trend_overlap_ui-trend_overlap_ui-overlap_1_UI-category_upset_height` * session$clientData$pixelratio * 1.01
-        }
+        session$clientData[[paste0("output_", get_module_id(id, session), "category_upset_height")]] * session$clientData$pixelratio * 1.01
       },
       res = 100
     )
@@ -217,9 +213,6 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
 
     return(
       tagList(
-        strong(p("This plot is meant to aid users to explore the relationships between the
-              sub-categories. Scrow down to select the sub-categories and view the return comments")),
-        # br(),
         plotOutput(ns("category_upset")) %>%
           shinycssloaders::withSpinner(),
 

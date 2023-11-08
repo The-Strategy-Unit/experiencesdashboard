@@ -12,6 +12,15 @@ app_server <- function(input, output, session) {
     Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups))
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
+  
+  # determine if user has admin right - if to show the data-management tab
+  if (!isTRUE(getOption('golem.app.prod'))) {
+    admin_user <- TRUE # set to true in development env
+  } else{
+    # get from session data of Connect environment - in production env
+    admin_user <- is_admin_user(session$groups)
+  }
+  cat("Admin right:", admin_user, " \n")
 
   # Create  DB connection pool
   pool <- get_pool()
@@ -277,7 +286,7 @@ app_server <- function(input, output, session) {
     # Transform the sentiment column
     return_data <- return_data %>% 
       transform_sentiment() %>% 
-      drop_na_for_col(c('category', 'super_category', 'sentiment'))
+      drop_na_by_col(c('category', 'super_category', 'sentiment'))
     
     # also return a dataset with unique individuals
     unique_data <- return_data %>%
@@ -299,7 +308,7 @@ app_server <- function(input, output, session) {
   mod_header_message_server("messageMenu", pool, db_data, data_exists)
 
   ## combine ALL sub-modules----
-  mod_patient_experience_server("patient_experience_ui_1")
+  mod_patient_experience_server("patient_experience_ui_1", admin_user)
 
   ## sub-modules
 
@@ -307,22 +316,12 @@ app_server <- function(input, output, session) {
 
   mod_trend_server("trend_ui_1", filter_data, data_exists)
 
-  mod_summary_server("summary_ui_1", data_exists)
-
   mod_summary_record_server("summary_record_1", db_data, filter_data)
 
-  mod_data_management_server("data_management_1", db_conn = pool, filter_data, data_exists, user)
-
-  mod_fft_server("fft_ui_1", filter_data = filter_data)
-
-  mod_report_builder_server(
-    "report_builder_ui_1",
-    filter_data = filter_data,
-    all_inputs = all_inputs,
-    data_exists = data_exists
-  )
-
-  mod_click_tables_server("click_tables_ui", filter_data = filter_data, data_exists = data_exists)
+  mod_click_tables_server("click_tables_ui", filter_data = filter_data,
+                          data_exists = data_exists)
+  
+  mod_complex_comments_server("complex_comments_1", filter_data, data_exists)
 
   mod_search_text_server("search_text_ui_1", filter_data = filter_data)
 
@@ -330,4 +329,7 @@ app_server <- function(input, output, session) {
 
   mod_demographics_server("demographics_ui_1", filter_data, data_exists
   )
+
+  mod_data_management_server("data_management_1", db_conn = pool, 
+                             filter_data, data_exists, user)
 }

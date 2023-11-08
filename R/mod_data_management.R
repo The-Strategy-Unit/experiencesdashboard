@@ -13,6 +13,10 @@ mod_data_management_ui <- function(id) {
     fluidPage(
       tags$br(),
       fluidRow(
+        p("
+        This page is for users who wants to upload new data or amend the
+        existing data in the dashboard
+          "),
         column(
           width = 1,
           actionButton(ns("upload_new_data-disabled"), "Upload new data",
@@ -21,7 +25,8 @@ mod_data_management_ui <- function(id) {
         )
       ),
       tags$hr(),
-      uiOutput(ns("data_management_UI"))
+      uiOutput(ns("data_management_UI")) |>
+        shinycssloaders::withSpinner()
     )
   )
 }
@@ -37,8 +42,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
-      complex_comments = data.frame(),
       display_column_name = list(
+        "checks" = "Flag row",
         "comment_id" = "Comment ID",
         "date" = "Date",
         "location_1" = get_golem_config("location_1"),
@@ -60,7 +65,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         "extra_variable_1" = get_golem_config("extra_variable_1"),
         "extra_variable_2" = get_golem_config("extra_variable_2"),
         "extra_variable_3" = get_golem_config("extra_variable_3"),
-        "pt_id" = "Responder ID"
+        "pt_id" = "Responder ID",
+        "flagged" = ""
       )
     )
 
@@ -71,9 +77,11 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         need(data_exists, "Data Table will appear here")
       )
 
+      # the data ----
       isolate({
         dt_out$data <- prepare_data_management_data(
           filter_data()$filter_data,
+          id, session,
           column_names = names(dt_out$display_column_name),
           comment_column = "comment_txt",
           comment_1 = get_golem_config("comment_1"),
@@ -83,7 +91,13 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
       # UI ----
       tagList(
-        # add button for editing the table
+        # download UIs
+        fluidRow(
+          column(12, uiOutput(ns("dynamic_flagged_ui")))
+        ),
+        hr(),
+
+        # add button for deleting and downloading (all) the data the table
         fluidRow(
           column(
             width = 1,
@@ -91,12 +105,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
               icon = icon("trash-can")
             ),
           ),
-          # column(
-          #   width = 1,
-          #   actionButton(ns("save_to_db"), "Save edit",
-          #     icon = icon("save"),
-          #   ),
-          # ),
           column(
             width = 1,
             downloadButton(ns("download1"), "Download data",
@@ -104,23 +112,30 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
             )
           )
         ),
-        tags$br(),
 
-        # UI complex comment
-
-        fluidRow(
-          column(12, uiOutput(ns("dynamic_complex_ui")))
-        ),
-        p(strong("To delete row(s): "), "Select the row(s) and click the delete button."),
-        p(strong(em("When you are done editting, you will need to refresh your browser to pull the editted data into other tabs of the dashboard"))),
-        # p(strong("To edit any row:"), "Double click the row, edit its value and press CTRL+ENTER to confirm"),
-
+        # hint UI
+        p(HTML(paste0(
+          with_red_stars(strong("To delete row(s): ")), "  Select the row(s)
+          and click the delete button.",
+          strong(em(" When you are done editing, you will need to refresh your
+          browser to pull the edited data into other tabs of the dashboard."))
+        ))),
+        sprintf(
+          'Use  %s  checkbox to flag a row as "interesting" and
+            %s to flag it as "wrongly categorised".',
+          icon("flag", style = "color:green"),
+          icon("circle-xmark", style = "color:red")
+        ) |> HTML() |> strong() |>
+          paste0("  All 'interesting' rows will be available to download if you
+                 refresh your browser") |>
+          HTML(),
+        hr(),
         # display the table
         fluidRow(
           column(
             width = 12,
             title = "Patient experience table",
-            DT::DTOutput(ns("pat_table")) %>%
+            DT::DTOutput(ns("pat_table")) |>
               shinycssloaders::withSpinner()
           )
         )
@@ -129,100 +144,93 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
     # render the data table ####
     output$pat_table <- DT::renderDT({
-      
-      colnames = unlist(dt_out$display_column_name[names(dt_out$data)], use.name = FALSE)
-      stopifnot('lenght of display column name is not the same as number of columns in the data' = length(names(dt_out$data)) == length(colnames))
-      
+      columns_to_show <- setdiff(names(dt_out$data), "flagged") # remove the flagged column
+
+      colnames <- unlist(dt_out$display_column_name[columns_to_show], use.names = FALSE)
+      stopifnot("lenght of display column name is not the same as number of
+                columns in the data" = length(columns_to_show) == length(colnames))
+
       DT::datatable(
-        dt_out$data,
+        dplyr::select(dt_out$data, -flagged),
         selection = "multiple",
         rownames = FALSE,
-        # editable = list(
-        #   "target" = "row",
-        #   disable = list(columns = c(
-        #     match("comment_id", names(dt_out$data)) - 1,
-        #     match("comment_type", names(dt_out$data)) - 1,
-        #     match("pt_id", names(dt_out$data)) - 1
-        #   )) # disable editing of comment_id (0), comment_type(5), n pat_id (last column) cols
-        # ),
         filter = "top",
         class = "display cell-border compact",
         colnames = colnames,
+        escape = FALSE, # ensures HTML entities in the table are properly rendered
         options = list(
+          columnDefs = list(
+            list("searchable" = FALSE, targets = 0)
+          ),
           pageLength = 10,
           lengthMenu = c(10, 30, 50),
           dom = "lrtip",
           search = list(caseInsensitive = FALSE),
-          scrollX = TRUE
+          scrollX = TRUE,
+          #  to show processing indicator when the DataTable is busy doing some operation that would take some time
+          processing = TRUE
         )
       )
     })
 
     # create a proxy data to track the UI version of the table when edited
-    proxy <- DT::dataTableProxy(ns("pat_table"))
+    proxy <- DT::dataTableProxy("pat_table")
 
-    # Edit a row and effect it in the UI view ####
-    observeEvent(input$pat_table_cell_edit, {
-      info <- input$pat_table_cell_edit # get the edited row information
+    # flagged comments ----
 
-      info$value <- sapply(info$value, html_decoder, USE.NAMES = FALSE) # decode any html character introduced to the values
+    # `input$current_check_info` is from the
+    # JavaScript function `get_check_info` (see js_script.js)
+    # used in the `add_checkbox_buttons()` function
 
-      old_dt <- dt_out$data # Track the initial state of the data before recording user changes
+    ## flag row ----
+    observeEvent(input$current_check_info, {
+      # only run when the id isn't null and one of the flagged box is clicked
+      req(!is.null(input$current_check_info) & stringr::str_detect(input$current_check_info, pattern = "flag"))
 
-      tryCatch(
-        {
-          dt_out$data <- DT::editData(dt_out$data, info, rownames = FALSE)
+      # extracted the comment_id and TRUE/FALSE value from the checkbox
+      row <- sub("flag_", "", input$current_check_info["id"])
+      check_value <- ifelse(input$current_check_info["value"], 1, 0)
 
-          # Data Validation
-          check_list <- list()
-          dont_check_columns <- c("comment_id", "date", "comment_type", "comment_txt", "pt_id")
-          column_to_check <- setdiff(names(dt_out$data), dont_check_columns)
+      # for logging
+      if (check_value) {
+        cat("Comment '", row, "' flagged as interesting \n")
+      } else {
+        cat("Comment '", row, "' unflagged as interesting \n")
+      }
 
-          # check if the value entered for each column in column_to_check is part of the existing unique values
-          # of that column  or empty string
-          for (i in column_to_check) {
-            index <- match(i, names(dt_out$data))
-            check <- info$value[index] %in% c(unique(dplyr::pull(db_data, i)), "")
-            check_list <- check_list %>% append(check)
-          }
+      # # Update the serve data
+      # dt_out$data[row,"flagged"] <- check_value
 
-          check_list <- unlist(check_list)
-          error_columns <- column_to_check[!check_list]
-
-          # Ignore changes if enter value in some columns are not part of the  existing unique values in its column
-          if (!all(check_list)) {
-            cat("columns with error in edited row: ", error_columns, " \n") # for debugging
-
-            dt_out$data <- old_dt
-
-            showModal(modalDialog(
-              title = "Error!",
-              paste("Value(s) entered in", paste(error_columns, collapse = " and "), "column(s) is not part of existing values in that column(s)"),
-              easyClose = TRUE
-            ))
-          }
-
-          # if any allowed changes was made to the data then update the UI data
-          cat("\n is UI and server data identical?", identical(old_dt, dt_out$data), "\n")
-
-          if (!identical(old_dt, dt_out$data)) {
-            DT::replaceData(proxy, dt_out$data, rownames = FALSE, resetPaging = FALSE)
-
-            # track edits
-            dt_out$index <- unique(dt_out$index %>% append((info$value[1]))) # track row ids that has been edited
-
-            cat("Edited rows: ", unlist(dt_out$index), " \n") # for debugging
-            print(dt_out$data %>% dplyr::filter(comment_id == dt_out$index))
-          }
-        },
-        error = function(e) {
-          showModal(modalDialog(
-            title = "Error!",
-            paste(e, "\n\nPlease correct your changes"),
-            easyClose = TRUE
-          ))
-        }
+      # Update the database
+      query <- glue::glue_sql(
+        "UPDATE {`get_golem_config('trust_name')`} SET flagged = {v*} WHERE comment_id IN ({ids*})",
+        v = check_value, ids = row, .con = db_conn
       )
+      DBI::dbExecute(db_conn, query)
+    })
+
+    ## bad row ----
+    observeEvent(input$current_check_info, {
+      # only run when the id isn't null and one of the bad box is clicked
+      req(!is.null(input$current_check_info) & stringr::str_detect(input$current_check_info, pattern = "bad"))
+
+      # extracted the comment_id and TRUE/FALSE value from the checkbox
+      row <- sub("bad_", "", input$current_check_info["id"])
+      check_value <- ifelse(input$current_check_info["value"], 1, 0)
+
+      # for logging
+      if (check_value) {
+        cat("Comment '", row, "' flagged as badly coded \n")
+      } else {
+        cat("Comment '", row, "' unflagged as badly coded \n")
+      }
+
+      # Update the database
+      query <- glue::glue_sql(
+        "UPDATE {`get_golem_config('trust_name')`} SET bad_code = {v*} WHERE comment_id IN ({ids*})",
+        v = check_value, ids = row, .con = db_conn
+      )
+      DBI::dbExecute(db_conn, query)
     })
 
     # Delete data ####
@@ -230,7 +238,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     deleteData <- reactive({
       # print(input$pat_table_rows_selected) # for debugging and logging
 
-      rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] %>% unlist(use.name = FALSE)
+      rowselected <- dt_out$data[input$pat_table_rows_selected, "comment_id"] |> unlist(use.name = FALSE)
 
       # Instead of actually deleting the rows from the database, we Set the hidden flag to 1 (for all the deleted rows).
       # Only rows with hidden == 0 are loaded into the dashboard. By doing this the data can be recovered if needed
@@ -247,7 +255,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       DBI::dbExecute(db_conn, query)
 
       # update UI
-      dt_out$data <- dt_out$data %>% dplyr::filter(!comment_id %in% rowselected)
+      dt_out$data <- dt_out$data |> dplyr::filter(!comment_id %in% rowselected)
       DT::replaceData(proxy, dt_out$data, resetPaging = FALSE) # update the data on the UI
 
       cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging
@@ -294,70 +302,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       )
     })
 
-    # Save (write edited data to source) ####
-    ### The save functionalities doesn't work for now. The handling of the list columns
-    ### (category and super_category) after users press ENTER is causing the issue
-    ### This will need revisiting if we need this data editing functionality
-
-    observeEvent(input$save_to_db, {
-      if (length(dt_out$index) < 1) {
-        showModal(modalDialog(
-          title = "Error!",
-          "There is not edited changes to be save",
-          easyClose = TRUE
-        ))
-      } else {
-        showModal(
-          modalDialog(
-            title = "Save data to database!",
-            HTML(paste("Are you sure you want to update", length(dt_out$index), "record(s) of data?")),
-            easyClose = TRUE,
-            footer = tagList(
-              modalButton("Cancel"),
-              actionButton(ns("update_source"), "Update", icon = icon("database")),
-            )
-          )
-        )
-      }
-    })
-
-    observeEvent(input$update_source, {
-      tryCatch(
-        {
-          # update the database
-          trust_db <- dplyr::tbl(db_conn, get_golem_config("trust_name"))
-          dplyr::rows_update(trust_db, dt_out$data %>% dplyr::filter(comment_id %in% unlist(dt_out$index)),
-            by = "comment_id", copy = TRUE, unmatched = "ignore", in_place = TRUE
-          )
-
-          # Update the edit date for the edited rows
-          query2 <- glue::glue_sql(
-            "UPDATE {`get_golem_config('trust_name')`} SET last_edit_date = {as.POSIXlt(Sys.time(), tz = 'UTC')} WHERE comment_id IN ({ids*})",
-            ids = unlist(dt_out$index, use.names = FALSE), .con = db_conn
-          )
-          DBI::dbExecute(db_conn, query2)
-
-          showModal(modalDialog(
-            title = "Success!",
-            p(paste("Record of", length(dt_out$index), "Responder(s) have been successfully updated.")),
-            em("Please refresh your browser to visualise the update"),
-            easyClose = TRUE
-          ))
-
-          dt_out$index <- list()
-        },
-        error = function(e) {
-          showModal(modalDialog(
-            title = "Error!",
-            paste("There was a problem accessing the database. Please try again"),
-            easyClose = TRUE
-          ))
-          print(e)
-        }
-      )
-    })
-
-    # Download the data ####
+    # Download ALL the data ----
 
     output$download1 <- downloadHandler(
       filename = paste0("pat_data-", Sys.Date(), ".xlsx"),
@@ -369,30 +314,38 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       }
     )
 
-    # complex comments ----
+    # Download rows flagged as interesting ----
 
-    output$dynamic_complex_ui <- renderUI({
-      # complex comments ----
-      dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
+    output$dynamic_flagged_ui <- renderUI({
+      dt_out$flagged_comments <- dt_out$data |>
+        dplyr::filter(flagged == 1) |>
+        prepare_data_for_download()
 
-      if (nrow(dt_out$complex_comments) > 1) {
-        n_complex_comments <- dt_out$complex_comments |>
+      if (nrow(dt_out$flagged_comments) > 0) {
+        n_flagged_comments <- dt_out$flagged_comments |>
           dplyr::pull(comment_txt) |>
           length()
 
         downloadLink(
-          ns("complex_com"),
-          HTML(paste(n_complex_comments, "complex comments identified. click here to download them") %>%
-            strong() %>% h4() %>% paste())
+          ns("flagged_com"),
+          HTML(sprintf('Click here to download the %s comments "flagged as interesting"', n_flagged_comments) |>
+            strong() |>
+            h4() |>
+            paste())
         )
+      } else {
+        p('
+        No comment has been flagged as interesting. If any are flagged, 
+        they will be downloadable here.
+        ')
       }
     })
 
-    output$complex_com <- downloadHandler(
-      filename = paste0("complex_comments-", Sys.Date(), ".xlsx"),
+    output$flagged_com <- downloadHandler(
+      filename = paste0("flagged_comments-", Sys.Date(), ".xlsx"),
       content = function(file) {
         withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(dt_out$complex_comments, file)
+          writexl::write_xlsx(dt_out$flagged_comments, file)
           incProgress(1)
         })
       }
@@ -401,7 +354,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     # data upload module ----
 
     observe({
-      
       # guess the wait time for sentiment prediction
       api_jobs <- check_api_job(db_conn)
       latest_time <- api_jobs$latest_time
@@ -420,7 +372,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       } else {
         # create an upload interface
         datamods::import_modal(
-          id = session$ns("myid"),
+          id = ns("myid"),
           from = "file",
           title = "Import data to be used in Dashboard"
         )

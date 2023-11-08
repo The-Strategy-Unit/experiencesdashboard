@@ -21,21 +21,21 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # add NHS blue color to the Datatable header
-    initComplete <- DT::JS(
-      "function(settings, json) {",
-      "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-      "}"
-    )
-
     output$dynamic_click_tableUI <- renderUI({
       validate(
         need(data_exists, "Sub-Category Table will appear here")
       )
 
       fluidPage(
-        h5("Click a row to see comments related to that sub-category"),
-        DT::DTOutput(ns("table")) %>%
+        p("The boxes below show the volume of comments/responders in the data 
+        after applying the filters at the side."),
+        mod_summary_record_ui("summary_record_1") |>
+          shinycssloaders::withSpinner(),
+        # hr(),
+        p("This table shows how many comments there are for each 
+          sub-category before you drill down into the underlying comments."),
+        strong("Please click a row to see comments related to that sub-category"),
+        DT::DTOutput(ns("table")) |>
           shinycssloaders::withSpinner(),
         hr(),
         h5("Please select a Sub-category from the table above in other to drill down the table below"),
@@ -64,7 +64,7 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
           lengthMenu = c(10, 15, 20, 50),
           dom = "Blfrtip",
           buttons = c("copy", "csv", "excel", "pdf", "print"),
-          initComplete = initComplete
+          initComplete = dt_nhs_header()
         )
       )
     })
@@ -77,7 +77,7 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
 
         print(category_selected)
 
-        data <- filter_data()$single_labeled_filter_data %>%
+        data <- filter_data()$single_labeled_filter_data |>
           dplyr::filter(category == category_selected)
       }
 

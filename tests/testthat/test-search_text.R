@@ -40,7 +40,7 @@ test_that("Searching text works", {
     comment_type_filter = "comment_2",
     search_type = "or"
   )
-  expect_equal(nrow(test_text), 8)
+  expect_equal(nrow(test_text), 3)
 
   test_text <- return_search_text(
     text_data = tidy_trust_data,

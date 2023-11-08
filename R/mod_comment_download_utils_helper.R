@@ -5,15 +5,17 @@
 #' @return a formatted datatable
 #' @noRd
 prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
-
   if (in_tidy_format) {
     comment_data <- comment_data %>%
       single_to_multi_label()
+  } else{
+    comment_data <- comment_data %>%
+      clean_super_category()
   }
 
   stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = comment_data$comment_id %>% duplicated() %>% sum() == 0)
 
-  # Select the important column and format the "category", "super_category", and "comment_type" to be more user friendly 
+  # Select the important column and format the "category", "super_category", and "comment_type" to be more user friendly
   comment_data <- comment_data %>%
     dplyr::select(date, comment_type, fft, sentiment, comment_txt, category, super_category) %>%
     dplyr::mutate(
@@ -32,6 +34,11 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
       )
   }
 
+  comment_data <- comment_data  %>%
+    dplyr::mutate(
+      across(any_of(c("comment_type", "fft")), as.factor)
+    )
+  
   # rename the column name to be more user friendly
   colnames(comment_data) <- c(
     "Date", "FFT Question", "FFT Score", "Comment Sentiment",
@@ -43,27 +50,33 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   return(comment_data)
 }
 
+# internal function to color code the sentiment
+sentiment_color_code <- function() {
+  c(
+    Positive = "#009639",
+    `Neutral/Mixed` = "#E8EDEE",
+    Negative = "#DA291C"
+  )
+}
+
 #' Internal function for the comment datatable
 #'
-#' @param data a dataframe
+#' @param data a dataframe, preferable data from `prep_data_for_comment_table()`
+#' @param sentiment_column string, name of the sentiment column in the data
 #' @return a formatted datatable
 #'
 #' @noRd
-render_comment_table <- function(data) {
-  # add NHS blue color to the table header
-  initcomplete <- DT::JS(
-    "function(settings, json) {",
-    "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-    "}"
-  )
-
+render_comment_table <- function(data, sentiment_column = "Comment Sentiment") {
   return(
     DT::datatable(
       data,
       options = list(
         dom = "ipt",
-        columnDefs = list(list(width = "500px", targets = c(4))), # ensure the comment column is wider on bigger screen
-        initComplete = initcomplete,
+        columnDefs = list(
+          list(width = "500px", targets = c(4)), # ensure the comment column is wider on bigger screen
+          list(searchable = FALSE, targets = 0) # remove filtering feature from the first column
+        ),
+        initComplete = dt_nhs_header(),
         pageLength = 50,
         scrollX = TRUE,
         selection = "single"
@@ -71,6 +84,13 @@ render_comment_table <- function(data) {
       filter = "top",
       rownames = FALSE,
       class = "display cell-border compact stripe",
-    )
+    ) |>
+      DT::formatStyle(
+        columns = sentiment_column,
+        backgroundColor = DT::styleEqual(
+          names(sentiment_color_code()),
+          sentiment_color_code()
+        )
+      )
   )
 }

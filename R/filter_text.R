@@ -23,11 +23,13 @@ filter_df <- function(text_data, comment_type_filter = NULL) {
 #'
 #' @noRd
 #'
-#' @return string as a vector
+#' @return vector of string
 input_sanitizer <- function(filter_text) {
-  strsplit(filter_text, ",")[[1]] %>%
+  sanitized_input <- strsplit(filter_text, ",")[[1]] %>%
     stringr::str_to_lower() %>%
     stringr::str_remove_all("[^[:alnum:]]")
+
+  return(sanitized_input[sanitized_input != ""])
 }
 
 #' Takes a list of comments and return it in lowercase
@@ -43,19 +45,29 @@ lowered_comments <- function(comments) {
     stringr::str_to_lower()
 }
 
-#' Find list of words in a string
+#' Check if a word or its variation (singular or plural
+#' version - if they are valid words) exist in a comment
 #'
-#' @param string a string
-#' @param search_strings list of strings with search terms in it
+#' @param comment string, a single comment
 #' @param search_fn type of search ('and', 'or')
+#' @param sanitized_input list of strings, best derived from `input_sanitizer``
+#' @return logical
 #' @noRd
-check_match <- function(string, search_strings, search_fn) {
-  search_fn(
-    lapply(
-      search_strings,
-      \(p) grepl(paste0("\\b.*", p, ".*\\b"), string)
-    ) %>% unlist()
-  )
+match_term_or_stem <- function(comment, search_fn, sanitized_input) {
+  tokens <- gsub("[[:punct:] ]+", " ", comment) %>%
+    strsplit(" ") %>%
+    unlist()
+
+  lapply(sanitized_input, \(x) any(
+    x %in% tokens, # actual word
+    ifelse(stringr::str_sub(x, start = -1L) == "s",
+      stringr::str_sub(x, end = -2L)  %in% tokens,
+      FALSE
+    ), # attempt to get the singular form of a word by removing last "s"
+    paste0(x, "s") %in% tokens # the plural version
+  )) %>%
+    unlist() %>%
+    search_fn()
 }
 
 #' Find comment in list of comments where all/any of search strings exist
@@ -78,21 +90,8 @@ check_match <- function(string, search_strings, search_fn) {
 #' )
 matched_comments <- function(lowered_comments, search_fn, search_strings) {
   lowered_comments %>%
-    lapply(\(comment) check_match(comment, search_strings, search_fn)) %>%
+    lapply(\(comment) match_term_or_stem(comment, search_fn, search_strings)) %>%
     unlist()
-}
-
-#' Find the stem word version of each search term
-#'
-#' @description sanitise the input strings and add their stemmed words to the list of words to search
-#' @param filter_text comma separated string with search terms in
-#' @noRd
-sanitized_search_strings <- function(filter_text) {
-  sanitized_input <- input_sanitizer(filter_text)
-  stemmed_input <- tm::stemDocument(sanitized_input)
-  search_strings <- stemmed_input[stemmed_input != ""]
-
-  return(search_strings)
 }
 
 #' Return text from a freetext search
@@ -132,7 +131,7 @@ return_search_text <- function(text_data, filter_text, comment_type_filter = NUL
   )
 
   # sanitise the input strings and add their stemmed words to the list of words to search
-  search_strings <- sanitized_search_strings(filter_text)
+  search_strings <- input_sanitizer(filter_text)
   cat("search strings: ") # for logging
   print(search_strings) # for logging
 

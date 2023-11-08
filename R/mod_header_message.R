@@ -24,11 +24,11 @@ mod_header_message_server <- function(id, pool, db_data, data_exists) {
       isolate({
         last_upload_date <- DBI::dbGetQuery(pool, paste0("SELECT MAX(last_upload_date) FROM ",
                                                          get_golem_config('trust_name')))$`MAX(last_upload_date)`
-        last_upload_date <- if (is.na(last_upload_date)) "No edit yet" else paste(strptime(last_upload_date, format = "%Y-%m-%d %H:%M"), "GMT")
+        last_upload_date <- if (is.na(last_upload_date)) "No edit yet" else paste(strptime(as.POSIXct(last_upload_date), format = "%Y-%m-%d %H:%M"))
         
         last_date_edit <- DBI::dbGetQuery(pool, paste0("SELECT MAX(last_edit_date) FROM ", 
                                                        get_golem_config('trust_name')))$`MAX(last_edit_date)`
-        last_date_edit <- if (is.na(last_date_edit)) "No edit yet" else paste(strptime(last_date_edit, format = "%Y-%m-%d %H:%M"), "GMT")
+        last_date_edit <- if (is.na(last_date_edit)) "No edit yet" else paste(strptime(as.POSIXct(last_date_edit), format = "%Y-%m-%d %H:%M"))
         
         total_users <- db_data %>%
           dplyr::pull(pt_id) %>%

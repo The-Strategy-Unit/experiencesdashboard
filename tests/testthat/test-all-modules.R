@@ -65,27 +65,27 @@ test_that("mod_click_tables_server works correctly - user input can be accessed"
 # mod_data_management_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_data_management_server work correctly", {
   # no data in the database
-  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), FALSE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), FALSE, "user"), {
     # act/assert
     expect_error(output$data_management_UI)
   })
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), TRUE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), TRUE, "user"), {
     filter_data(
       list(
-        filter_data = phase_2_db_data |> head(100)
+        filter_data = phase_2_db_data |> head(100) |>
+          mutate(flagged = 0, bad_code = 0)
       )
     )
 
     # act/assert
     expect_no_error(output$data_management_UI)
     expect_equal(nrow(dt_out$data), 100)
-    expect_equal(ncol(dt_out$data), 19)
+    expect_equal(ncol(dt_out$data), 21)
     expect_equal(class(dt_out$data$category), "list")
     expect_no_error(output$pat_table)
     expect_equal(class(proxy), "dataTableProxy")
-    expect_true(inherits(dt_out$complex_comments, "data.frame"))
   })
 })
 
@@ -359,7 +359,7 @@ test_that("mod_patient_experience_server work correctly", {
   stub(mod_patient_experience_server, "mod_search_text_ui", m6)
 
   m7 <- mock()
-  stub(mod_patient_experience_server, "mod_summary_ui", m7)
+  stub(mod_patient_experience_server, "mod_complex_comments_ui", m7)
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "random_config")
   m8 <- mock()
@@ -370,7 +370,7 @@ test_that("mod_patient_experience_server work correctly", {
   stub(mod_patient_experience_server, "mod_demographics_ui", m9)
 
   # there is data in the database
-  testServer(mod_patient_experience_server, {
+  testServer(mod_patient_experience_server, args = list(TRUE), {
     # act
     session$setInputs()
 
@@ -749,42 +749,49 @@ test_that("mod_overlap_1_server works correctly when given some inputs", {
 
 # mod_comment_download_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("module server works well if given corrent arguements", {
+  
+  # mock render_comment_table behaviour
+  stub(mod_comment_download_server, "render_comment_table", identity)
+  
   testServer(mod_comment_download_server,
-             args = list(head(phase_2_db_data, 100), "test-data-"), {
-               ns <- session$ns
-               expect_true(
-                 inherits(ns, "function")
-               )
-               expect_true(
-                 grepl(id, ns(""))
-               )
-               expect_true(
-                 grepl("test", ns("test"))
-               )
-               
-               # the return data is accessible
-               expect_identical(return_data, head(phase_2_db_data, 100))
-               
-               # shows the comment table
-               expect_true(
-                 inherits(output$dynamic_comment_table, "json")
-               )
-               
-               # download file is named correctly
-               expect_true(grepl("(test-data-.).+(.xlsx)$", output$download_comments))
-               
-               # returned value is class shiny.tag.list
-               golem::expect_shinytaglist(session$returned)
-               expect_snapshot(session$returned)
-             }
+    args = list(head(phase_2_db_data, 100), "test-data-"),
+    {
+      ns <- session$ns
+      expect_true(
+        inherits(ns, "function")
+      )
+      expect_true(
+        grepl(id, ns(""))
+      )
+      expect_true(
+        grepl("test", ns("test"))
+      )
+
+      # the return data is accessible
+      expect_identical(return_data, head(phase_2_db_data, 100))
+
+      # shows the comment table
+      expect_true(
+        inherits(output$dynamic_comment_table, "json")
+      )
+
+      # download file is named correctly
+      expect_true(grepl("(test-data-.).+(.xlsx)$", output$download_comments))
+
+      # returned value is class shiny.tag.list
+      golem::expect_shinytaglist(session$returned)
+      expect_snapshot(session$returned)
+    }
   )
 })
 
 test_that("module server works well if passed data is empty", {
   # throw error when there is no data in the database
-  testServer(mod_comment_download_server, 
-             args = list(data.frame(), "test-data-"), {
-               # show expected result
-               expect_true(grepl("No data to show", session$returned))
-             })
+  testServer(mod_comment_download_server,
+    args = list(data.frame(), "test-data-"),
+    {
+      # show expected result
+      expect_true(grepl("No data to show", session$returned))
+    }
+  )
 })

@@ -4,35 +4,37 @@ test_that("data management data is well formatted", {
     "comment_type", "comment_txt", "fft", "category", "super_category", "sentiment", "sex",
     "gender", "age", "ethnicity", "sexuality", "disability", "religion",
     "extra_variable_1", "extra_variable_2", "extra_variable_3",
-    "pt_id"
+    "pt_id", "checks"
   )
   
-  test1 <- prepare_data_management_data(head(phase_2_db_data, 100), 
+  # mock the behavior of "add_checkbox_buttons()" and get_module_id
+  stub(prepare_data_management_data, 'add_checkbox_buttons', 'HTML')
+  stub(prepare_data_management_data, 'get_module_id', 'module_id')
+  
+  test1 <- prepare_data_management_data(head(phase_2_db_data, 100), 'id', 'session',
           selected_columns, "comment_txt", comment_1 = 'why your answer', comment_2 =  NULL)
   test_1_no <- nrow(test1)
   data_no <- phase_2_db_data %>% head(100) %>% filter(comment_type %in% c('comment_1')) %>% nrow()
   expect_equal(test_1_no, data_no)
   expect_true(unique(test1$comment_type) == 'why your answer')
   
-  test2 <- prepare_data_management_data(head(phase_2_db_data, 100), 
+  test2 <- prepare_data_management_data(head(phase_2_db_data, 100), 'id', "session",
                    selected_columns, "comment_txt", comment_1 = 'why your answer', comment_2 =  'what could improve')
   expect_equal(nrow(test2), 100)
   expect_true(all(unique(test2$comment_type) == c('why your answer',  'what could improve')))
   
   # if some location and demography data a not in the data?
-  test3 <- prepare_data_management_data(phase_2_db_data %>% 
-                     head(100) %>% 
-                     select(-location_3, -sex, -sexuality,  -religion, -disability), 
-          selected_columns, "comment_txt", comment_1 = 'why your answer', comment_2 =  NULL)
-  expect_equal(length(names(test3)), 14)
+  test3 <- prepare_data_management_data(
+    select(head(phase_2_db_data, 100), -location_3, -sex, -sexuality,  -religion, -disability),
+    'id', 'session', selected_columns, "comment_txt", comment_1 = 'why your answer', comment_2 =  NULL)
+  expect_equal(length(names(test3)), 15)
   
   
   # if empty column and columns with 'NA' are removed (ex. extra_variable_1)
-  test3 <- prepare_data_management_data(phase_2_db_data %>% 
-                     head(100) %>% 
-                     select(-location_3, -sex, -sexuality,  -religion, -disability),
-                   selected_columns, "comment_txt", comment_1 = 'why your answer', comment_2 =  NULL)
-  expect_equal(length(names(test3)), 14)
+  test3 <- prepare_data_management_data(
+    select(head(phase_2_db_data, 100), -location_3, -sex, -sexuality,  -religion, -disability),
+    'id', 'session', selected_columns, "comment_txt", comment_1 = 'why your answer', comment_2 =  NULL)
+  expect_equal(length(names(test3)), 15)
 })
 
 test_that("prepare data for download function works", {

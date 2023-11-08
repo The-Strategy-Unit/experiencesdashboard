@@ -1,4 +1,12 @@
 test_that("filter_text works", {
+  
+  # check_match and match_term_or_stem works as expected
+  comment = "There was a bit of a wait, which can’t be helped during shortage of doctors"
+  match_term_or_stem(comment, all, "doctors") |>
+    expect_true()
+  match_term_or_stem(comment, all, "doctor") |>
+    expect_true()
+  
   # lowered_comments works as expected
   expect_equal("this   and ThaT" %>%
     lowered_comments(), "this and that")
@@ -23,7 +31,7 @@ test_that("filter_text works", {
       ),
       comment_type = c("comment_1", "comment_1", "comment_1")
     ),
-    filter_text = "Uick, time, appraisal$, &!",
+    filter_text = "qUick, time, appraisal$, &!",
     comment_type_filter = "comment_1", search_type = "and",
     return_dataframe = FALSE
   )
@@ -48,8 +56,8 @@ test_that("filter_text works", {
 
   expect_equal(test3, c("<hr/>no matching result"))
 
-  # test 4 sanitized_search_strings() work correctly
-  expect_equal(sanitized_search_strings("DocTORS, staffs"), c("doctor", "staff"))
+  # test 4 input_sanitizer() work correctly
+  expect_equal(input_sanitizer("DocTORS, staffs"), c("doctors", "staffs"))
 })
 
 test_that("filter_text works - stemmed words version of each search term are searched and return", {
@@ -66,13 +74,13 @@ test_that("filter_text works - stemmed words version of each search term are sea
   search_type <- "and"
   return_dataframe <- FALSE
 
-  search_strings <- sanitized_search_strings(filter_text)
-  expect_equal(search_strings, c("doctor"))
+  search_strings <- input_sanitizer(filter_text)
+  expect_equal(search_strings, c("doctors"))
 
-  t_d <- filter_df(text_data, comment_type_filter)
-  expect_equal(nrow(t_d), 3)
+  result <- filter_df(text_data, comment_type_filter)
+  expect_equal(nrow(result), 3)
 
-  comments <- t_d |>
+  comments <- result |>
     dplyr::pull(comment_txt)
   expect_equal(comments, c(
     "tricky times, I need emergency doctor appointment",

@@ -9,12 +9,15 @@ mod_documentation_page_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h4(strong("Making best use of the qualitative comments"), style = "color : #005EB8;"),
-    HTML(paste0(
-      "This dashboard should be used to facilitate initial exploration of your qualitative data, before
-        drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
-        should read the good practice guidance on the documentation page: ",
+    HTML(paste0("
+      The key feature of this dashboard is the categorisation of large volumes
+      of qualitative comments, it should be used to facilitate initial
+      exploration of your qualitative data, before drawing fuller insight
+      from the underlying qualitative comments within the sub-categories.
+      Before using the dashboard, you should read the good practice guidance
+      on the documentation page: ",
       a(strong("Good practice guidance."),
-        href = "https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html",
+        href = "https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard_good_practice.html",
         target = "_blank"
       ),
       "This includes important
@@ -41,7 +44,8 @@ mod_documentation_page_ui <- function(id) {
     img(src = "www/framework_MVP_version.jpeg", width = "100%"),
     rep_br(2),
     p("To see detailed description of the sub-categories, kindly click on the category to expand it."),
-    DT::DTOutput(ns("framework_table"))
+    DT::DTOutput(ns("framework_table")) |>
+      shinycssloaders::withSpinner()
   )
 }
 
@@ -62,22 +66,19 @@ mod_documentation_page_server <- function(id) {
         "table.one('init', () => $('.dtrg-group').trigger('click'))"
       )
 
-      # add NHS blue color to the table header
-      initComplete <- DT::JS(
-        "function(settings, json) {",
-        "$(this.api().table().header()).css({'background-color': '#005EB8', 'color': '#fff'});",
-        "}"
-      )
-
       DT::datatable(
-        framework,
+        dplyr::select(framework, -color),
         extensions = c("RowGroup", "Buttons"), # required to show the download buttons and groups
         options = list(
           rowGroup = list(dataSrc = 1),
           dom = "Bt",
           buttons = c("csv", "excel", "pdf"),
-          initComplete = initComplete,
-          pageLength = 50
+          initComplete = dt_nhs_header(),
+          pageLength = 50,
+          columnDefs = list(
+            list("visible" = FALSE, targets = 0) # Hide the first column
+          ),
+          ordering = FALSE
         ),
         callback = callback_js,
         class = "display cell-border",
