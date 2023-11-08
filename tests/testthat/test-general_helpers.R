@@ -40,7 +40,7 @@ test_that("single_to_multi_label works", {
 
 
 test_that("render_comment_table works", {
-  test <- render_comment_table(phase_2_upload_data)
+  test <- render_comment_table(phase_2_db_data, "sentiment")
   expect_no_error(test)
   expect_true(inherits(test, "datatables"))
 })

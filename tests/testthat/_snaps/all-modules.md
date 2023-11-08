@@ -46,7 +46,7 @@
       <div class="row">
         <a id="proxy1-download_comments" class="btn btn-default shiny-download-link " href="" target="_blank" download>
           <i class="fas fa-download" role="presentation" aria-label="download icon"></i>
-          Download data
+          Download data from table
         </a>
         <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="proxy1-dynamic_comment_table" style="width:100%;height:auto;"></div>
       </div>
