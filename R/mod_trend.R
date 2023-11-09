@@ -76,7 +76,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
       )
     })
 
-    # dynamic ui part ----
+    # dynamic sub-category ui part ----
     output$category_selectionUI <- renderUI({
       choices <- filter_data()$single_labeled_filter_data$super_category %>%
         unique() %>%
@@ -99,19 +99,23 @@ mod_trend_server <- function(id, filter_data, data_exists) {
     # server code ----
     ## trend plot for the super-category ----
     super_plot_source <- ns("event_id-1") # to get user data from the super category plot
+    
     output$super_category_trend_plot <- plotly::renderPlotly({
+      
       filter_data()$single_labeled_filter_data %>%
         make_trend_data() %>%
         plot_trend("super_category", source = super_plot_source) %>%
         plotly::event_register("plotly_click")
+      
     })
 
     ## the comments tables - super category ----
     return_data <- reactive({
+      
       data <- filter_data()$single_labeled_filter_data
 
-      if (isTruthy(plotly::event_data("plotly_click", source = super_plot_source, priority = "input"))) {
-        d <- plotly::event_data("plotly_click", source = super_plot_source, priority = "input")
+      if (isTruthy(plotly::event_data("plotly_click", source = super_plot_source, priority = "event"))) {
+        d <- plotly::event_data("plotly_click", source = super_plot_source, priority = "event")
 
         super_category_selected <- d$y
         selected_date <- d$x
@@ -122,37 +126,45 @@ mod_trend_server <- function(id, filter_data, data_exists) {
         data <- filter_data()$single_labeled_filter_data %>%
           dplyr::filter(
             super_category == super_category_selected,
-            format(as.Date(date), "%Y-%m") == format(as.Date(selected_date), "%Y-%m")
+            format(as.Date(date), "%Y-%m") == selected_date
           )
       }
+      
       return(prep_data_for_comment_table(data))
     })
 
     output$dynamic_super_category_table <- renderUI({
+      
       mod_comment_download_server(ns("comment_download_1"), return_data(), filepath = "super_category-trend-")
+      
     })
     
     ## trend plot for the sub-category ----
-    sub_plot_source <- ns("event_id-1") # to get user data from the sub category plot
+    sub_plot_source <- ns("event_id-2") # to get user data from the sub category plot
     output$sub_category_trend_plot <- plotly::renderPlotly({
+      
       req(!is.null(input$select_super_category))
       
-      super_category <- input$select_super_category
       filter_data()$single_labeled_filter_data %>%
-        make_trend_data(selected_super_category = super_category) %>%
-        plot_trend("category", source = sub_plot_source, super_category = super_category) %>%
-        plotly::event_register("plotly_click")
+        make_trend_data(selected_super_category = input$select_super_category) %>%
+        plot_trend(
+          "category", 
+          source = sub_plot_source, 
+          super_category = input$select_super_category
+          )
+      
     })
 
     ## the comments tables - sub category ----
     return_data2 <- reactive({
+      
       req(!is.null(input$select_super_category))
       
       data <- filter_data()$single_labeled_filter_data %>% 
         dplyr::filter(super_category == input$select_super_category)
 
-      if (isTruthy(plotly::event_data("plotly_click", source = sub_plot_source, priority = "input"))) {
-        sub_d <- plotly::event_data("plotly_click", source = sub_plot_source, priority = "input")
+      if (isTruthy(plotly::event_data("plotly_click", source = sub_plot_source, priority = "event"))) {
+        sub_d <- plotly::event_data("plotly_click", source = sub_plot_source, priority = "event")
 
         sub_category_selected <- sub_d$y
         selected_date <- sub_d$x
@@ -163,7 +175,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
         return_data <- data %>%
           dplyr::filter(
             category == sub_category_selected,
-            format(as.Date(date), "%Y-%m") == format(as.Date(selected_date), "%Y-%m")
+            format(as.Date(date), "%Y-%m") == selected_date
           )
         
         if (nrow(return_data) > 0) data <- return_data
@@ -173,7 +185,9 @@ mod_trend_server <- function(id, filter_data, data_exists) {
     })
 
     output$dynamic_sub_category_table <- renderUI({
+      
       mod_comment_download_server(ns("comment_download_2"), return_data2(), filepath = "sub_category-trend-")
+      
     })
   })
 }
