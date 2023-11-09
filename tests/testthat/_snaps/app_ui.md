@@ -108,7 +108,13 @@
     Code
       mod_click_tables_ui("id")
     Output
-      <div id="id-dynamic_click_tableUI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-8037d1009a7c45bcf4543a6fd53b1e71" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_click_tableUI" class="shiny-html-output"></div>
+      </div>
 
 # mod_data_management_ui works
 
@@ -144,7 +150,13 @@
     Code
       mod_demographics_ui("id")
     Output
-      <div id="id-dynamic_demo_UI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-a20ad783510d301bbba36f3fff1f1e4f" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_demo_UI" class="shiny-html-output"></div>
+      </div>
 
 # mod_documentation_page_ui works
 
@@ -217,7 +229,13 @@
       mod_trend_ui("id")
     Output
       <br/>
-      <div id="id-dynamic_trendUI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-2952843a500da0d7dc13c7f622b4db18" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_trendUI" class="shiny-html-output"></div>
+      </div>
 
 # mod_report_builder_ui works
 
