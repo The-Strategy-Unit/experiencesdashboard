@@ -237,12 +237,18 @@
         <div id="id-dynamic_trendUI" class="shiny-html-output"></div>
       </div>
 
-# mod_report_builder_ui works
+# mod_complex_comments_ui works
 
     Code
-      mod_report_builder_ui("id")
+      mod_complex_comments_ui("id")
     Output
-      <div id="id-dynamic_report_UI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-6c68bc92f54824dd748672d47601c52b" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_complex_tableUI" class="shiny-html-output"></div>
+      </div>
 
 # mod_search_text_ui works
 
@@ -284,11 +290,4 @@
       mod_summary_record_ui("id")
     Output
       <div id="id-dynamic_summary_record" class="shiny-html-output"></div>
-
-# mod_summary_ui works
-
-    Code
-      mod_summary_ui("id")
-    Output
-      <div id="id-dynamic_summary" class="shiny-html-output"></div>
 
