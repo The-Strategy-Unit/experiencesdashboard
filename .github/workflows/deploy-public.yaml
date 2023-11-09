@@ -43,7 +43,7 @@ jobs:
         with:
           url: ${{ secrets.RSCONNECT_URL }}   # URL of the Connect server
           api-key: ${{ secrets.RSCONNECT_API_KEY }}   # Connect API key, which can be acquired from your Connect profile
-          access-type: acl    # accessible to specific users and groups managed within Connect
+          access-type: all    # publicly accessible
           force: true
           dir: .:/-qdc_public  # the second part specifies the URL of the deployed app 
           namespace: experiencesdashboard 
