@@ -8,7 +8,7 @@
 make_trend_data <- function(data, selected_super_category = NULL) {
   if (is.null(selected_super_category)) {
     data %>%
-      dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
+      dplyr::mutate(date = format(as.Date(date), "%Y-%m")) %>%
       dplyr::group_by(date, super_category) %>%
       dplyr::summarize(n_comments = length(unique(comment_id))) %>%
       dplyr::left_join(
@@ -19,7 +19,7 @@ make_trend_data <- function(data, selected_super_category = NULL) {
   } else {
     data %>%
       dplyr::filter(super_category %in% selected_super_category) %>%
-      dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
+      dplyr::mutate(date = format(as.Date(date), "%Y-%m")) %>%
       dplyr::group_by(date, category) %>%
       dplyr::summarize(n_comments = length(unique(comment_id))) %>%
       dplyr::left_join(
