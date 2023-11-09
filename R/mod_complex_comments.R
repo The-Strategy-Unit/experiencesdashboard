@@ -23,23 +23,12 @@ mod_complex_comments_server <- function(id, filter_data, data_exists) {
 
     # get the complex comments
     complex_comments <- reactive({
-      # data <- prepare_data_management_data(
-      #   filter_data()$filter_data,
-      #   id , session,
-      #   column_names = names(dt_out$display_column_name),
-      #   comment_column = "comment_txt",
-      #   comment_1 = get_golem_config("comment_1"),
-      #   comment_2 = get_golem_config("comment_2")
-      # )
-      
-      data <- filter_data()$filter_data
-
-      return(
-        get_complex_comments(data, multilabel_column = "category")
-      )
+      get_complex_comments(
+        filter_data()$filter_data,
+        multilabel_column = "category")
     })
 
-
+    # Dynamic UI
     output$dynamic_complex_tableUI <- renderUI({
       validate(
         need(data_exists, "Complex comment table will appear here")
@@ -55,18 +44,12 @@ mod_complex_comments_server <- function(id, filter_data, data_exists) {
       )
     })
 
-    ## the comments tables ----
-    output$comment_table <- renderUI({
-    })
-
-    # complex comments ----
-
+    # complex comments output ----
     output$dynamic_complex_ui <- renderUI({
       if (nrow(complex_comments()) > 0) {
         n_complex_comments <- complex_comments() |>
           dplyr::pull(comment_txt) |>
           length()
-
 
         return_data <- prep_data_for_comment_table(complex_comments(), in_tidy_format = FALSE)
 
