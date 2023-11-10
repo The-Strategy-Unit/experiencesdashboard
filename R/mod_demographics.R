@@ -72,7 +72,7 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
         ),
         hr(),
         pre("The below chart shows the average percentage of FFT score for each group in the demographic feature.",
-          "Note: Categories with fewer than 10 individuals are excluded",
+          "Note: Only 1-5 point FFT scores are considered and categories with fewer than 10 individuals are excluded",
           style = "background-color:#005EB8; color:#fff"
         ),
         fluidRow(
