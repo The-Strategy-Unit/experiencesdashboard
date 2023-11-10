@@ -23,16 +23,11 @@ app_ui <- function(request) {
             icon = shiny::icon("comment"),
             selected = TRUE
           ),
-          uiOutput("filter_location_1") |>
-            shinycssloaders::withSpinner(),
-          uiOutput("filter_location_2") |>
-            shinycssloaders::withSpinner(),
-          uiOutput("filter_location_3") |>
-            shinycssloaders::withSpinner(),
-          mod_demographics_selection_ui("demographics_selection_1") |>
-            shinycssloaders::withSpinner(),
-          uiOutput("date_filter_ui") |>
-            shinycssloaders::withSpinner(),
+          uiOutput("filter_location_1"),
+          uiOutput("filter_location_2"),
+          uiOutput("filter_location_3"),
+          mod_demographics_selection_ui("demographics_selection_1"),
+          uiOutput("date_filter_ui"),
           style = "color: black;" # ensure all text are black
         )
       ),
