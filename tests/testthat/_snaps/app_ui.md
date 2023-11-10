@@ -47,41 +47,11 @@
                     <span>Qualitative Data Categorisation</span>
                   </a>
                 </li>
-                <div class="shiny-spinner-output-container shiny-spinner-hideui ">
-                  <div class="load-container shiny-spinner-hidden load1">
-                    <div id="spinner-ba78c668609eded639a2da304050c63b" class="loader">Loading...</div>
-                  </div>
-                  <div style="height:400px" class="shiny-spinner-placeholder"></div>
-                  <div id="filter_location_1" class="shiny-html-output"></div>
-                </div>
-                <div class="shiny-spinner-output-container shiny-spinner-hideui ">
-                  <div class="load-container shiny-spinner-hidden load1">
-                    <div id="spinner-ae523cbb0fef0e4fb09426547ef6afd4" class="loader">Loading...</div>
-                  </div>
-                  <div style="height:400px" class="shiny-spinner-placeholder"></div>
-                  <div id="filter_location_2" class="shiny-html-output"></div>
-                </div>
-                <div class="shiny-spinner-output-container shiny-spinner-hideui ">
-                  <div class="load-container shiny-spinner-hidden load1">
-                    <div id="spinner-5cca906c3668b5351d4ab80410c66d21" class="loader">Loading...</div>
-                  </div>
-                  <div style="height:400px" class="shiny-spinner-placeholder"></div>
-                  <div id="filter_location_3" class="shiny-html-output"></div>
-                </div>
-                <div class="shiny-spinner-output-container shiny-spinner-hideui ">
-                  <div class="load-container shiny-spinner-hidden load1">
-                    <div id="spinner-2b76e3f63a54a1dc3a6b988bf6694a55" class="loader">Loading...</div>
-                  </div>
-                  <div style="height:400px" class="shiny-spinner-placeholder"></div>
-                  <div id="demographics_selection_1-dynamic_demographics_selection" class="shiny-html-output"></div>
-                </div>
-                <div class="shiny-spinner-output-container shiny-spinner-hideui ">
-                  <div class="load-container shiny-spinner-hidden load1">
-                    <div id="spinner-cd508d165900c436725416866cd0513a" class="loader">Loading...</div>
-                  </div>
-                  <div style="height:400px" class="shiny-spinner-placeholder"></div>
-                  <div id="date_filter_ui" class="shiny-html-output"></div>
-                </div>
+                <div id="filter_location_1" class="shiny-html-output"></div>
+                <div id="filter_location_2" class="shiny-html-output"></div>
+                <div id="filter_location_3" class="shiny-html-output"></div>
+                <div id="demographics_selection_1-dynamic_demographics_selection" class="shiny-html-output"></div>
+                <div id="date_filter_ui" class="shiny-html-output"></div>
               </ul>
             </section>
           </aside>
