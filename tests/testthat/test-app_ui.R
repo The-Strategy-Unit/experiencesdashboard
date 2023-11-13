@@ -39,8 +39,8 @@ test_that("mod_trend_ui works", {
 })
 
 # mod_report_builder_ui ----
-test_that("mod_report_builder_ui works", {
-  expect_snapshot(mod_report_builder_ui("id"))
+test_that("mod_complex_comments_ui works", {
+  expect_snapshot(mod_complex_comments_ui("id"))
 })
 
 # mod_search_text_ui ----
@@ -51,11 +51,6 @@ test_that("mod_search_text_ui works", {
 # mod_summary_record_ui ----
 test_that("mod_summary_record_ui works", {
   expect_snapshot(mod_summary_record_ui("id"))
-})
-
-# mod_summary_ui ----
-test_that("mod_summary_ui works", {
-  expect_snapshot(mod_summary_ui("id"))
 })
 
 # mod_comment_download_ui ----

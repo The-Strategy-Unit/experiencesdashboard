@@ -212,6 +212,26 @@ with_red_stars <- function(text) {
 }
 
 
+#' Add color to header 4 text
+#'
+#' Adds a red star at the end of the text
+#' (for example for indicating mandatory fields).
+#'
+#' @param text the HTLM text to put before the red star
+#'
+#' @return an html element
+#' @noRd
+#'
+#' @examples
+#' colored_h4("Enter your name here")
+#'
+#' @importFrom htmltools tags
+colored_h4 <- function(text, color = "#005EB8") {
+  tags$h4(
+    text,
+    style = paste("color:", color)
+  )
+}
 
 #' Repeat tags$br
 #'
@@ -241,7 +261,7 @@ rep_br <- function(times = 1) {
 #'
 #' @importFrom htmltools tags
 enurl <- function(url, text) {
-  tags$a(href = url, text)
+  tags$a(href = url, text, target = "_blank")
 }
 
 #' Columns wrappers

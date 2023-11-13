@@ -213,15 +213,6 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
 
     return(
       tagList(
-        strong(p(
-        "This plot is meant to aid users as they explore the relationships 
-        between the sub-categories. Scroll down to select the sub-categories 
-        and view the return comments")),
-        HTML(paste0(with_red_stars(strong("For users on small screen:  ")), "  This plots may not fit the screen, 
-        A quick fix is to Zoom out to 75% or 80% on your browser (access 
-        your browser setting from the three dots (…) at the top right)")),
-        hr(),
-        # br(),
         plotOutput(ns("category_upset")) %>%
           shinycssloaders::withSpinner(),
 

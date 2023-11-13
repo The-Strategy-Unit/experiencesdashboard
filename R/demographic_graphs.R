@@ -6,9 +6,13 @@
 #'
 #' @return a plotly object
 #' @noRd
-compare_demographics <- function(pass_data, variable, score_column = list("fft")) {
-  score_column <- unlist(score_column[!vapply(score_column, is.null, TRUE)])
-
+compare_demographics <- function(pass_data, variable, score_column = "fft") {
+  
+  if (score_column == "fft"){
+    pass_data <- pass_data %>%
+      dplyr::filter(.data[[score_column]] <= 5)
+  }
+  
   p <- pass_data %>%
     dplyr::filter(!is.na(.data[[variable]])) %>%
     dplyr::group_by(.data[[variable]]) %>%
@@ -16,8 +20,8 @@ compare_demographics <- function(pass_data, variable, score_column = list("fft")
       n = dplyr::n()
     ) %>%
     dplyr::filter(n > 10) %>%
-    dplyr::mutate(dplyr::across(where(is.numeric), ~ round(. * 20, 1))) %>%
     dplyr::select(-n) %>%
+    dplyr::mutate(dplyr::across(where(is.numeric), ~ 100 - round(. * 20, 1))) %>%
     tidyr::pivot_longer(-all_of(variable)) %>%
     ggplot2::ggplot(ggplot2::aes(
       x = .data[[variable]], y = value,
@@ -25,7 +29,7 @@ compare_demographics <- function(pass_data, variable, score_column = list("fft")
     )) +
     ggplot2::geom_col(position = "dodge") +
     add_theme_nhs() +
-    ggplot2::ylab("%") +
+    ggplot2::ylab(sprintf("%s %s score", "%",score_column)) +
     ggplot2::ylim(0, 100) +
     ggplot2::coord_flip() +
     ggplot2::theme(
@@ -64,7 +68,8 @@ demographic_distribution <- function(pass_data, variable, return_ggplot = FALSE)
       legend.position = "none",
       axis.title = ggplot2::element_text(size = 12),
       axis.text = ggplot2::element_text(size = 11),
-    )
+    ) +
+    ggplot2::ylab("Number of comments")
 
   if (return_ggplot) {
     return(
@@ -76,8 +81,7 @@ demographic_distribution <- function(pass_data, variable, return_ggplot = FALSE)
         ) +
         ggplot2::theme(
           axis.text.x = ggplot2::element_text(angle = 45, vjust = 1.2, hjust=1)
-        ) +
-        ggplot2::ylab("Number of comments")
+        )
     )
   }
 

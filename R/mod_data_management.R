@@ -13,6 +13,10 @@ mod_data_management_ui <- function(id) {
     fluidPage(
       tags$br(),
       fluidRow(
+        p("
+        This page is for users who wants to upload new data or amend the
+        existing data in the dashboard
+          "),
         column(
           width = 1,
           actionButton(ns("upload_new_data"), "Upload new data",
@@ -21,7 +25,8 @@ mod_data_management_ui <- function(id) {
         )
       ),
       tags$hr(),
-      uiOutput(ns("data_management_UI"))
+      uiOutput(ns("data_management_UI")) |>
+        shinycssloaders::withSpinner()
     )
   )
 }
@@ -37,7 +42,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
     dt_out <- reactiveValues(
       data = data.frame(),
       index = list(),
-      complex_comments = data.frame(),
       display_column_name = list(
         "checks" = "Flag row",
         "comment_id" = "Comment ID",
@@ -73,6 +77,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         need(data_exists, "Data Table will appear here")
       )
 
+      # the data ----
       isolate({
         dt_out$data <- prepare_data_management_data(
           filter_data()$filter_data,
@@ -87,40 +92,42 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       # UI ----
       tagList(
         # download UIs
-
         fluidRow(
-          column(12, uiOutput(ns("dynamic_complex_ui"))),
           column(12, uiOutput(ns("dynamic_flagged_ui")))
         ),
         hr(),
-        
+
         # add button for deleting and downloading (all) the data the table
         fluidRow(
           column(
             width = 1,
             actionButton(ns("del_pat"), "Delete",
-                         icon = icon("trash-can")
+              icon = icon("trash-can")
             ),
           ),
           column(
             width = 1,
             downloadButton(ns("download1"), "Download data",
-                           icon = icon("download")
+              icon = icon("download")
             )
           )
         ),
 
         # hint UI
-        p(with_red_stars(strong("To delete row(s): ")), "  Select the row(s) and click the delete button."),
-        p(strong(em("When you are done editing, you will need to refresh your browser to
-                    pull the edited data into other tabs of the dashboard."))),
+        p(HTML(paste0(
+          with_red_stars(strong("To delete row(s): ")), "  Select the row(s)
+          and click the delete button.",
+          strong(em(" When you are done editing, you will need to refresh your
+          browser to pull the edited data into other tabs of the dashboard."))
+        ))),
         sprintf(
-          'Use  %s  checkbox to flag a row as "interesting" and 
+          'Use  %s  checkbox to flag a row as "interesting" and
             %s to flag it as "wrongly categorised".',
           icon("flag", style = "color:green"),
           icon("circle-xmark", style = "color:red")
         ) |> HTML() |> strong() |>
-          paste0("  All 'interesting' rows will be available to download if you refresh your browser") |>
+          paste0("  All 'interesting' rows will be available to download if you
+                 refresh your browser") |>
           HTML(),
         hr(),
         # display the table
@@ -140,7 +147,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       columns_to_show <- setdiff(names(dt_out$data), "flagged") # remove the flagged column
 
       colnames <- unlist(dt_out$display_column_name[columns_to_show], use.names = FALSE)
-      stopifnot("lenght of display column name is not the same as number of columns in the data" = length(columns_to_show) == length(colnames))
+      stopifnot("lenght of display column name is not the same as number of
+                columns in the data" = length(columns_to_show) == length(colnames))
 
       DT::datatable(
         dplyr::select(dt_out$data, -flagged),
@@ -189,7 +197,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       } else {
         cat("Comment '", row, "' unflagged as interesting \n")
       }
-      
+
       # # Update the serve data
       # dt_out$data[row,"flagged"] <- check_value
 
@@ -313,7 +321,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         dplyr::filter(flagged == 1) |>
         prepare_data_for_download()
 
-      if (nrow(dt_out$flagged_comments) > 1) {
+      if (nrow(dt_out$flagged_comments) > 0) {
         n_flagged_comments <- dt_out$flagged_comments |>
           dplyr::pull(comment_txt) |>
           length()
@@ -325,6 +333,11 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
             h4() |>
             paste())
         )
+      } else {
+        p('
+        No comment has been flagged as interesting. If any are flagged, 
+        they will be downloadable here.
+        ')
       }
     })
 
@@ -333,34 +346,6 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       content = function(file) {
         withProgress(message = "Downloading...", value = 0, {
           writexl::write_xlsx(dt_out$flagged_comments, file)
-          incProgress(1)
-        })
-      }
-    )
-
-    # complex comments ----
-
-    output$dynamic_complex_ui <- renderUI({
-      dt_out$complex_comments <- get_complex_comments(dt_out$data, multilabel_column = "category")
-
-      if (nrow(dt_out$complex_comments) > 1) {
-        n_complex_comments <- dt_out$complex_comments |>
-          dplyr::pull(comment_txt) |>
-          length()
-
-        downloadLink(
-          ns("complex_com"),
-          HTML(paste(n_complex_comments, "complex comments identified. click here to download them") |>
-            strong() |> h4() |> paste())
-        )
-      }
-    })
-
-    output$complex_com <- downloadHandler(
-      filename = paste0("complex_comments-", Sys.Date(), ".xlsx"),
-      content = function(file) {
-        withProgress(message = "Downloading...", value = 0, {
-          writexl::write_xlsx(dt_out$complex_comments, file)
           incProgress(1)
         })
       }

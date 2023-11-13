@@ -65,23 +65,18 @@ attachment::att_amend_desc()
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module(name = "patient_experience") # Name of the module
-golem::add_module(name = "category_criticality") # Name of the module
-golem::add_module(name = "fft") # Name of the module
-golem::add_module(name = "report_builder") # Name of the module
-golem::add_module(name = "click_tables") # Name of the module
 golem::add_module(name = "search_text") # Name of the module
-golem::add_module(name = "text_reactable") # Name of the module
 golem::add_module(name = "demographics") # Name of the module
-golem::add_module(name = "summary") # Name of the module
-golem::add_module(name = "trend_overlap") # Name of the module
 golem::add_module(name = "data_management", fct = "helper") # Name of the module
 golem::add_module(name = "summary_record") # Name of the module
 golem::add_module(name = "demographics_selection") # Name of the module
 golem::add_module(name = "documentation_page") # Name of the module
 golem::add_module(name = "trend", utils = "helper") # Name of the module
 golem::add_module(name = "header_message") # Name of the module
+golem::add_module(name = "trend_overlap") # Name of the module
 golem::add_module(name = "overlap_1") # Name of the module
 golem::add_module(name = "comment_download", utils = "helper") # Name of the module
+golem::add_module(name = "complex_comments") # Name of the module
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*

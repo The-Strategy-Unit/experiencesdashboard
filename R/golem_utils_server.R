@@ -87,6 +87,16 @@ header_links <- function() {
       ),
       class = "dropdown"
     ),
+    tags$li(
+      a(
+        onclick = "onclick =window.open('https://github.com/CDU-data-science-team/experiencesdashboard')",
+        href = NULL,
+        icon("github", prefer_type = "solid"),
+        title = "Visit project GitHub page",
+        style = "cursor: pointer;"
+      ),
+      class = "dropdown"
+    ),
     class = "dropdown"
   )
 }
@@ -405,7 +415,7 @@ get_sentiment_text <- function(value) {
     value == 3 ~ "Neutral/Mixed",
     value == 4 ~ "Negative",
     value == 5 ~ "Negative",
-    TRUE ~ NA
+    TRUE ~ NA_character_
   )
 }
 

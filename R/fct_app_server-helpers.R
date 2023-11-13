@@ -22,6 +22,13 @@ set_trust_config <- function(groups) {
   }
 }
 
+#' determine if the user as admin right to edit data
+#' @param groups session$group
+#' @noRd
+is_admin_user <- function(groups) {
+  "experiencedashboard-admins" %in% groups
+}
+
 get_location_data <- function(date_filter, select_location_1, select_location_2, select_location_3) {
   return_data <- date_filter
 

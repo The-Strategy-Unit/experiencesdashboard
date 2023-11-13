@@ -28,6 +28,11 @@
                         <i class="fas fa-envelope" role="presentation" aria-label="envelope icon"></i>
                       </a>
                     </li>
+                    <li class="dropdown">
+                      <a onclick="onclick =window.open(&#39;https://github.com/CDU-data-science-team/experiencesdashboard&#39;)" title="Visit project GitHub page" style="cursor: pointer;">
+                        <i class="fab fa-github" role="presentation" aria-label="github icon"></i>
+                      </a>
+                    </li>
                   </li>
                 </ul>
               </div>
@@ -40,7 +45,6 @@
                   <a href="#shiny-tab-experiences-user" data-toggle="tab" data-value="experiences-user" data-start-selected="1">
                     <i class="far fa-comment" role="presentation" aria-label="comment icon"></i>
                     <span>Qualitative Data Categorisation</span>
-                    <small class="badge pull-right bg-green">dev</small>
                   </a>
                 </li>
                 <div id="filter_location_1" class="shiny-html-output"></div>
@@ -53,32 +57,15 @@
           </aside>
           <div class="content-wrapper">
             <section class="content">
-              <a href="https://github.com/CDU-data-science-team/experiencesdashboard"
-                   class="github-corner" aria-label="View source on GitHub"><svg width="80"
-                   height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position:
-                   absolute; top: 50; border: 0; right: 0;" aria-hidden="true"><path d="M0,0
-                   L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0
-                   C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6
-                   C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3
-                   C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor"
-                   style="transform-origin: 130px 106px;" class="octo-arm"></path><path
-                   d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6
-                   C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0
-                   C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1
-                   C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4
-                   C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9
-                   C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5
-                   C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9
-                   L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor"
-                   class="octo-body"></path></svg></a><style>.github-corner:hover
-                   .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes
-                   octocat-wave{0%,100%{transform:rotate(0)}20%,
-                   60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media
-                   (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner
-                   .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
               <div class="tab-content">
                 <div role="tabpanel" class="tab-pane" id="shiny-tab-experiences-user">
-                  <div id="patient_experience_ui_1-dynamicUI" class="shiny-html-output"></div>
+                  <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+                    <div class="load-container shiny-spinner-hidden load1">
+                      <div id="spinner-ce037ce376c5887ba6d38bdd0fa93ff0" class="loader">Loading...</div>
+                    </div>
+                    <div style="height:400px" class="shiny-spinner-placeholder"></div>
+                    <div id="patient_experience_ui_1-dynamicUI" class="shiny-html-output"></div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -91,7 +78,13 @@
     Code
       mod_click_tables_ui("id")
     Output
-      <div id="id-dynamic_click_tableUI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-8037d1009a7c45bcf4543a6fd53b1e71" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_click_tableUI" class="shiny-html-output"></div>
+      </div>
 
 # mod_data_management_ui works
 
@@ -101,6 +94,10 @@
       <div class="container-fluid">
         <br/>
         <div class="row">
+          <p>
+              This page is for users who wants to upload new data or amend the
+              existing data in the dashboard
+                </p>
           <div class="col-sm-1">
             <button id="id-upload_new_data" type="button" class="btn btn-default action-button">
               <i class="fas fa-person-circle-plus" role="presentation" aria-label="person-circle-plus icon"></i>
@@ -109,7 +106,13 @@
           </div>
         </div>
         <hr/>
-        <div id="id-data_management_UI" class="shiny-html-output"></div>
+        <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+          <div class="load-container shiny-spinner-hidden load1">
+            <div id="spinner-4f4addaabb32c3acde588397b5fddf19" class="loader">Loading...</div>
+          </div>
+          <div style="height:400px" class="shiny-spinner-placeholder"></div>
+          <div id="id-data_management_UI" class="shiny-html-output"></div>
+        </div>
       </div>
 
 # mod_demographics_ui works
@@ -117,7 +120,13 @@
     Code
       mod_demographics_ui("id")
     Output
-      <div id="id-dynamic_demo_UI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-a20ad783510d301bbba36f3fff1f1e4f" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_demo_UI" class="shiny-html-output"></div>
+      </div>
 
 # mod_documentation_page_ui works
 
@@ -127,9 +136,13 @@
       <h4 style="color : #005EB8;">
         <strong>Making best use of the qualitative comments</strong>
       </h4>
-      This dashboard should be used to facilitate initial exploration of your qualitative data, before
-              drawing fuller insight from the underlying qualitative comments. Before using the dashboard, you
-              should read the good practice guidance on the documentation page: <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard3.html" target="_blank">
+      
+            The key feature of this dashboard is the categorisation of large volumes
+            of qualitative comments, it should be used to facilitate initial
+            exploration of your qualitative data, before drawing fuller insight
+            from the underlying qualitative comments within the sub-categories.
+            Before using the dashboard, you should read the good practice guidance
+            on the documentation page: <a href="https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/dashboard_good_practice.html" target="_blank">
         <strong>Good practice guidance.</strong>
       </a>This includes important
               information, tips, and advice to help you maximise your use of the categorised qualitative comments,
@@ -152,14 +165,26 @@
       <img src="www/framework_MVP_version.jpeg" width="100%"/>
       <br/> <br/>
       <p>To see detailed description of the sub-categories, kindly click on the category to expand it.</p>
-      <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="id-framework_table" style="width:100%;height:auto;"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-f8e944809a302ad9c1115264dc8453d1" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item-overflow-hidden html-fill-item" id="id-framework_table" style="width:100%;height:auto;"></div>
+      </div>
 
 # mod_trend_overlap_ui works
 
     Code
       mod_trend_overlap_ui("id")
     Output
-      <div id="id-dynamic_trend_overlap" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-43e682cb011f04edba48fdc823ac3110" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_trend_overlap" class="shiny-html-output"></div>
+      </div>
 
 # mod_patient_experience_ui works
 
@@ -174,14 +199,26 @@
       mod_trend_ui("id")
     Output
       <br/>
-      <div id="id-dynamic_trendUI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-2952843a500da0d7dc13c7f622b4db18" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_trendUI" class="shiny-html-output"></div>
+      </div>
 
-# mod_report_builder_ui works
+# mod_complex_comments_ui works
 
     Code
-      mod_report_builder_ui("id")
+      mod_complex_comments_ui("id")
     Output
-      <div id="id-dynamic_report_UI" class="shiny-html-output"></div>
+      <div class="shiny-spinner-output-container shiny-spinner-hideui ">
+        <div class="load-container shiny-spinner-hidden load1">
+          <div id="spinner-6c68bc92f54824dd748672d47601c52b" class="loader">Loading...</div>
+        </div>
+        <div style="height:400px" class="shiny-spinner-placeholder"></div>
+        <div id="id-dynamic_complex_tableUI" class="shiny-html-output"></div>
+      </div>
 
 # mod_search_text_ui works
 
@@ -189,9 +226,28 @@
       mod_search_text_ui("id")
     Output
       <div class="container-fluid">
-        <p>Add multiple search terms with comma</p>
+        <h4 style="color: #005EB8">
+          <strong>Appropriate use of the comment search</strong>
+        </h4>
+        <p>
+            Before searching for comments on a specific topic, first identify whether 
+            a relevant sub-category already exists in the categorisation framework. 
+            If it does you should look at the comments categorised there without need 
+            to use the comment search. Word searches are a simplistic approach which 
+            can miss a lot of relevant data, whereas the sophisticated categorisation 
+            approach used within this tool has much better results. The comment search
+            is best utilised when you have a very narrow focus of interest and there 
+            is a small consistent vocabulary around the topic.
+            </p>
+        <h4 style="color: #005EB8">
+          <strong>How search is done</strong>
+        </h4>
+        <p>The search uses Boolean techniques to find all provided words, 
+            including their singular and plural forms. For instance, if you input 
+            "staff, doctors", it will also search for "staffs, doctor" and so on.".
+              </p>
         <div class="form-group shiny-input-container">
-          <label class="control-label" id="id-text_search-label" for="id-text_search">Search term(s)</label>
+          <label class="control-label" id="id-text_search-label" for="id-text_search">Search term(s) - Add multiple search terms with comma</label>
           <input id="id-text_search" type="text" class="shiny-input-text form-control" value="" placeholder="e.g. staff, doctor, nurse"/>
         </div>
         <hr/>
@@ -204,11 +260,4 @@
       mod_summary_record_ui("id")
     Output
       <div id="id-dynamic_summary_record" class="shiny-html-output"></div>
-
-# mod_summary_ui works
-
-    Code
-      mod_summary_ui("id")
-    Output
-      <div id="id-dynamic_summary" class="shiny-html-output"></div>
 

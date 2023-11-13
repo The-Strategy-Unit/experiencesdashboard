@@ -13,7 +13,7 @@ test_that("demographic_distribution functions works: return ggplot object", {
 test_that("compare_demographics functions works", {
 
   result2 <- unique_data %>%
-    compare_demographics(variable = "age", score_column = list("fft"))
+    compare_demographics(variable = "age", score_column = "fft")
   expect_true(inherits(result2, "plotly"))
   expect_snapshot(result2)
 })
