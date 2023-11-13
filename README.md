@@ -56,13 +56,13 @@ experiencesdashboard
 | Name | Link | Description |
 | ---- | ---- | ----------- |
 | .github/workflows | [[Link](/.github/workflows)]  | Github Action workflow files that automate the `R CMD check` and `deployment` process |
-| app.R | [[Link](.)]  | A `golem` file that contains the function to deploy the app on Posit platforms |
+| app.R | [[Link](.)]  | A `golem` file that contains the set of functions needed to deploy the app on any platform such as Posit Connect, etc |
 | DESCRIPTION | [[Link](.)]  | A standard `R` package file containing series of metadata about the package including the package dependencies required to run the app. It forms a key part of the dependency management |
 | NAMESPACE | [[Link](.)]  | A standard `R` package file that contains functions to import and from which package and what functions to export |
 | R/ | [[Link](R/)]  | Standard `R` package folder holding all the package functions. It contains the functions required for the app core functionality such as the Server function `app_server.R`, UI function `app_ui.R`, all the modules `mod_*` files and utilitarian/business logic functions `fct_*.R` or `*utils*.R`/ or other `.R` files. It also contains an important file, `run_app.R`, which in turn contains the [`run_app()`](R/run_app.R) function that is called to launch the app |
 | dev/ | [[Link](dev/)]  | This folder contains utilitarian files used during development phase only and not core functionalities of the app.  |
 | inst/ | [[Link](inst)]  | It contains the [`golem-config.yml`](inst/golem-config.yml) file and [`inst/app/www/`](inst/app/www/) files. [`inst/app/www/`](inst/app/www/) contains all files that are made available at application run time, while [`golem-config.yml`](inst/golem-config.yml) is an important yaml file to configure the app. |
-| test/ | [[Link](test/)]  | This folder contains the unit test infrastructure codes |
+| test/ | [[Link](tests/)]  | This folder contains the codes for the unit test infrastructure |
 | data/ | [[Link](data/)]  | Contains `.rda` data used by the app during runtime |
 | data-raw/ | [[Link](data-raw/)]  | It contains scripts to prepare dataset in the `data` folder. We also store some data in there that are not required at runtime |
 | man/ | [[Link](man/)]  | This is a standard `R` package folder containing automatically filled files for function documentations |
@@ -123,7 +123,7 @@ Your data type must follow the schema in [Database table schema](data-raw/phase_
   i. You can safely ignore these columns without any modification:  `'extra_variable_1', 'extra_variable_2', 'extra_variable_3'`
   
   ii. To ignore the following columns `
-   'location_2', 'location_3', 'sex', 'gender', 'age', 'ethnicity', 'sexuality', 'disability', 'religion',`, You need to set your configuration file accordingly. A sample configuation is this:
+   'location_2', 'location_3', 'sex', 'gender', 'age', 'ethnicity', 'sexuality', 'disability', 'religion'`, You need to set your configuration file accordingly. A sample configuation is this:
    
   ```
   my_config:
@@ -133,7 +133,7 @@ Your data type must follow the schema in [Database table schema](data-raw/phase_
     question_1: fft
     location_1: Division
   ```
-Please [get in touch](mailto:PHUdatascience@nottshc.nhs.uk) if you need additional help implementing this solution locally.
+Please [get in touch](mailto:chris.beeley@gmail.com) if you need additional help implementing this solution locally.
 
 ## Code of Conduct
 

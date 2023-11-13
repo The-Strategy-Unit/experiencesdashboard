@@ -79,7 +79,7 @@ header_links <- function() {
     ),
     tags$li(
       a(
-        onclick = "onclick =window.open('mailto:chris.beeley1@nhs.net?cc=oluwasegun.apejoye2@nottshc.nhs.uk')",
+        onclick = "onclick =window.open('mailto:chris.beeley1@nhs.net')",
         href = NULL,
         icon("envelope", prefer_type = "solid"),
         title = "Contact Project Team",

@@ -24,7 +24,7 @@
                       </a>
                     </li>
                     <li class="dropdown">
-                      <a onclick="onclick =window.open(&#39;mailto:chris.beeley1@nhs.net?cc=oluwasegun.apejoye2@nottshc.nhs.uk&#39;)" title="Contact Project Team" style="cursor: pointer;">
+                      <a onclick="onclick =window.open(&#39;mailto:chris.beeley1@nhs.net&#39;)" title="Contact Project Team" style="cursor: pointer;">
                         <i class="fas fa-envelope" role="presentation" aria-label="envelope icon"></i>
                       </a>
                     </li>
