@@ -283,10 +283,12 @@ app_server <- function(input, output, session) {
         dplyr::arrange(date)
     }
 
-    # Transform the sentiment column
+    # Transform the sentiment  and convert the category and super_category
+    # column from raw (see `transform_prediction_for_database()`)
     return_data <- return_data %>% 
       transform_sentiment() %>% 
-      drop_na_by_col(c('category', 'super_category', 'sentiment'))
+      drop_na_by_col(c('category', 'super_category', 'sentiment')) %>% 
+      dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, rawToChar)))
     
     # also return a dataset with unique individuals
     unique_data <- return_data %>%

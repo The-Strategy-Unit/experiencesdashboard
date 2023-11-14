@@ -1,0 +1,81 @@
+---
+title: "Write the predictions for all completed jobs to Database"
+author: "Experiences dashboard"
+date: 2023/11/14
+format: 
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| include: false
+
+library(DBI)
+library(odbc)
+library(dplyr)
+library(pins)
+```
+
+
+
+## Intro
+
+Use this Script to manually write the prediction for all completed jobs that couldn't be auto written to the database by the scheduled API_url_tracker on Connect
+
+```{r}
+#| message: false
+
+conn <- odbc::dbConnect(
+  drv = odbc::odbc(),
+  driver = Sys.getenv("odbc_driver"),
+  server = Sys.getenv("HOST_NAME"),
+  UID = Sys.getenv("DB_USER"),
+  PWD = Sys.getenv("MYSQL_PASSWORD"),
+  database = "TEXT_MINING",
+  Port = 3306,
+  encoding = "UTF-8"
+)
+
+# connect to strategy unit Connect server
+board <- pins::board_connect()
+
+pending_jobs <- dplyr::tbl(
+  conn,
+  dbplyr::in_schema(
+    "TEXT_MINING",
+    "api_jobs"
+  )
+) |>
+  dplyr::filter(status == "completed") |>
+  dplyr::collect()
+```
+
+
+```{r}
+if (nrow(pending_jobs) > 0) {
+  
+  for (i in 1:nrow(pending_jobs)) {
+    
+    job <- pending_jobs[i,]
+    trust_id <- as.character(job["trust_id"])
+    developer_username <- "oluwasegun.apejoye"
+    board_name = sprintf("%s/%s_prediction", developer_username, trust_id)
+    prediction <- pins::pin_read(board, board_name)
+    
+    dplyr::rows_update(
+      dplyr::tbl(conn, trust_id),
+      prediction,
+      by = "comment_id",
+      unmatched = "ignore",
+      copy = TRUE,
+      in_place = TRUE
+    )
+    
+    # update the job status as uploaded (successfully write prediction to main table)
+    DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
+    
+    # delete the prediction from the board
+    pins::pin_delete(board, board_name)
+  }
+}
+```

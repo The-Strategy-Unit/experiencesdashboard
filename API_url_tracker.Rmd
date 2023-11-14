@@ -25,6 +25,9 @@ conn <- odbc::dbConnect(
   Port = 3306
 )
 
+# connect to a pin board to save the prediction incase database writing fails
+board <- pins::board_connect()
+
 pending_jobs <- dplyr::tbl(
   conn,
   dbplyr::in_schema(
@@ -44,7 +47,8 @@ Sys.sleep(2) # Sleep for 5 seconds to allow any pending tasks to start in the AP
 if (nrow(pending_jobs) > 0) {
   pending_jobs |>
     apply(1, track_api_job,
-      conn = conn, write_db = TRUE
+      conn = conn, write_db = TRUE,
+      board = board
     )
 } else {
   paste("No pending job")
