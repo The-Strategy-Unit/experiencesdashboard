@@ -162,11 +162,11 @@ track_api_job <- function(job, conn, write_db = TRUE, board = NULL) {
 
     # update the job status as uploaded (successfully write prediction to main table)
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
-
-    cat("Job", job_id, "prediction has been successfully written to database \n")
     
     # delete the trust's prediction from the board if successfully written to database
     if (write_to_board) pins::pin_delete(board, board_name)
+    
+    cat("Job", job_id, "prediction has been successfully written to database \n")
     
   } else if (is.character(prediction)) {
     cat("Job", job_id, "is still busy \n")

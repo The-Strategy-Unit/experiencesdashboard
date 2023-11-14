@@ -20,7 +20,8 @@ library(pins)
 
 ## Intro
 
-Use this Script to manually write the prediction for all completed jobs that couldn't be auto written to the database by the scheduled API_url_tracker on Connect
+Use this Script to manually write the prediction for all completed jobs that couldn't be auto written to the database by the scheduled API_url_tracker on Connect. 
+This Script won't be needed if the [issue with the database upload](https://github.com/CDU-data-science-team/experiencesdashboard/issues/200) has been resolved. 
 
 ```{r}
 #| message: false
@@ -53,15 +54,18 @@ pending_jobs <- dplyr::tbl(
 
 ```{r}
 if (nrow(pending_jobs) > 0) {
-  
   for (i in 1:nrow(pending_jobs)) {
     
-    job <- pending_jobs[i,]
+    job <- pending_jobs[i, ]
+    job_id <- as.character(job["job_id"])
     trust_id <- as.character(job["trust_id"])
     developer_username <- "oluwasegun.apejoye"
-    board_name = sprintf("%s/%s_prediction", developer_username, trust_id)
-    prediction <- pins::pin_read(board, board_name)
+    board_name <- sprintf("%s/%s_prediction", developer_username, trust_id)
     
+    # get the prediction from the board
+    prediction <- pins::pin_read(board, board_name)
+
+    # update the main table on the database
     dplyr::rows_update(
       dplyr::tbl(conn, trust_id),
       prediction,
@@ -70,12 +74,16 @@ if (nrow(pending_jobs) > 0) {
       copy = TRUE,
       in_place = TRUE
     )
-    
+
     # update the job status as uploaded (successfully write prediction to main table)
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
-    
+
     # delete the prediction from the board
     pins::pin_delete(board, board_name)
+
+    cat("Job", job_id, "prediction has been successfully written to database \n")
   }
+} else {
+  cat("No uncompleted job")
 }
 ```

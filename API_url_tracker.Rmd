@@ -25,8 +25,11 @@ conn <- odbc::dbConnect(
   Port = 3306
 )
 
-# connect to a pin board to save the prediction incase database writing fails
+# connect to a pin board to save the prediction in case database writing fails. 
 board <- pins::board_connect()
+# OR
+# # Set board to Null if database writing is no longer an issue
+# board = NULL
 
 pending_jobs <- dplyr::tbl(
   conn,
