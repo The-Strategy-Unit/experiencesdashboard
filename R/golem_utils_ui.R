@@ -195,10 +195,13 @@ jq_hide <- function(id) {
 #' with_red_star("Enter your name here")
 #'
 #' @importFrom htmltools tags HTML
-with_red_star <- function(text) {
+with_red_stars <- function(text) {
   htmltools::tags$span(
     HTML(
       paste0(
+        htmltools::tags$span(
+          style = "color:red", "*"
+        ),
         text,
         htmltools::tags$span(
           style = "color:red", "*"
@@ -209,6 +212,26 @@ with_red_star <- function(text) {
 }
 
 
+#' Add color to header 4 text
+#'
+#' Adds a red star at the end of the text
+#' (for example for indicating mandatory fields).
+#'
+#' @param text the HTLM text to put before the red star
+#'
+#' @return an html element
+#' @noRd
+#'
+#' @examples
+#' colored_h4("Enter your name here")
+#'
+#' @importFrom htmltools tags
+colored_h4 <- function(text, color = "#005EB8") {
+  tags$h4(
+    text,
+    style = paste("color:", color)
+  )
+}
 
 #' Repeat tags$br
 #'
@@ -238,7 +261,7 @@ rep_br <- function(times = 1) {
 #'
 #' @importFrom htmltools tags
 enurl <- function(url, text) {
-  tags$a(href = url, text)
+  tags$a(href = url, text, target = "_blank")
 }
 
 #' Columns wrappers
@@ -310,21 +333,57 @@ col_1 <- function(...) {
 #' #' @importFrom markdown markdownToHTML
 #' #' @importFrom htmltools HTML
 #' includeRMarkdown <- function(path){
+#' #'
+#' #'   md <- tempfile(fileext = '.md')
+#' #'
+#' #'   on.exit(unlink(md),add = TRUE)
+#' #'
+#' #'   rmarkdown::render(
+#' #'     path,
+#' #'     output_format = 'md_document',
+#' #'     output_dir = tempdir(),
+#' #'     output_file = md,quiet = TRUE
+#' #'     )
+#' #'
+#' #'   html <- markdown::markdownToHTML(md, fragment.only = TRUE)
+#' #'
+#' #'   Encoding(html) <- "UTF-8"
+#' #'
+#' #'   return(HTML(html))
+#' #' }
+
+#' Internal function to add 2 group of checkboxs to a datatable
+#' in a sub-module based on values from two columns within the data
 #'
-#'   md <- tempfile(fileext = '.md')
+#' @param inputId unique input id to access the box
+#' @param module_id id used to call the module, see `get_module_id()`
+#' @param flag_value integer, value 1 or 0 (from a column containing 1, 0)
+#' used to check (1) or uncheck (0) the box when the table loads
+#' @param bad_value integer, value 1 or 0 from the (from a column containing
+#'  1, 0) used to check (1) or uncheck (0) the box when the table loads
 #'
-#'   on.exit(unlink(md),add = TRUE)
-#'
-#'   rmarkdown::render(
-#'     path,
-#'     output_format = 'md_document',
-#'     output_dir = tempdir(),
-#'     output_file = md,quiet = TRUE
-#'     )
-#'
-#'   html <- markdown::markdownToHTML(md, fragment.only = TRUE)
-#'
-#'   Encoding(html) <- "UTF-8"
-#'
-#'   return(HTML(html))
-#' }
+#' @return string, A list of HTML elements
+#' @noRd
+add_checkbox_buttons <- function(inputId, module_id, flag_value, bad_value) {
+  flag_value <- ifelse(flag_value, "checked", "uncheck")
+  bad_value <- ifelse(bad_value, "checked", "uncheck")
+
+  glue::glue('
+<div class="form-group">
+  <div class="checkbox">
+    <label>
+      <input id="flag_{inputId}" type="checkbox" class="shiny-input-checkbox"
+       {flag_value} onclick=get_check_info(this,"{module_id}")>
+       <span><i class="fa-solid fa-flag" style="color:green"></i></span>
+    </label>
+  </div>
+  <div class="checkbox">
+    <label>
+      <input id="bad_{inputId}" type="checkbox" class="shiny-input-checkbox"
+       {bad_value} onclick=get_check_info(this,"{module_id}")>
+       <span><i class="fa-solid fa-circle-xmark" style="color:red"></i></span>
+    </label>
+  </div>
+</div>
+')
+}

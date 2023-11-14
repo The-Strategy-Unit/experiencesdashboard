@@ -8,15 +8,25 @@
 make_trend_data <- function(data, selected_super_category = NULL) {
   if (is.null(selected_super_category)) {
     data %>%
-      dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
+      dplyr::mutate(date = format(as.Date(date), "%Y-%m")) %>%
       dplyr::group_by(date, super_category) %>%
-      dplyr::summarize(n_comments = length(unique(comment_id)))
+      dplyr::summarize(n_comments = length(unique(comment_id))) %>%
+      dplyr::left_join(
+        dplyr::select(framework, Category, color) %>% 
+          dplyr::distinct(),
+        by = dplyr::join_by(super_category == Category)
+      )
   } else {
     data %>%
       dplyr::filter(super_category %in% selected_super_category) %>%
-      dplyr::mutate(date = as.Date(cut(date, "month"))) %>%
+      dplyr::mutate(date = format(as.Date(date), "%Y-%m")) %>%
       dplyr::group_by(date, category) %>%
-      dplyr::summarize(n_comments = length(unique(comment_id)))
+      dplyr::summarize(n_comments = length(unique(comment_id))) %>%
+      dplyr::left_join(
+        dplyr::select(framework, `Sub-category`, color) %>% 
+          dplyr::distinct(),
+        by = dplyr::join_by(category == `Sub-category`)
+      )
   }
 }
 
@@ -31,6 +41,7 @@ make_trend_data <- function(data, selected_super_category = NULL) {
 #' @noRd
 #' @return a plotly object
 plot_trend <- function(data, category_column, source, super_category = NULL) {
+  
   p <- data %>%
     plotly::plot_ly(
       x = ~date,
@@ -38,9 +49,8 @@ plot_trend <- function(data, category_column, source, super_category = NULL) {
       size = ~n_comments,
       type = "scatter",
       mode = "markers",
-      color = I("#005EB8"),
+      color = ~I(color),
       symbol = I("square"),
-      alpha = .8,
       showlegend = FALSE,
       source = source
     ) %>%
@@ -78,7 +88,7 @@ plot_trend <- function(data, category_column, source, super_category = NULL) {
       ) %>%
       plotly::layout(
         xaxis = list(title = ""),
-        yaxis = list(title = "Sub Categorie")
+        yaxis = list(title = "Sub Categories")
       )
   }
 }

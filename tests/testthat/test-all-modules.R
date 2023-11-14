@@ -65,27 +65,27 @@ test_that("mod_click_tables_server works correctly - user input can be accessed"
 # mod_data_management_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_data_management_server work correctly", {
   # no data in the database
-  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), FALSE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), FALSE, "user"), {
     # act/assert
     expect_error(output$data_management_UI)
   })
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
-  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), TRUE), {
+  testServer(mod_data_management_server, args = list("db_conn", reactiveVal(), TRUE, "user"), {
     filter_data(
       list(
-        filter_data = phase_2_db_data |> head(100)
+        filter_data = phase_2_db_data |> head(100) |>
+          mutate(flagged = 0, bad_code = 0)
       )
     )
 
     # act/assert
     expect_no_error(output$data_management_UI)
     expect_equal(nrow(dt_out$data), 100)
-    expect_equal(ncol(dt_out$data), 19)
+    expect_equal(ncol(dt_out$data), 21)
     expect_equal(class(dt_out$data$category), "list")
     expect_no_error(output$pat_table)
     expect_equal(class(proxy), "dataTableProxy")
-    expect_true(inherits(dt_out$complex_comments, "data.frame"))
   })
 })
 
@@ -205,110 +205,6 @@ test_that("mod_documentation_page_server work correctly", {
   })
 })
 
-# mod_fft_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_that("it set's up graph data correctly", {
-  # arrange
-  m <- mock("spc_data")
-
-  stub(mod_fft_server, "split_data_spc", m)
-
-  testServer(mod_fft_server, args = list(reactiveVal()), {
-    filter_data(
-      list(
-        unique_data = "data"
-      )
-    )
-
-    #  act/assert
-    expect_equal(graph_data(), "spc_data")
-
-    expect_called(m, 1)
-    expect_args(m, 1, "data", variable = "fft", chunks = "monthly")
-  })
-})
-
-test_that("it checks the number of rows", {
-  # arrange
-  graph_data_expected <- tibble(
-    date = c(
-      "2020-12-01", "2021-01-01", "2021-02-01",
-      "2021-03-01", "2021-04-01", "2021-05-01"
-    ),
-    n = c(1, 2, 2, 3, 3, 3)
-  )
-
-  stub(mod_fft_server, "split_data_spc", graph_data_expected)
-
-  testServer(mod_fft_server, args = list(reactiveVal()), {
-    filter_data(
-      list(
-        unique_data = "data"
-      )
-    )
-
-    #  act/assert
-    expect_equal(no_group(), 6)
-  })
-})
-
-
-test_that("it doesn't validates the plot data when group is less than 10", {
-  # arrange
-  graph_data_expected <- tibble(
-    date = c(
-      "2020-12-01", "2021-01-01", "2021-02-01",
-      "2021-03-01", "2021-04-01", "2021-05-01"
-    ),
-    fft = c(1, 2, 2, 3, 3, 3)
-  )
-
-  m <- mock()
-
-  graph_data_expected <- graph_data_expected |>
-    mutate(date = as.Date(date))
-
-  stub(mod_fft_server, "split_data_spc", graph_data_expected)
-  stub(mod_fft_server, "plot_fft_spc", m)
-
-  testServer(mod_fft_server, args = list(reactiveVal()), {
-    expect_error(output$spc_plot)
-    expect_called(m, 0)
-  })
-})
-
-test_that("it validates the plot data when group is at least 10", {
-  # arrange
-  graph_data_expected <- tibble(
-    date = c(
-      "2020-04-01", "2020-05-01", "2020-08-01",
-      "2020-09-01", "2020-10-01", "2020-11-01",
-      "2020-12-01", "2021-01-01", "2021-02-01",
-      "2021-03-01", "2021-04-01", "2021-05-01"
-    ),
-    fft = c(1, 2, 2, 3, 3, 3, 4, 5, 3, 5, 3, 4)
-  )
-
-  m <- mock()
-
-  stub(mod_fft_server, "split_data_spc", graph_data_expected)
-  stub(mod_fft_server, "plot_fft_spc", m)
-
-  testServer(mod_fft_server, args = list(reactiveVal()), {
-    filter_data(
-      list(
-        unique_data = "data"
-      )
-    )
-
-    # act/assert
-    expect_no_error(output$spc_plot)
-    expect_no_warning(output$spc_plot)
-
-    expect_called(m, 1)
-    expect_args(m, 1, graph_data_expected)
-  })
-})
-
 # mod_header_message_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_header_message_server work correctly", {
   # arrange
@@ -359,7 +255,7 @@ test_that("mod_patient_experience_server work correctly", {
   stub(mod_patient_experience_server, "mod_search_text_ui", m6)
 
   m7 <- mock()
-  stub(mod_patient_experience_server, "mod_summary_ui", m7)
+  stub(mod_patient_experience_server, "mod_complex_comments_ui", m7)
 
   withr::local_envvar("R_CONFIG_ACTIVE" = "random_config")
   m8 <- mock()
@@ -370,7 +266,7 @@ test_that("mod_patient_experience_server work correctly", {
   stub(mod_patient_experience_server, "mod_demographics_ui", m9)
 
   # there is data in the database
-  testServer(mod_patient_experience_server, {
+  testServer(mod_patient_experience_server, args = list(TRUE), {
     # act
     session$setInputs()
 
@@ -421,115 +317,6 @@ test_that("mod_summary_record_server works correctly", {
   })
 })
 
-# mod_report_builder_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_that("mod_report_builder_server work correctly: nothing is selected", {
-  # no data in the database
-  testServer(mod_report_builder_server, args = list(reactiveVal(), FALSE), {
-    # act/assert
-    expect_error(output$dynamic_report_UI)
-  })
-
-  testServer(mod_report_builder_server, args = list(filter_data = reactiveVal(), all_inputs = reactiveVal(), data_exists = TRUE), {
-    all_inputs <- reactive({
-      list(
-        "date_from" = as.Date("2020-05-26"),
-        "date_to" = as.Date("2021-10-18"),
-        "location_1" = NULL,
-        "location_2" = NULL,
-        "location_3" = NULL
-      )
-    })
-    # act/assert
-    expect_no_error(output$dynamic_report_UI)
-    expect_no_error(output$report_componentsUI)
-    expect_null(input$report_components)
-    expect_error(output$download_report)
-  })
-})
-
-test_that("mod_report_builder_server work correctly: filter data is less than 10 rows", {
-  # no data in the database
-  testServer(mod_report_builder_server, args = list(reactiveVal(), FALSE), {
-    # act/assert
-    expect_error(output$dynamic_report_UI)
-  })
-
-  # there is data in the database
-  testServer(mod_report_builder_server, args = list(filter_data = reactiveVal(), all_inputs = reactiveVal(), data_exists = TRUE), {
-    filter_data(
-      list(
-        filter_data = phase_2_db_data |> head(9),
-        single_labeled_filter_data = "data"
-      )
-    )
-    all_inputs <- reactive({
-      list(
-        "date_from" = as.Date("2020-05-26"),
-        "date_to" = as.Date("2021-10-18"),
-        "location_1" = NULL,
-        "location_2" = NULL,
-        "location_3" = NULL
-      )
-    })
-
-    # act
-    session$setInputs(report_components = c(
-      "% categories table" = "category_table",
-      "Verbatim comments" = "verbatim_comments"
-    ))
-
-
-    # assert
-    expect_no_error(output$dynamic_report_UI)
-    expect_no_error(output$report_componentsUI)
-
-    expect_true(nrow(filter_data()$filter_data) < 10)
-    expect_error(output$download_report)
-  })
-})
-
-test_that("mod_report_builder_server work correctly", {
-  # no data in the database
-  testServer(mod_report_builder_server, args = list(reactiveVal(), FALSE), {
-    # act/assert
-    expect_error(output$dynamic_report_UI)
-  })
-
-  # There is data in the database
-  testServer(mod_report_builder_server, args = list(filter_data = reactiveVal(), all_inputs = reactiveVal(), data_exists = TRUE), {
-    filter_data(
-      list(
-        filter_data = phase_2_db_data |> head(10),
-        single_labeled_filter_data = phase_2_db_data |>
-          head(10) |>
-          get_tidy_filter_data(TRUE)
-      )
-    )
-    all_inputs <- reactive({
-      list(
-        "date_from" = as.Date("2020-05-26"),
-        "date_to" = as.Date("2021-10-18"),
-        "location_1" = NULL,
-        "location_2" = NULL,
-        "location_3" = NULL
-      )
-    })
-
-    # act
-    session$setInputs(report_components = c(
-      "% categories table" = "category_table",
-      "Verbatim comments" = "verbatim_comments"
-    ))
-    session$setInputs(time_period = "Previous quarter")
-
-
-    # assert
-    expect_no_error(output$dynamic_report_UI)
-    expect_no_error(output$report_componentsUI)
-    expect_no_error(output$download_report)
-  })
-})
-
 # mod_search_text_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("mod_search_text_server work correctly", {
   # no data in the database
@@ -553,20 +340,6 @@ test_that("mod_search_text_server work correctly", {
     # act/assert
     expect_no_error(return_data())
     expect_no_error(output$comment_output)
-  })
-})
-
-# mod_summary_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_that("mod_summary_server work correctly", {
-  # no data in the database
-  testServer(mod_summary_server, args = list(FALSE), {
-    # act/assert
-    expect_error(output$dynamic_summary)
-  })
-
-  testServer(mod_summary_server, args = list(TRUE), {
-    # act/assert
-    expect_no_error(output$dynamic_summary)
   })
 })
 
@@ -749,42 +522,99 @@ test_that("mod_overlap_1_server works correctly when given some inputs", {
 
 # mod_comment_download_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 test_that("module server works well if given corrent arguements", {
+  
+  # mock render_comment_table behaviour
+  stub(mod_comment_download_server, "render_comment_table", identity)
+  
   testServer(mod_comment_download_server,
-             args = list(head(phase_2_db_data, 100), "test-data-"), {
-               ns <- session$ns
-               expect_true(
-                 inherits(ns, "function")
-               )
-               expect_true(
-                 grepl(id, ns(""))
-               )
-               expect_true(
-                 grepl("test", ns("test"))
-               )
-               
-               # the return data is accessible
-               expect_identical(return_data, head(phase_2_db_data, 100))
-               
-               # shows the comment table
-               expect_true(
-                 inherits(output$dynamic_comment_table, "json")
-               )
-               
-               # download file is named correctly
-               expect_true(grepl("(test-data-.).+(.xlsx)$", output$download_comments))
-               
-               # returned value is class shiny.tag.list
-               golem::expect_shinytaglist(session$returned)
-               expect_snapshot(session$returned)
-             }
+    args = list(head(phase_2_db_data, 100), "test-data-"),
+    {
+      ns <- session$ns
+      expect_true(
+        inherits(ns, "function")
+      )
+      expect_true(
+        grepl(id, ns(""))
+      )
+      expect_true(
+        grepl("test", ns("test"))
+      )
+
+      # the return data is accessible
+      expect_identical(return_data, head(phase_2_db_data, 100))
+
+      # shows the comment table
+      expect_true(
+        inherits(output$dynamic_comment_table, "json")
+      )
+
+      # download file is named correctly
+      expect_true(grepl("(test-data-.).+(.xlsx)$", output$download_comments))
+
+      # returned value is class shiny.tag.list
+      golem::expect_shinytaglist(session$returned)
+      expect_snapshot(session$returned)
+    }
   )
 })
 
 test_that("module server works well if passed data is empty", {
   # throw error when there is no data in the database
-  testServer(mod_comment_download_server, 
-             args = list(data.frame(), "test-data-"), {
-               # show expected result
-               expect_true(grepl("No data to show", session$returned))
-             })
+  testServer(mod_comment_download_server,
+    args = list(data.frame(), "test-data-"),
+    {
+      # show expected result
+      expect_true(grepl("No data to show", session$returned))
+    }
+  )
+})
+
+# mod_complex_comments_server ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_that("mod_complex_comments_server well if given corrent arguements", {
+  
+  # arrange
+  withr::local_envvar("R_CONFIG_ACTIVE" = "phase_2_demo")
+  
+  ## when complex comment is present 
+  # mock prep_data_for_comment_table and get_complex_comments behaviors
+  stub(mod_complex_comments_server, "get_complex_comments", identity(head(phase_2_db_data, 10)))
+  stub(mod_complex_comments_server, "prep_data_for_comment_table", identity(head(phase_2_db_data, 10)))
+  
+  testServer(mod_complex_comments_server, args = list(reactiveVal(), TRUE), {
+    filter_data(
+      list(
+        filter_data = phase_2_db_data |> head(10)
+      )
+    )
+    
+    # act/assert
+    expect_identical(complex_comments(), head(phase_2_db_data, 10))
+    expect_snapshot(output$dynamic_complex_ui)
+  })
+  
+  # when no complex comment
+  # arrange
+  stub(mod_complex_comments_server, "get_complex_comments", data.frame())
+  
+  testServer(mod_complex_comments_server, args = list(reactiveVal(), TRUE), {
+    filter_data(
+      list(
+        filter_data = phase_2_db_data |> head(10)
+      )
+    )
+    
+    # act/assert
+    expect_identical(complex_comments(), data.frame())
+    expect_no_error(output$dynamic_complex_ui)
+    # 
+    expect_equal(grep("No complex comment identified", output$dynamic_complex_ui), 1)
+  })
+})
+
+test_that("mod_complex_comments_server work correctly", {
+  # no data in the database
+  testServer(mod_complex_comments_server, args = list(reactiveVal(), FALSE), {
+    # act/assert
+    expect_error(output$dynamic_complex_tableUI)
+  })
 })
