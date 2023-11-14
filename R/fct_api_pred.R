@@ -144,7 +144,7 @@ track_api_job <- function(job, conn, write_db = TRUE, board = NULL) {
     # it will be deleted if database writing is successful but if not 
     # it can then be picked up later for local database writing
     if (write_to_board) {
-      pins::pin_write(board, x = prediction, name = board_name, 
+      board_path <- pins::pin_write(board, x = prediction, name = board_name, 
                       type = "rds", versioned = FALSE)
     }
 
@@ -164,7 +164,7 @@ track_api_job <- function(job, conn, write_db = TRUE, board = NULL) {
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
     
     # delete the trust's prediction from the board if successfully written to database
-    if (write_to_board) pins::pin_delete(board, board_name)
+    if (write_to_board) pins::pin_delete(board, board_path)
     
     cat("Job", job_id, "prediction has been successfully written to database \n")
     
