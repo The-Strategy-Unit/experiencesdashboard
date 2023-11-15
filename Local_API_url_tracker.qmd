@@ -55,13 +55,11 @@ pending_jobs <- dplyr::tbl(
 ```{r}
 if (nrow(pending_jobs) > 0) {
   for (i in 1:nrow(pending_jobs)) {
-    
     job <- pending_jobs[i, ]
     job_id <- as.character(job["job_id"])
     trust_id <- as.character(job["trust_id"])
-    developer_username <- "oluwasegun.apejoye"
-    board_path <- sprintf("%s/%s_prediction", developer_username, trust_id)
-    
+    board_path <- as.character(job["pin_path"])
+
     # get the prediction from the board
     prediction <- pins::pin_read(board, board_path)
 
@@ -80,6 +78,10 @@ if (nrow(pending_jobs) > 0) {
 
     # delete the prediction from the board
     pins::pin_delete(board, board_path)
+    DBI::dbExecute(
+      conn,
+      sprintf("UPDATE api_jobs SET pin_path ='%s' WHERE job_id = %s", NA, job_id)
+    )
 
     cat("Job", job_id, "prediction has been successfully written to database \n")
   }

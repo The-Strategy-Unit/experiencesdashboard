@@ -146,6 +146,7 @@ track_api_job <- function(job, conn, write_db = TRUE, board = NULL) {
     if (write_to_board) {
       board_path <- pins::pin_write(board, x = prediction, name = board_name, 
                       type = "rds", versioned = FALSE)
+      DBI::dbExecute(conn, sprintf("UPDATE api_jobs SET pin_path ='%s' WHERE job_id = %s", board_path, job_id))
     }
 
     # update the main table
@@ -164,7 +165,13 @@ track_api_job <- function(job, conn, write_db = TRUE, board = NULL) {
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
     
     # delete the trust's prediction from the board if successfully written to database
-    if (write_to_board) pins::pin_delete(board, board_path)
+    if (write_to_board) {
+      pins::pin_delete(board, board_path)
+      DBI::dbExecute(
+        conn, 
+        sprintf("UPDATE api_jobs SET pin_path ='%s' WHERE job_id = %s", NA, job_id)
+        )
+    }
     
     cat("Job", job_id, "prediction has been successfully written to database \n")
     
