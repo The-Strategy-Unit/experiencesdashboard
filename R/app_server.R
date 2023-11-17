@@ -283,7 +283,7 @@ app_server <- function(input, output, session) {
         dplyr::arrange(date)
     }
 
-    # Transform the sentiment column
+    # Transform the sentiment 
     return_data <- return_data %>% 
       transform_sentiment() %>% 
       drop_na_by_col(c('category', 'super_category', 'sentiment'))

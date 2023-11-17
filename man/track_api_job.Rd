@@ -4,7 +4,7 @@
 \alias{track_api_job}
 \title{Track the API job table. If prediction is done, it writes it to the main table and delete the job from the api job table}
 \usage{
-track_api_job(job, conn, write_db = TRUE)
+track_api_job(job, conn, write_db = TRUE, board = NULL)
 }
 \arguments{
 \item{job}{an instance of the api job table}
@@ -12,6 +12,8 @@ track_api_job(job, conn, write_db = TRUE)
 \item{conn}{database connection}
 
 \item{write_db}{logical should the prediction data be written to the database or returned as a dataframe?}
+
+\item{board}{a pin board to temporary write the prediction incase database writing fails}
 }
 \value{
 dataframe (if `write_db` is FALSE)

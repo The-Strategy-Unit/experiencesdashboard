@@ -1,6 +1,6 @@
 ---
 title: "API URL tracker"
-author: "Oluwasegun Apejoye"
+author: "Experiences Dashboard"
 date: "2023-09-04"
 output: html_document
 ---
@@ -25,6 +25,12 @@ conn <- odbc::dbConnect(
   Port = 3306
 )
 
+# connect to a pin board to save the prediction in case database writing fails. 
+board <- pins::board_connect()
+# OR
+# # Set board to Null if database writing is no longer an issue
+# board = NULL
+
 pending_jobs <- dplyr::tbl(
   conn,
   dbplyr::in_schema(
@@ -44,7 +50,8 @@ Sys.sleep(2) # Sleep for 5 seconds to allow any pending tasks to start in the AP
 if (nrow(pending_jobs) > 0) {
   pending_jobs |>
     apply(1, track_api_job,
-      conn = conn, write_db = TRUE
+      conn = conn, write_db = TRUE,
+      board = board
     )
 } else {
   paste("No pending job")
