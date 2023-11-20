@@ -1,0 +1,91 @@
+---
+title: "Write the predictions for all completed jobs to Database"
+author: "Experiences dashboard"
+date: 2023/11/14
+format: 
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| include: false
+
+library(DBI)
+library(odbc)
+library(dplyr)
+library(pins)
+```
+
+
+
+## Intro
+
+Use this Script to manually write the prediction for all completed jobs that couldn't be auto written to the database by the scheduled API_url_tracker on Connect. 
+This Script won't be needed if the [issue with the database upload](https://github.com/CDU-data-science-team/experiencesdashboard/issues/200) has been resolved. 
+
+```{r}
+#| message: false
+
+conn <- odbc::dbConnect(
+  drv = odbc::odbc(),
+  driver = Sys.getenv("odbc_driver"),
+  server = Sys.getenv("HOST_NAME"),
+  UID = Sys.getenv("DB_USER"),
+  PWD = Sys.getenv("MYSQL_PASSWORD"),
+  database = "TEXT_MINING",
+  Port = 3306,
+  encoding = "UTF-8"
+)
+
+# connect to strategy unit Connect server
+board <- pins::board_connect()
+
+pending_jobs <- dplyr::tbl(
+  conn,
+  dbplyr::in_schema(
+    "TEXT_MINING",
+    "api_jobs"
+  )
+) |>
+  dplyr::filter(status == "completed") |>
+  dplyr::collect()
+```
+
+
+```{r}
+if (nrow(pending_jobs) > 0) {
+  for (i in 1:nrow(pending_jobs)) {
+    job <- pending_jobs[i, ]
+    job_id <- as.character(job["job_id"])
+    trust_id <- as.character(job["trust_id"])
+    board_path <- as.character(job["pin_path"])
+
+    # get the prediction from the board
+    prediction <- pins::pin_read(board, board_path)
+
+    # update the main table on the database
+    dplyr::rows_update(
+      dplyr::tbl(conn, trust_id),
+      prediction,
+      by = "comment_id",
+      unmatched = "ignore",
+      copy = TRUE,
+      in_place = TRUE
+    )
+
+    # update the job status as uploaded (successfully write prediction to main table)
+    DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
+
+    # delete the prediction from the board
+    pins::pin_delete(board, board_path)
+    DBI::dbExecute(
+      conn,
+      sprintf("UPDATE api_jobs SET pin_path ='%s' WHERE job_id = %s", NA, job_id)
+    )
+
+    cat("Job", job_id, "prediction has been successfully written to database \n")
+  }
+} else {
+  cat("No uncompleted job")
+}
+```

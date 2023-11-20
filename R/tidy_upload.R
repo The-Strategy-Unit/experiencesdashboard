@@ -178,10 +178,13 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
   } else {
     tidy_data <- tidy_data %>%
       dplyr::filter(question_type == api_question_code(get_golem_config("comment_1")))
+    
+    db_tidy <- db_tidy %>%
+      dplyr::filter(comment_type == "comment_1")
   }
 
   ## get prediction url ----
-  cat("Making sentiment and label predictions for", nrow(db_tidy), "comments from pxtextming API \n")
+  cat("Making sentiment and label predictions for", nrow(tidy_data), "comments from pxtextming API \n")
   api_result <- get_api_pred_url(tidy_data, Sys.getenv("API_key"))
 
   ## update api job table ----

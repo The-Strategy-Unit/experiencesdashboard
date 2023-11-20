@@ -12,15 +12,6 @@ app_server <- function(input, output, session) {
     Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups))
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
-  
-  # determine if user has admin right - if to show the data-management tab
-  if (!isTRUE(getOption('golem.app.prod'))) {
-    admin_user <- TRUE # set to true in development env
-  } else{
-    # get from session data of Connect environment - in production env
-    admin_user <- is_admin_user(session$groups)
-  }
-  cat("Admin right:", admin_user, " \n")
 
   # Create  DB connection pool
   pool <- get_pool()
@@ -34,6 +25,15 @@ app_server <- function(input, output, session) {
 
   # get the current user
   user <- if (is.null(session$user)) "demo user" else session$user
+  
+  # determine if user has admin right - if to show the data-management tab
+  if (!isTRUE(getOption('golem.app.prod'))) {
+    admin_user <- TRUE # set to true in development env
+  } else{
+    # get from session data of Connect environment - in production env
+    admin_user <- is_admin_user(session$groups)
+  }
+  cat("Admin right:", admin_user, " \n")
 
   # find out if there is data in the table
   data_exists <- db_data %>%
@@ -283,7 +283,7 @@ app_server <- function(input, output, session) {
         dplyr::arrange(date)
     }
 
-    # Transform the sentiment column
+    # Transform the sentiment 
     return_data <- return_data %>% 
       transform_sentiment() %>% 
       drop_na_by_col(c('category', 'super_category', 'sentiment'))
