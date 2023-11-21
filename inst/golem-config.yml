@@ -105,8 +105,7 @@ trust_NUH:
   location_2: Specialty
   location_3: Ward
   demography_1: gender
-  demography_2: age
-  demography_3: ethnicity
+  demography_2: ethnicity
   extra_variable_1: Rating channels
   extra_variable_2: Date feedback given
   extra_variable_3: Exclude from reports
