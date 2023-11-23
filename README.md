@@ -15,7 +15,7 @@ This read me is based on version [0.7.2](https://github.com/CDU-data-science-tea
 
 The Experience dashboard is the front end tool (Shiny App) for the [Patient Experience Qualitative Data Categorisation project](https://cdu-data-science-team.github.io/PatientExperience-QDC/), funded by NHS England and hosted by Nottinghamshire Healthcare NHS Foundation Trust. It ties a machine learning back-end, the [Pxtextmining](https://cdu-data-science-team.github.io/pxtextmining/reference/API/API/), to the data source via an API and present metrics and graphs to help clinical staffs and managers quickly gain insight from patient experience data collected via the [NHS England Friends and Family Test](https://www.england.nhs.uk/fft/).
 
-A hosted version can be found [here](https://feedbackmatters.uk/rsconnect/experience_a/). Please note that some of the data has been modified for the purposes of
+[Link to hosted version](https://connect.strategyunitwm.nhs.uk/qdc_public/). Please note that some of the data has been modified for the purposes of
 demonstration so it should NOT be used for reporting and is not accurate
 in several important ways.
 
