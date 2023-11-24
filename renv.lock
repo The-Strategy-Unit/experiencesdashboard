@@ -96,46 +96,6 @@
       ],
       "Hash": "cb6855ac711958ca734b75e631b2035d"
     },
-    "NHSRdatasets": {
-      "Package": "NHSRdatasets",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "tibble"
-      ],
-      "Hash": "02c9417179975a83e37329f40c451591"
-    },
-    "NHSRplotthedots": {
-      "Package": "NHSRplotthedots",
-      "Version": "0.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "NHSRdatasets",
-        "assertthat",
-        "crayon",
-        "dplyr",
-        "ggplot2",
-        "grid",
-        "rlang",
-        "scales",
-        "utils"
-      ],
-      "Hash": "aa3cf9998167e64289ba1c3c88a93194"
-    },
-    "NLP": {
-      "Package": "NLP",
-      "Version": "0.2-1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "utils"
-      ],
-      "Hash": "94b0a21c13933f61cf6272a192964624"
-    },
     "R.methodsS3": {
       "Package": "R.methodsS3",
       "Version": "1.8.2",
@@ -768,18 +728,16 @@
       "Package": "experiencesdashboard",
       "Version": "0.8.1",
       "Source": "GitHub",
-      "Remotes": "nhs-r-community/NHSRtheme",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "experiencesdashboard",
       "RemoteUsername": "CDU-data-science-team",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "9577650507a96849ed62877928f8e3212715a24f",
+      "RemoteRef": "update_dependencies",
+      "RemoteSha": "8eaec73148fe19f416f0a26d2213738c57ad0a21",
       "Requirements": [
         "ComplexUpset",
         "DBI",
         "DT",
-        "NHSRplotthedots",
         "R",
         "SnowballC",
         "config",
@@ -799,9 +757,11 @@
         "memoise",
         "odbc",
         "pander",
+        "pins",
         "plotly",
         "pool",
         "purrr",
+        "reactable",
         "rlang",
         "rmarkdown",
         "shiny",
@@ -810,11 +770,10 @@
         "stringr",
         "tidyr",
         "tidyselect",
-        "tm",
         "writexl",
         "xml2"
       ],
-      "Hash": "706798801943cd1419aeef6f122eb485"
+      "Hash": "902a290da4cc6fb00d9aaa98e79883d5"
     },
     "fansi": {
       "Package": "fansi",
@@ -1086,7 +1045,7 @@
     },
     "htmltools": {
       "Package": "htmltools",
-      "Version": "0.5.6",
+      "Version": "0.5.7",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1099,7 +1058,7 @@
         "rlang",
         "utils"
       ],
-      "Hash": "a2326a66919a3311f7fbb1e3bf568283"
+      "Hash": "2d7b3857980e0e0d0a1fd6f11928ab0f"
     },
     "htmlwidgets": {
       "Package": "htmlwidgets",
@@ -1217,7 +1176,7 @@
     },
     "knitr": {
       "Package": "knitr",
-      "Version": "1.44",
+      "Version": "1.45",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1229,7 +1188,7 @@
         "xfun",
         "yaml"
       ],
-      "Hash": "60885b9f746c9dfaef110d070b5f7dc0"
+      "Hash": "1ec462871063897135c1bcbe0fc8f07d"
     },
     "labeling": {
       "Package": "labeling",
@@ -1819,7 +1778,7 @@
       "Package": "reactable",
       "Version": "0.4.4",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "digest",
@@ -2265,17 +2224,6 @@
       ],
       "Hash": "eeba2e2da392ca67c10b450da87d2ed0"
     },
-    "slam": {
-      "Package": "slam",
-      "Version": "0.1-50",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "stats"
-      ],
-      "Hash": "e25793551cbdb843154152e5ee88cbd6"
-    },
     "sourcetools": {
       "Package": "sourcetools",
       "Version": "0.1.7-1",
@@ -2314,9 +2262,9 @@
     },
     "stringr": {
       "Package": "stringr",
-      "Version": "1.5.0",
+      "Version": "1.5.1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "cli",
@@ -2327,7 +2275,7 @@
         "stringi",
         "vctrs"
       ],
-      "Hash": "671a4d384ae9d32fc47a14e98bfa3dc8"
+      "Hash": "960e2ae9e09656611e0b8214ad543207"
     },
     "svglite": {
       "Package": "svglite",
@@ -2479,26 +2427,6 @@
         "xfun"
       ],
       "Hash": "0c41a73214d982f539c56a7773c7afa5"
-    },
-    "tm": {
-      "Package": "tm",
-      "Version": "0.7-11",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "BH",
-        "NLP",
-        "R",
-        "Rcpp",
-        "graphics",
-        "parallel",
-        "slam",
-        "stats",
-        "tools",
-        "utils",
-        "xml2"
-      ],
-      "Hash": "625329dd66ec8e8fbeb5ea6003e9be0a"
     },
     "tzdb": {
       "Package": "tzdb",
