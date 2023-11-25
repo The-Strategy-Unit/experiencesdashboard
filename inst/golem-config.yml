@@ -140,7 +140,7 @@ trust_NTH:
 trust_NEAS:
   trust_name: trust_NEAS
   comment_1: What could be improved?
-  comment_2: FFT overall satisfaction
+  comment_2: Why did you answer this way?
   question_1: fft
   location_1: CCG Area
   location_2: Station
