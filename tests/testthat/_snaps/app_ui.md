@@ -24,7 +24,7 @@
                       </a>
                     </li>
                     <li class="dropdown">
-                      <a onclick="onclick =window.open(&#39;mailto:chris.beeley1@nhs.net?cc=oluwasegun.apejoye2@nottshc.nhs.uk&#39;)" title="Contact Project Team" style="cursor: pointer;">
+                      <a onclick="onclick =window.open(&#39;mailto:chris.beeley1@nhs.net&#39;)" title="Contact Project Team" style="cursor: pointer;">
                         <i class="fas fa-envelope" role="presentation" aria-label="envelope icon"></i>
                       </a>
                     </li>
@@ -95,9 +95,11 @@
         <br/>
         <div class="row">
           <p>
-              This page is for users who wants to upload new data or amend the
-              existing data in the dashboard
-                </p>
+            <strong>
+              This page is only for users who wants to upload new data or amend the
+              existing data in the dashboard.
+                </strong>
+          </p>
           <div class="col-sm-1">
             <button id="id-upload_new_data-disabled" type="button" class="btn btn-default action-button">
               <i class="fas fa-person-circle-plus" role="presentation" aria-label="person-circle-plus icon"></i>

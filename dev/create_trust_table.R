@@ -8,20 +8,21 @@
 #' @param pool the database connection
 #' @param set_trust_id the name of the trust table, should be same as `get_golem_config('trust_name')`
 #' @param drop_table if the trust table already exist, should it be dropped and recreated or an error be thrown.
-#'
+#' @param default_trust trust to use as template. 
+#' 
 #' @return zero if operation is successful
 #' @examples create_trust_table(pool, set_trust_id = "trust_a_bk")
 #' @noRd
-create_trust_table <- function(pool, set_trust_id, drop_table = FALSE) {
+create_trust_table <- function(pool, set_trust_id, default_trust = "phase_2_demo", drop_table = FALSE) {
   tryCatch(
     {
-      query <- paste0("CREATE TABLE ", set_trust_id, " AS (SELECT * FROM phase_2_demo WHERE 1=2)")
+      query <- sprintf("CREATE TABLE %s AS (SELECT * FROM %s WHERE 1=2)", set_trust_id, default_trust)
       DBI::dbExecute(pool, query)
     },
     error = function(e) {
       if (drop_table) {
         DBI::dbExecute(pool, paste0("DROP TABLE IF EXISTS ", set_trust_id))
-        query <- paste0("CREATE TABLE ", set_trust_id, " AS (SELECT * FROM phase_2_demo WHERE 1=2)")
+        query <- sprintf("CREATE TABLE %s AS (SELECT * FROM %s WHERE 1=2)", set_trust_id, default_trust)
         DBI::dbExecute(pool, query)
       } else {
         stop("Table already exist")
@@ -48,6 +49,7 @@ create_job_table <- function(conn) {
       trust_id tinytext NOT NULL,
       user tinytext NOT NULL,
       email tinytext,
+      pin_path text,
       status tinytext NOT NULL CHECK (status IN ('submitted', 'completed', 'failed', 'uploaded')),
       PRIMARY KEY (job_id)
   )"

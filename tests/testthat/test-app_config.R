@@ -24,10 +24,10 @@ test_that("trust configuration is still the same", {
   expect_true(isTruthy(get_golem_config("location_2")))
   expect_true(isTruthy(get_golem_config("location_3")))
   expect_true(isTruthy(get_golem_config("comment_1")))
-  expect_false(isTruthy(get_golem_config("comment_2")))
+  expect_true(isTruthy(get_golem_config("comment_2")))
   expect_equal(get_golem_config("demography_1"), "gender")
-  expect_equal(get_golem_config("demography_2"), "age")
-  expect_equal(get_golem_config("demography_3"), "ethnicity")
+  expect_equal(get_golem_config("demography_2"), "ethnicity")
+  expect_equal(get_golem_config("demography_3"), "age")
   
   # trust_GOSH ----
   withr::local_envvar("R_CONFIG_ACTIVE" = "trust_GOSH")

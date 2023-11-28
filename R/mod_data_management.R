@@ -13,10 +13,10 @@ mod_data_management_ui <- function(id) {
     fluidPage(
       tags$br(),
       fluidRow(
-        p("
-        This page is for users who wants to upload new data or amend the
-        existing data in the dashboard
-          "),
+        strong("
+        This page is only for users who wants to upload new data or amend the
+        existing data in the dashboard.
+          ") |> p(),
         column(
           width = 1,
           actionButton(ns("upload_new_data-disabled"), "Upload new data",

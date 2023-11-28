@@ -99,14 +99,15 @@ phase_2_demo:
   demography_3: ethnicity
 trust_NUH:
   trust_name: trust_NUH
-  comment_1: Why give this answer and What could be improved?
+  comment_1: Why did you answer this way?
+  comment_2: What could be improved?
   question_1: fft
   location_1: Division
   location_2: Specialty
   location_3: Ward
   demography_1: gender
-  demography_2: age
-  demography_3: ethnicity
+  demography_2: ethnicity
+  demography_3: age
   extra_variable_1: Rating channels
   extra_variable_2: Date feedback given
   extra_variable_3: Exclude from reports
@@ -141,7 +142,7 @@ trust_NTH:
 trust_NEAS:
   trust_name: trust_NEAS
   comment_1: What could be improved?
-  comment_2: FFT overall satisfaction
+  comment_2: Why did you answer this way?
   question_1: fft
   location_1: CCG Area
   location_2: Station

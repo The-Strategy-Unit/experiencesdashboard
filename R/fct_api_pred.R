@@ -100,13 +100,16 @@ transform_prediction_for_database <- function(prediction) {
 #' @param job an instance of the api job table
 #' @param conn database connection
 #' @param write_db logical should the prediction data be written to the database or returned as a dataframe?
-#'
+#' @param board a pin board to temporary write the prediction incase database writing fails
+#' 
 #' @return dataframe (if `write_db` is FALSE)
 #' @export
-track_api_job <- function(job, conn, write_db = TRUE) {
+track_api_job <- function(job, conn, write_db = TRUE, board = NULL) {
   job_id <- as.character(job["job_id"])
   url <- as.character(job["url"])
   trust_id <- as.character(job["trust_id"])
+  board_name <- paste0(trust_id, "_prediction")
+  write_to_board <- !is.null(board)
 
   cat("Checking Job", job_id, "\n")
   prediction <- NULL
@@ -136,6 +139,15 @@ track_api_job <- function(job, conn, write_db = TRUE) {
 
     prediction <- prediction |>
       transform_prediction_for_database()
+    
+    # write the prediction to a board in case it fails to write to database.
+    # it will be deleted if database writing is successful but if not 
+    # it can then be picked up later for local database writing
+    if (write_to_board) {
+      board_path <- pins::pin_write(board, x = prediction, name = board_name, 
+                      type = "rds", versioned = FALSE)
+      DBI::dbExecute(conn, sprintf("UPDATE api_jobs SET pin_path ='%s' WHERE job_id = %s", board_path, job_id))
+    }
 
     # update the main table
     cat("Updating database with prediction \n")
@@ -151,8 +163,18 @@ track_api_job <- function(job, conn, write_db = TRUE) {
 
     # update the job status as uploaded (successfully write prediction to main table)
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='uploaded' WHERE job_id =", job_id))
-
+    
+    # delete the trust's prediction from the board if successfully written to database
+    if (write_to_board) {
+      pins::pin_delete(board, board_path)
+      DBI::dbExecute(
+        conn, 
+        sprintf("UPDATE api_jobs SET pin_path ='%s' WHERE job_id = %s", NA, job_id)
+        )
+    }
+    
     cat("Job", job_id, "prediction has been successfully written to database \n")
+    
   } else if (is.character(prediction)) {
     cat("Job", job_id, "is still busy \n")
   } else {

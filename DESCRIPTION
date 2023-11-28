@@ -29,12 +29,13 @@ Imports:
     lubridate,
     magrittr,
     memoise,
-    NHSRplotthedots,
     odbc,
     pander,
+    pins,
     plotly,
     pool,
     purrr,
+    reactable,
     rlang,
     rmarkdown,
     shiny,
@@ -44,7 +45,6 @@ Imports:
     stringr,
     tidyr,
     tidyselect,
-    tm,
     writexl,
     xml2
 Suggests: 
@@ -59,8 +59,6 @@ Suggests:
     withr
 VignetteBuilder: 
     knitr
-Remotes: 
-    nhs-r-community/NHSRtheme
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-gb
