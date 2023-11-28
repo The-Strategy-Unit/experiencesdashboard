@@ -60,17 +60,17 @@ test_that("clean_dataframe works", {
 })
 
 
-test_that("tidy_trust_gosh works", {
+test_that("tidy_trust_nuh works", {
   data <- data.frame(
-    comment_id = 1:4,
-    age = c("31", "55", "77", NA)
+    comment_id = 1:6,
+    age = c(16, "31", "55", "77", NA, 'prefer not to say')
   )
 
-  result <- tidy_trust_gosh(data)
+  result <- tidy_trust_nuh(data)
 
   expect_true(inherits(result, "data.frame"))
   expect_true(inherits(result$age, "character"))
-  expect_equal(result$age, c("26 - 39", "40 - 64", "65 - 79", NA))
+  expect_equal(result$age, c("16 - 25", "26 - 35", "46 - 55", "Over 65", NA_character_, NA_character_))
 })
 
 test_that("tidy_trust_neas works", {
