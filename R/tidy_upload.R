@@ -1,17 +1,19 @@
 # function to do trust specific data cleaning
-tidy_trust_gosh <- function(db_tidy) {
+tidy_trust_nuh <- function(db_tidy) {
   db_tidy %>%
     dplyr::mutate(age = as.integer(age)) %>%
     dplyr::mutate(
       age = dplyr::case_when(
-        age < 12 ~ "0 - 11",
-        age < 18 ~ "12 - 17",
-        age < 26 ~ "18 - 25",
-        age < 40 ~ "26 - 39",
-        age < 65 ~ "40 - 64",
-        age < 80 ~ "65 - 79",
-        age > 79 ~ "80+",
-        TRUE ~ as.character(age)
+        age < 8 ~ "0 - 7",
+        age < 12 ~ "8 - 11",
+        age < 16 ~ "12 - 15",
+        age < 26 ~ "16 - 25",
+        age < 36 ~ "26 - 35",
+        age < 46 ~ "36 - 45",
+        age < 56 ~ "46 - 55",
+        age < 66 ~ "56 - 65",
+        age > 65 ~ "Over 65",
+        TRUE ~ NA_character_
       )
     )
 }
@@ -150,7 +152,7 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     ) 
 
   # do trust specific data cleaning ----
-  if (trust_id == "trust_GOSH") db_tidy <- db_tidy %>% tidy_trust_gosh()
+  if (trust_id == "trust_NUH") db_tidy <- db_tidy %>% tidy_trust_nuh()
   if (trust_id == "trust_NEAS") db_tidy <- db_tidy %>% tidy_trust_neas()
   if (trust_id == "trust_NTH") db_tidy <- db_tidy %>% tidy_trust_nth()
 
