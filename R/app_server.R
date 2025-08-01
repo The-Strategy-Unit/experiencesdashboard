@@ -9,22 +9,22 @@ app_server <- function(input, output, session) {
   # if it hasn't been set before calling run_app()
   cat("Session group on Connect:", session$groups, " \n")
   if (Sys.getenv("R_CONFIG_ACTIVE") == "rsconnect") {
-    Sys.setenv("R_CONFIG_ACTIVE" = set_trust_config(session$groups))
+    Sys.setenv("R_CONFIG_ACTIVE" = "open")
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
 
   # Create  DB connection pool
-  pool <- get_pool()
-
-  onStop(function() {
-    pool::poolClose(pool)
-  })
+  # pool <- get_pool()
+  # 
+  # onStop(function() {
+  #   pool::poolClose(pool)
+  # })
 
   # fetch  the data
-  db_data <- get_db_data(pool, get_golem_config("trust_name"))
+  # db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
   # get the current user
-  user <- if (is.null(session$user)) "demo user" else session$user
+  user <- "demo user"
   
   # determine if user has admin right - if to show the data-management tab
   if (!isTRUE(getOption('golem.app.prod'))) {
@@ -34,6 +34,8 @@ app_server <- function(input, output, session) {
     admin_user <- is_admin_user(session$groups)
   }
   cat("Admin right:", admin_user, " \n")
+  
+  db_data <- readr::read_csv("data-raw/phase_2_sample_data.csv")
 
   # find out if there is data in the table
   data_exists <- db_data %>%
@@ -55,32 +57,32 @@ app_server <- function(input, output, session) {
   }
 
   # alert the user when the trust has a pending api job
-  api_jobs <- check_api_job(pool)
-  latest_time <- api_jobs$latest_time
-  wait_time <- api_jobs$estimated_wait_time
+  # api_jobs <- check_api_job(pool)
+  # latest_time <- api_jobs$latest_time
+  # wait_time <- api_jobs$estimated_wait_time
 
-  if (!is.null(latest_time) & data_exists) {
-    # filter out all the unfinished rows(api job time is same as last_upload_date when doing data upload)
-    db_data <- db_data %>%
-      dplyr::filter(last_upload_date != latest_time)
-    
-    # for first upload to the dashboard, this will ensure all the tabs are left blank 
-    # till the upload is done
-    data_exists <- db_data %>%
-      dplyr::tally() %>%
-      dplyr::pull(n) > 0
-
-    showModal(modalDialog(
-      title = strong("Warning!"),
-      HTML(paste(
-        h5(strong("Please note that this is not the most up-to-date data")),
-        h6(HTML(paste0(
-          "A data uploaded at", strong(em((paste(latest_time, "GMT")))), "is still uploading. If you really need to access the most up-to-date data, please check back or refresh your browser in roughly",
-          strong(em((paste(wait_time, "minutes")))), "time"
-        )))
-      ))
-    ))
-  }
+  # if (!is.null(latest_time) & data_exists) {
+  #   # filter out all the unfinished rows(api job time is same as last_upload_date when doing data upload)
+  #   db_data <- db_data %>%
+  #     dplyr::filter(last_upload_date != latest_time)
+  #   
+  #   # for first upload to the dashboard, this will ensure all the tabs are left blank 
+  #   # till the upload is done
+  #   data_exists <- db_data %>%
+  #     dplyr::tally() %>%
+  #     dplyr::pull(n) > 0
+  # 
+  #   showModal(modalDialog(
+  #     title = strong("Warning!"),
+  #     HTML(paste(
+  #       h5(strong("Please note that this is not the most up-to-date data")),
+  #       h6(HTML(paste0(
+  #         "A data uploaded at", strong(em((paste(latest_time, "GMT")))), "is still uploading. If you really need to access the most up-to-date data, please check back or refresh your browser in roughly",
+  #         strong(em((paste(wait_time, "minutes")))), "time"
+  #       )))
+  #     ))
+  #   ))
+  # }
 
   # store values of demographics and location_1 from last 3 years
 
