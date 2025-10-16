@@ -16,13 +16,13 @@ compare_demographics <- function(pass_data, variable, score_column = "fft") {
   p <- pass_data %>%
     dplyr::filter(!is.na(.data[[variable]])) %>%
     dplyr::group_by(.data[[variable]]) %>%
-    dplyr::summarise(across(all_of(score_column), ~ mean(.x, na.rm = TRUE)),
+    dplyr::summarise(dplyr::across(dplyr::all_of(score_column), ~ mean(.x, na.rm = TRUE)),
       n = dplyr::n()
     ) %>%
     dplyr::filter(n > 10) %>%
     dplyr::select(-n) %>%
-    dplyr::mutate(dplyr::across(where(is.numeric), ~ 100 - round(. * 20, 1))) %>%
-    tidyr::pivot_longer(-all_of(variable)) %>%
+    dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ 100 - round(. * 20, 1))) %>%
+    tidyr::pivot_longer(-dplyr::all_of(variable)) %>%
     ggplot2::ggplot(ggplot2::aes(
       x = .data[[variable]], y = value,
       group = name, fill = name
@@ -57,8 +57,8 @@ compare_demographics <- function(pass_data, variable, score_column = "fft") {
 demographic_distribution <- function(pass_data, variable, return_ggplot = FALSE) {
   p <- pass_data %>%
     dplyr::count(.data[[variable]]) %>%
-    dplyr::mutate(across(
-      all_of(variable),
+    dplyr::mutate(dplyr::across(
+      dplyr::all_of(variable),
       ~ dplyr::coalesce(., "Unknown")
     )) %>%
     ggplot2::ggplot(ggplot2::aes(x = .data[[variable]], y = n)) +

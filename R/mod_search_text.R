@@ -11,8 +11,8 @@ mod_search_text_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidPage(
-      colored_h4(strong("Appropriate use of the comment search")),
-      p("
+      colored_h4(htmltools::strong("Appropriate use of the comment search")),
+      htmltools::p("
       Before searching for comments on a specific topic, first identify whether 
       a relevant sub-category already exists in the categorisation framework. 
       If it does you should look at the comments categorised there without need 
@@ -22,15 +22,15 @@ mod_search_text_ui <- function(id) {
       is best utilised when you have a very narrow focus of interest and there 
       is a small consistent vocabulary around the topic.
       "),
-      colored_h4(strong("How search is done")),
-      p('The search uses Boolean techniques to find all provided words, 
+      colored_h4(htmltools::strong("How search is done")),
+      htmltools::p('The search uses Boolean techniques to find all provided words, 
       including their singular and plural forms. For instance, if you input 
       "staff, doctors", it will also search for "staffs, doctor" and so on.".
         '),
       textInput(ns("text_search"), "Search term(s) - Add multiple search terms with comma",
         placeholder = "e.g. staff, doctor, nurse"
       ),
-      hr(),
+      htmltools::hr(),
       uiOutput(ns("dynamic_comment_ui"))
     )
   )
@@ -43,8 +43,8 @@ mod_search_text_server <- function(id, filter_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    output$dynamic_comment_ui <- renderUI({
-      validate(
+    output$dynamic_comment_ui <- shiny::renderUI({
+      shiny::validate(
         need(text_search(), "Please enter a search term")
       )
       req(return_data())
@@ -75,7 +75,7 @@ mod_search_text_server <- function(id, filter_data) {
     })
 
     ## the comments tables ----
-    output$comment_output <- renderUI({
+    output$comment_output <- shiny::renderUI({
       mod_comment_download_server(
         ns("comment_download_1"),
         return_data(),

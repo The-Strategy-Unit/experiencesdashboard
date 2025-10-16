@@ -31,7 +31,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       return(length(selected_list) > 1)
     }
 
-    output$trendUI_2 <- renderUI({
+    output$trendUI_2 <- shiny::renderUI({
       choices <- c(
         "",
         get_unique_value(filter_data()$single_labeled_filter_data, "category")
@@ -40,14 +40,14 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       fluidRow(
         column(4, selectInput(
           session$ns("select_category1"),
-          label = h5(strong("Select Sub-category")),
+          label = h5(htmltools::strong("Select Sub-category")),
           choices = choices,
         )),
         column(
           4,
           selectInput(
             session$ns("select_category2"),
-            label = h5(strong("Select Sub-category")),
+            label = h5(htmltools::strong("Select Sub-category")),
             choices = choices,
           )
         ),
@@ -55,7 +55,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
           4,
           selectInput(
             session$ns("select_category3"),
-            label = h5(strong("Select Sub-category")),
+            label = h5(htmltools::strong("Select Sub-category")),
             choices = choices,
           )
         ),
@@ -63,8 +63,8 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
     })
 
     # overlap tab UI ----
-    output$dynamic_select_category_ui <- renderUI({
-      validate(
+    output$dynamic_select_category_ui <- shiny::renderUI({
+      shiny::validate(
         need(
           check_cat_selection(
             c(
@@ -88,7 +88,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       if (length(global$selected_cats) > 1) {
         tagList(
           paste(stringr::str_to_title(c(global$selected_cats)), collapse = "  ||  "),
-          hr()
+          htmltools::hr()
         )
       }
     })
@@ -116,7 +116,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
     ## the upset plot ----
     # create a session-level cacheable version of upset_plot()
     memoised_upset_plot <- memoise::memoise(upset_plot, cache = session$cache)
-    output$category_upset <- renderPlot(
+    output$category_upset <- shiny::renderPlot(
       {
         if (!is.null(input_select_super_category)) {
           filtered_categories <- filtered_categories()
@@ -135,7 +135,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
           {
             tryCatch(
               {
-                memoised_upset_plot(upset_data(),
+                memoised_upset_plot(ComplexUpset::upset_data(),
                   intersect = filtered_categories,
                   min_size = min_size,
                   title = title
@@ -144,7 +144,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
               error = function(e) {
                 print("layer 1 error:")
                 print(e)
-                memoised_upset_plot(upset_data(),
+                memoised_upset_plot(ComplexUpset::upset_data(),
                   intersect = all_categories(),
                   min_size = 2,
                   title = "Upset plot showing relationship between sub-categories across all Categories"
@@ -154,8 +154,8 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
                 showModal(modalDialog(
                   title = "Error!",
                   HTML(paste0(
-                    p(strong("There is no relationship in this selection")),
-                    strong("Plot has default to  show all sub-categories
+                    htmltools::p(htmltools::strong("There is no relationship in this selection")),
+                    htmltools::strong("Plot has default to  show all sub-categories
                            with '2' minimum number of comments")
                   )),
                   easyClose = TRUE
@@ -169,7 +169,7 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
             showModal(modalDialog(
               title = "Error!",
               HTML(paste0(
-                strong("Sorry, there is not enough data to draw the upset plot. Please expand your selection")
+                htmltools::strong("Sorry, there is not enough data to draw the upset plot. Please expand your selection")
               )),
               easyClose = TRUE
             ))
@@ -189,13 +189,13 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
       req(length(global$selected_cats) > 1)
 
       data <- filter_data()$single_labeled_filter_data %>%
-        relationship_table("category", na.omit(global$selected_cats))
+        relationship_table("category", stats::na.omit(global$selected_cats))
 
       return(prep_data_for_comment_table(data))
     })
 
     ## the comments tables ----
-    output$overlap_table <- renderUI({
+    output$overlap_table <- shiny::renderUI({
       # only run when at least 2 categories are selected
       req(
         check_cat_selection(
@@ -217,11 +217,11 @@ mod_overlap_1_server <- function(id, filter_data, input_select_super_category, i
           shinycssloaders::withSpinner(),
 
         # comment table ui ----
-        br(),
+        htmltools::br(),
         fluidRow(
           column(
             12,
-            hr(),
+            htmltools::hr(),
             uiOutput(ns("trendUI_2")),
             uiOutput(ns("dynamic_select_category_ui")),
             uiOutput(ns("overlap_table"))

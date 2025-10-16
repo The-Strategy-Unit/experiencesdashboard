@@ -39,7 +39,7 @@ mod_comment_download_server <- function(id, return_data, filepath) {
     # if the data is empty then don't show the UI
     if (nrow(return_data) < 1) {
       return(tagList(
-        pre(strong("No data to show"))
+        htmltools::pre(htmltools::strong("No data to show"))
       ))
     }
 

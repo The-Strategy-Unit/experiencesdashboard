@@ -68,7 +68,7 @@ rvtl <- shiny::reactiveValuesToList
 header_links <- function() {
   tags$li(
     tags$li(
-      a(
+      htmltools::a(
         onclick = "onclick =window.open('https://cdu-data-science-team.github.io/PatientExperience-QDC/')",
         href = NULL,
         icon("book"),
@@ -78,7 +78,7 @@ header_links <- function() {
       class = "dropdown"
     ),
     tags$li(
-      a(
+      htmltools::a(
         onclick = "onclick =window.open('mailto:chris.beeley1@nhs.net')",
         href = NULL,
         icon("envelope", prefer_type = "solid"),
@@ -88,7 +88,7 @@ header_links <- function() {
       class = "dropdown"
     ),
     tags$li(
-      a(
+      htmltools::a(
         onclick = "onclick =window.open('https://github.com/CDU-data-science-team/experiencesdashboard')",
         href = NULL,
         icon("github", prefer_type = "solid"),
@@ -145,12 +145,12 @@ single_to_multi_label <- function(sl_data) {
   mt_data <- sl_data %>%
     dplyr::group_by(comment_id, comment_type) %>%
     dplyr::summarise(
-      across(c(date, comment_txt, fft, sentiment), unique),
-      across(c(category, super_category), \(x) list(unique(x))), # remove duplicated
+      dplyr::across(c(date, comment_txt, fft, sentiment), unique),
+      dplyr::across(c(category, super_category), \(x) list(unique(x))), # remove duplicated
     ) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(date) %>%
-    dplyr::mutate(across(c(category, super_category), ~ lapply(.x, to_string))) # for user friendly print
+    dplyr::mutate(dplyr::across(c(category, super_category), ~ lapply(.x, to_string))) # for user friendly print
 
   stopifnot("values in 'comment ID' should be unique" = mt_data$comment_id %>% duplicated() %>% sum() == 0)
 
@@ -215,7 +215,7 @@ add_theme_nhs <- function() {
 get_unique_value <- function(data, column) {
   data[, column] %>%
     unique() %>%
-    na.omit() %>%
+    stats::na.omit() %>%
     dplyr::pull() %>%
     sort()
 }
@@ -272,7 +272,7 @@ upset_plot <- function(upset_data, intersect, min_size = 1, title = "", ...) {
       geom = ggplot2::geom_segment(linewidth = 1.5),
       # color = "white"
     ),
-    encode_sets = FALSE, # for annotate() to select the set by name disable encoding
+    encode_sets = FALSE, # for ggplot2::annotate() to select the set by name disable encoding
     #
     matrix = (
       ComplexUpset::intersection_matrix(
@@ -443,7 +443,7 @@ transform_sentiment <- function(data, sentiment_column = "sentiment") {
 #' @return data frame
 #' @export
 drop_na_by_col <- function(df, vars, negate = TRUE) {
-  diff <- setdiff(vars, names(df))
+  diff <- dplyr::setdiff(vars, names(df))
   stopifnot("Some column doesn't exist in data" = length(diff) == 0)
 
   if (negate) {

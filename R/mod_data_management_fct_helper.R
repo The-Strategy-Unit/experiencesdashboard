@@ -42,10 +42,10 @@ prepare_data_management_data <- function(data, id, session, column_names, commen
     ) %>% # delete all empty columns
     clean_super_category() %>%
     dplyr::mutate(
-      across(any_of(factor_columns), as.factor)
+      dplyr::across(dplyr::any_of(factor_columns), as.factor)
     ) %>% 
     dplyr::arrange(comment_id) %>%
-    dplyr::select(checks, everything())
+    dplyr::select(checks, dplyr::everything())
 }
 
 #' remove duplicate values from each super category row
@@ -54,9 +54,9 @@ prepare_data_management_data <- function(data, id, session, column_names, commen
 #' @noRd
 clean_super_category <- function(data) {
   data %>%
-    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
+    dplyr::mutate(dplyr::across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON)),
       super_category = lapply(super_category, unique), # to remove the duplicate values from each super category row
-      across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
+      dplyr::across(c(category, super_category), ~ purrr::map(.x, to_string)) # format to more user friendly output
     )
 }
 
@@ -68,10 +68,10 @@ clean_super_category <- function(data) {
 #' @noRd
 prepare_data_for_download <- function(data) {
   data %>%
-    dplyr::select(-any_of("checks")) %>% 
+    dplyr::select(-dplyr::any_of("checks")) %>% 
     # return the category, super_category columns as string
     dplyr::mutate(
-      across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
+      dplyr::across(c(category, super_category), ~ sapply(.x, paste0, simplify = TRUE, USE.NAMES = F))
     )
 }
 

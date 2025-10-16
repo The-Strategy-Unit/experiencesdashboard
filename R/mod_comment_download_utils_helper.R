@@ -36,7 +36,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
 
   comment_data <- comment_data  %>%
     dplyr::mutate(
-      across(any_of(c("comment_type", "fft")), as.factor)
+      dplyr::across(dplyr::any_of(c("comment_type", "fft")), as.factor)
     )
   
   # rename the column name to be more user friendly

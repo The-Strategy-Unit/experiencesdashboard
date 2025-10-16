@@ -86,13 +86,13 @@ transform_prediction_for_database <- function(prediction) {
     dplyr::mutate(super_category = assign_highlevel_categories(category)) |> # assign super categories
     dplyr::group_by(comment_id) %>%
     dplyr::summarise(
-      across(-tidyselect::all_of(c("category", "super_category")), unique),
-      across(c(category, super_category), list) # duplicate super category value is preserved. This will allow easy manipulation later. for ex. see get_tidy_filter_data()
+      dplyr::across(-tidyselect::all_of(c("category", "super_category")), unique),
+      dplyr::across(c(category, super_category), list) # duplicate super category value is preserved. This will allow easy manipulation later. for ex. see get_tidy_filter_data()
     ) |>
     dplyr::ungroup() |>
     # convert the category and super category column to raw json before loading into the database
-    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) |>
-    dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, charToRaw)))
+    dplyr::mutate(dplyr::across(c(category, super_category), ~ purrr::map(.x, jsonlite::toJSON))) |>
+    dplyr::mutate(dplyr::across(c(category, super_category), ~ purrr::map(.x, charToRaw)))
 }
 
 #' Track the API job table. If prediction is done, it writes it to the main table and delete the job from the api job table
@@ -127,7 +127,7 @@ track_api_job <- function(job, conn, write_db = TRUE, board = NULL) {
   if (is.data.frame(prediction)) {
     cat("Job", job_id, "is done \n")
 
-    # update the job status as complete (Prediction has been returned)
+    # update the job status as tidyr::complete (Prediction has been returned)
     DBI::dbExecute(conn, paste("UPDATE api_jobs SET status='completed' WHERE job_id =", job_id))
 
     if (!write_db) {
@@ -218,7 +218,7 @@ batch_predict <- function(df) {
   preds <- data.frame()
   a <- nrow(df)
   f <- c(seq(1, a, by = 1000))
-  l <- setdiff(unique(c(seq(0, a, by = 1000), a)), 0)
+  l <- dplyr::setdiff(unique(c(seq(0, a, by = 1000), a)), 0)
 
   for (i in 1:length(f)) {
     d <- df[f[i]:l[i], ]

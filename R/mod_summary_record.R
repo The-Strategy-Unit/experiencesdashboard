@@ -28,7 +28,7 @@ mod_summary_record_server <- function(id, db_data, filter_data) {
       current_responses = NULL, current_individuals = NULL
     )
 
-    output$dynamic_summary_record <- renderUI({
+    output$dynamic_summary_record <- shiny::renderUI({
       global$n_responses <- db_data %>%
         dplyr::filter(!is.na(comment_txt)) %>%
         dplyr::tally() %>%
@@ -62,34 +62,34 @@ mod_summary_record_server <- function(id, db_data, filter_data) {
     })
 
     # value boxes
-    output$commentBox <- renderValueBox({
+    output$commentBox <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
         format(global$n_responses, format = "d", big.mark = ","),
-        p("Comments in Database", style = "font-size: 90%"),
+        htmltools::p("Comments in Database", style = "font-size: 90%"),
         icon = icon("comment"),
         color = "light-blue"
       )
     })
-    output$individualBox <- renderValueBox({
+    output$individualBox <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
         format(global$n_individuals, format = "d", big.mark = ","),
-        p("Responders in Database", style = "font-size: 90%"),
+        htmltools::p("Responders in Database", style = "font-size: 90%"),
         icon = icon("users"),
         color = "light-blue"
       )
     })
-    output$current_commentBox <- renderValueBox({
+    output$current_commentBox <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
         format(global$current_responses, format = "d", big.mark = ","),
-        p("Comments in Current Selection", style = "font-size: 90%"),
+        htmltools::p("Comments in Current Selection", style = "font-size: 90%"),
         icon = icon("comment-dots"),
         color = "light-blue"
       )
     })
-    output$current_individualBox <- renderValueBox({
+    output$current_individualBox <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
         format(global$current_individuals, format = "d", big.mark = ","),
-        p("Responders in Current Selection", style = "font-size: 90%"),
+        htmltools::p("Responders in Current Selection", style = "font-size: 90%"),
         icon = icon("users"),
         color = "light-blue"
       )

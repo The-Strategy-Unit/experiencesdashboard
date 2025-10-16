@@ -35,7 +35,7 @@ make_trend_data <- function(data, selected_super_category = NULL) {
 #' @param data dataframe made using `make_trend_data()`
 #' @param category_column column name of the super or sub-category e.g to plot the sub-categories use 'category'
 #' @param yaxis label of the yaxis e.g 'Sub Category'
-#' @param source a string to match the source value in `event_data()` to retrieve the event data corresponding to this specific plot
+#' @param source a string to match the source value in `plotly::event_data()` to retrieve the event data corresponding to this specific plot
 #' @param super_category a list of super-categories that was used to filter the trend data. This is require for hover text. Default is NULL
 #'
 #' @noRd

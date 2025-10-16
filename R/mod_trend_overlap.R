@@ -24,14 +24,14 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
     ns <- session$ns
 
     # Super UI ----
-    output$dynamic_trend_overlap <- renderUI({
-      validate(
+    output$dynamic_trend_overlap <- shiny::renderUI({
+      shiny::validate(
         need(data_exists, "Sub-category inter-relationship plots will appear here")
       )
 
       fluidPage(
         fluidRow(
-          p(HTML(paste0("
+          htmltools::p(HTML(paste0("
           This page provides an optional, more advanced data exploration tool,
           best utilised by analysts who want to move beyond looking at
           comments for different sub-categories in isolation and want to explore
@@ -41,28 +41,28 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
             "https://cdu-data-science-team.github.io/PatientExperience-QDC/dashboard/#inter-relationship-between-sub-categories",
             "Patient Experience – QDC documentation page.")
           ))),
-          p(with_red_stars(strong("
+          htmltools::p(with_red_stars(htmltools::strong("
           Please note that this plot is not currently interractive. Please 
           scroll down to select the sub-categories and view the comments.
           "))),
-          HTML(paste0(with_red_stars(strong("For users on small screen:  ")), 
+          HTML(paste0(with_red_stars(htmltools::strong("For users on small screen:  ")), 
           "  This plots may not fit the screen, a quick fix is to Zoom out to 
           75% or 80% on your browser (access your browser setting from the three
           dots (…) at the top right)")),
-          hr(),
+          htmltools::hr(),
           uiOutput(ns("trendUI")),
           column(
             6,
             numericInput(
               ns("min_size"),
-              label = h5(strong("Select minimum number of
-                              comments in groups (defaults to 2):")),
+              label = h5(htmltools::strong("Select minimum number of
+                              comments in dplyr::groups (defaults to 2):")),
               value = 2,
               min = 1,
               max = 3000
             )
           ),
-          br()
+          htmltools::br()
         ),
         tabsetPanel(
           id = ns("tabset_overlap"),
@@ -85,7 +85,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
     })
 
     # dynamic ui part ----
-    output$trendUI <- renderUI({
+    output$trendUI <- shiny::renderUI({
       req(input$tabset_overlap != "tab_across_categories")
 
       choices <- get_unique_value(filter_data()$single_labeled_filter_data, "super_category")
@@ -94,7 +94,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
         6,
         selectInput(
           session$ns("select_super_category"),
-          label = h5(strong("Select a Category to see its Sub-categories
+          label = h5(htmltools::strong("Select a Category to see its Sub-categories
                               relationships (defaults to first category):")),
           choices = choices,
           selected = choices[1]
@@ -102,7 +102,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
       )
     })
 
-    output$within_categories_ui <- renderUI({
+    output$within_categories_ui <- shiny::renderUI({
       input_select_super_category <- input$select_super_category
       input_min_size <- input$min_size
 
@@ -112,7 +112,7 @@ mod_trend_overlap_server <- function(id, filter_data, data_exists) {
       )
     })
 
-    output$across_categories_ui <- renderUI({
+    output$across_categories_ui <- shiny::renderUI({
       input_min_size <- input$min_size
 
       mod_overlap_1_server(

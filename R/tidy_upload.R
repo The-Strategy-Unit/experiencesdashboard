@@ -77,11 +77,11 @@ clean_dataframe <- function(data, comment_column) {
   data %>%
     dplyr::mutate(
       dplyr::across(
-        where(is.character),
+        dplyr::where(is.character),
         \(.x) stringr::str_replace_all(.x, "[^[:alnum:][:punct:]]+", " ") # remove non-graphical characters from all character columns, ‘⁠[:graph:  is not reliable⁠’
       ),
       dplyr::across(
-        where(is.character), ~ dplyr::case_when(
+        dplyr::where(is.character), ~ dplyr::case_when(
           grepl("^[?]+$", .) ~ NA_character_, # remove multiple question marks
           . %in% c("NULL", "#NAME?", "NA", "N/A", "", " ") ~ NA_character_,
           TRUE ~ .
@@ -133,7 +133,7 @@ upload_data <- function(data, conn, trust_id, user, write_db = TRUE) {
     max_id <- 0
   }
 
-  # parse the date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded).
+  # parse the lubridate::date (if it hasn't been parsed) and confirm if it's well parsed (the assumption here is that, data older than year 2000 won't be uploaded).
   data <- parse_date(data)
   stopifnot("Start year should reasonably be after year 2000" = lubridate::year(min(data$date)) > 2000)
 

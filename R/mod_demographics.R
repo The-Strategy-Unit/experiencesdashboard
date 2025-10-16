@@ -23,8 +23,8 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
 
     # the UI render
 
-    output$dynamic_demo_UI <- renderUI({
-      validate(
+    output$dynamic_demo_UI <- shiny::renderUI({
+      shiny::validate(
         need(data_exists, "Demography plots will appear here")
       )
 
@@ -46,7 +46,7 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
       )
 
       tagList(
-        br(),
+        htmltools::br(),
         fluidRow(
           if (has_demography_1) {
             column(
@@ -70,8 +70,8 @@ mod_demographics_server <- function(id, filter_data, data_exists) {
             )
           }
         ),
-        hr(),
-        pre("The below chart shows the average percentage of FFT score for each group in the demographic feature.",
+        htmltools::hr(),
+        htmltools::pre("The below chart shows the average percentage of FFT score for each group in the demographic feature.",
           "Note: Only 1-5 point FFT scores are considered and categories with fewer than 10 individuals are excluded",
           style = "background-color:#005EB8; color:#fff"
         ),

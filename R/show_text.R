@@ -6,7 +6,7 @@ show_text <- function(data, filter_by_column, filter_by_text, comment_type_filte
         .data[[filter_by_column]] == filter_by_text
       ) %>%
       dplyr::pull(comment_txt) %>%
-      paste0(., hr())
+      paste0(., htmltools::hr())
   )
 }
 
