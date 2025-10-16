@@ -10,3 +10,4 @@ Meta
 scratch.R
 inst/app/www/*.docx
 secret/
+rsconnect/
