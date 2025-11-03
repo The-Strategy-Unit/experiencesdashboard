@@ -29,7 +29,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
     }
 
     # Super UI ----
-    output$dynamic_trendUI <- renderUI({
+    output$dynamic_trendUI <- shiny::renderUI({
       # Only show module contents if the data from the database is not empty
       validate(
         need(data_exists, "Category Trends plots will appear here")
@@ -84,7 +84,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
     })
 
     # dynamic sub-category ui part ----
-    output$category_selectionUI <- renderUI({
+    output$category_selectionUI <- shiny::renderUI({
       choices <- filter_data()$single_labeled_filter_data$super_category %>%
         unique() %>%
         na.omit() %>%
@@ -145,7 +145,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
       )
     })
 
-    output$dynamic_super_category_table <- renderUI({
+    output$dynamic_super_category_table <- shiny::renderUI({
       if (!is.null(return_data()$date)) {
         tagList(
           sprintf(
@@ -223,7 +223,7 @@ mod_trend_server <- function(id, filter_data, data_exists) {
       )
     })
 
-    output$dynamic_sub_category_table <- renderUI({
+    output$dynamic_sub_category_table <- shiny::renderUI({
       if (!is.null(return_data2()$date)) {
         tagList(
           sprintf(

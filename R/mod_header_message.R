@@ -8,7 +8,7 @@
 #' @importFrom shiny NS tagList
 mod_header_message_ui <- function(id) {
   ns <- NS(id)
-  dropdownMenuOutput(ns("dynamic_messageMenu"))
+  shinydashboard::dropdownMenuOutput(ns("dynamic_messageMenu"))
 }
 
 #' header_message Server Functions
@@ -18,7 +18,7 @@ mod_header_message_server <- function(id, pool, db_data, data_exists) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    output$dynamic_messageMenu <- renderMenu({
+    output$dynamic_messageMenu <- shinydashboard::renderMenu({
       req(data_exists)
 
       isolate({
@@ -38,21 +38,21 @@ mod_header_message_server <- function(id, pool, db_data, data_exists) {
 
       dropdownMenu(
         type = "messages",
-        headerText = strong("Dashboard Status", style = "color: #005EB8;"),
+        headerText = htmltools::strong("Dashboard Status", style = "color: #005EB8;"),
         icon = icon("circle-info"),
         messageItem(
-          from = strong(total_users, style = "color: #005EB8;"),
-          message = p("Total number of responders"),
+          from = htmltools::strong(total_users, style = "color: #005EB8;"),
+          message = htmltools::p("Total number of responders"),
           icon = icon("users", style = "color: #005EB8;")
         ),
         messageItem(
-          from = strong(last_upload_date, style = "color: #005EB8;"),
-          message = p("Date data was last uploaded"),
+          from = htmltools::strong(last_upload_date, style = "color: #005EB8;"),
+          message = htmltools::p("Date data was last uploaded"),
           icon = icon("file-pen", style = "color: #005EB8;")
         ),
         messageItem(
-          from = strong(last_date_edit, style = "color: #005EB8;"),
-          message = p("Date data was last editted"),
+          from = htmltools::strong(last_date_edit, style = "color: #005EB8;"),
+          message = htmltools::p("Date data was last editted"),
           icon("calendar", style = "color: #005EB8;")
         )
       )

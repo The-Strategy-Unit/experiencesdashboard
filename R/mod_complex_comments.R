@@ -29,23 +29,23 @@ mod_complex_comments_server <- function(id, filter_data, data_exists) {
     })
 
     # Dynamic UI
-    output$dynamic_complex_tableUI <- renderUI({
-      validate(
+    output$dynamic_complex_tableUI <- shiny::renderUI({
+      shiny::validate(
         need(data_exists, "Complex comment table will appear here")
       )
 
       tagList(
-        colored_h4(strong("Criterial for selecting complex comments")),
-        p("Any comment with over 50 words or assigned more than 5 labels by the
+        colored_h4(htmltools::strong("Criterial for selecting complex comments")),
+        htmltools::p("Any comment with over 50 words or assigned more than 5 labels by the
           machine learning model is considered complex."),
-        hr(),
+        htmltools::hr(),
         uiOutput(ns("dynamic_complex_ui"))|>
           shinycssloaders::withSpinner()
       )
     })
 
     # complex comments output ----
-    output$dynamic_complex_ui <- renderUI({
+    output$dynamic_complex_ui <- shiny::renderUI({
       if (nrow(complex_comments()) > 0) {
         n_complex_comments <- complex_comments() |>
           dplyr::pull(comment_txt) |>
@@ -55,11 +55,11 @@ mod_complex_comments_server <- function(id, filter_data, data_exists) {
 
         tagList(
           HTML(paste(n_complex_comments, "complex comments identified") |>
-            strong() |> h4() |> paste()),
+            htmltools::strong() |> h4() |> paste()),
           mod_comment_download_server(ns("comment_download_1"), return_data, filepath = "complex-data-")
         )
       } else {
-        pre(strong("No complex comment identified"))
+        htmltools::pre(htmltools::strong("No complex comment identified"))
       }
     })
   })

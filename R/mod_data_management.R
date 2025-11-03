@@ -13,10 +13,10 @@ mod_data_management_ui <- function(id) {
     fluidPage(
       tags$br(),
       fluidRow(
-        strong("
+        htmltools::strong("
         This page is only for users who wants to upload new data or amend the
         existing data in the dashboard.
-          ") |> p(),
+          ") |> htmltools::p(),
         column(
           width = 1,
           actionButton(ns("upload_new_data"), "Upload new data",
@@ -72,8 +72,8 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
     # dynamic UI ----
 
-    output$data_management_UI <- renderUI({
-      validate(
+    output$data_management_UI <- shiny::renderUI({
+      shiny::validate(
         need(data_exists, "Data Table will appear here")
       )
 
@@ -95,7 +95,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         fluidRow(
           column(12, uiOutput(ns("dynamic_flagged_ui")))
         ),
-        hr(),
+        htmltools::hr(),
 
         # add button for deleting and downloading (all) the data the table
         fluidRow(
@@ -114,10 +114,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         ),
 
         # hint UI
-        p(HTML(paste0(
-          with_red_stars(strong("To delete row(s): ")), "  Select the row(s)
+        htmltools::p(HTML(paste0(
+          with_red_stars(htmltools::strong("To delete row(s): ")), "  Select the row(s)
           and click the delete button.",
-          strong(em(" When you are done editing, you will need to refresh your
+          htmltools::strong(htmltools::em(" When you are done editing, you will need to refresh your
           browser to pull the edited data into other tabs of the dashboard."))
         ))),
         sprintf(
@@ -125,11 +125,11 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
             %s to flag it as "wrongly categorised".',
           icon("flag", style = "color:green"),
           icon("circle-xmark", style = "color:red")
-        ) |> HTML() |> strong() |>
+        ) |> HTML() |> htmltools::strong() |>
           paste0("  All 'interesting' rows will be available to download if you
                  refresh your browser") |>
           HTML(),
-        hr(),
+        htmltools::hr(),
         # display the table
         fluidRow(
           column(
@@ -144,7 +144,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
     # render the data table ####
     output$pat_table <- DT::renderDT({
-      columns_to_show <- setdiff(names(dt_out$data), "flagged") # remove the flagged column
+      columns_to_show <- dplyr::setdiff(names(dt_out$data), "flagged") # remove the flagged column
 
       colnames <- unlist(dt_out$display_column_name[columns_to_show], use.names = FALSE)
       stopifnot("lenght of display column name is not the same as number of
@@ -260,7 +260,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
       cat("Deleted Rows: ", rowselected, " \n") # for debugging and logging
 
-      dt_out$index <- setdiff(dt_out$index, rowselected) # remove deleted rows from tracked edited rows
+      dt_out$index <- dplyr::setdiff(dt_out$index, rowselected) # remove deleted rows from tracked edited rows
     })
 
     observeEvent(input$del_pat, {
@@ -316,7 +316,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
 
     # Download rows flagged as interesting ----
 
-    output$dynamic_flagged_ui <- renderUI({
+    output$dynamic_flagged_ui <- shiny::renderUI({
       dt_out$flagged_comments <- dt_out$data |>
         dplyr::filter(flagged == 1) |>
         prepare_data_for_download()
@@ -329,12 +329,12 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
         downloadLink(
           ns("flagged_com"),
           HTML(sprintf('Click here to download the %s comments "flagged as interesting"', n_flagged_comments) |>
-            strong() |>
+            htmltools::strong() |>
             h4() |>
             paste())
         )
       } else {
-        p('
+        htmltools::p('
         No comment has been flagged as interesting. If any are flagged, 
         they will be downloadable here.
         ')
@@ -400,7 +400,7 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
       req(import_dt$data())
 
       raw_df <- import_dt$data()
-      # print(str(raw_df))
+      # print(utils::str(raw_df))
 
       compulsory_cols <- c("date", "location_1", "question_1", "fft_score")
 
@@ -421,10 +421,10 @@ mod_data_management_server <- function(id, db_conn, filter_data, data_exists, us
           wait_time <- api_jobs$estimated_wait_time
 
           showModal(modalDialog(
-            title = strong("Success!"),
+            title = htmltools::strong("Success!"),
             HTML(paste(
               h5(paste(nrow(raw_df), "records successfully imported. The dashboard is still processing data to predict category and sentiment")),
-              h4(strong(em(paste("Please check back or refresh your browser in about", wait_time, "mins to access the new data"))))
+              h4(htmltools::strong(htmltools::em(paste("Please check back or refresh your browser in about", wait_time, "mins to access the new data"))))
             )),
             easyClose = FALSE
           ))

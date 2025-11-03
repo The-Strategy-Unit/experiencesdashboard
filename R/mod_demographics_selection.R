@@ -22,7 +22,7 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
     ns <- session$ns
 
     # the UI render
-    output$dynamic_demographics_selection <- renderUI({
+    output$dynamic_demographics_selection <- shiny::renderUI({
       req(data_exists) # only run if data exist in the database
 
       # check which demographic variables are present before displaying its associated output
@@ -41,7 +41,7 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
 
     # demography selection----
 
-    output$demography_1_UI <- renderUI({
+    output$demography_1_UI <- shiny::renderUI({
       isolate(
         choices <- get_demographic_choices(filter_data()$unique_data, 
                                           get_golem_config("demography_1"))
@@ -49,12 +49,12 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
 
       selectInput(session$ns("select_demography_1"),
         label = paste("Select", get_golem_config("demography_1"), "(defaults to all)"),
-        choices = na.omit(choices),
+        choices = stats::na.omit(choices),
         selected = NULL, multiple = TRUE
       )
     })
 
-    output$demography_2_UI <- renderUI({
+    output$demography_2_UI <- shiny::renderUI({
       isolate(
         choices <- get_demographic_choices(filter_data()$unique_data, 
                                           get_golem_config("demography_2"))
@@ -62,12 +62,12 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
 
       selectInput(session$ns("select_demography_2"),
         label = paste("Select", get_golem_config("demography_2"), "(defaults to all)"),
-        choices = na.omit(choices),
+        choices = stats::na.omit(choices),
         selected = NULL, multiple = TRUE
       )
     })
 
-    output$demography_3_UI <- renderUI({
+    output$demography_3_UI <- shiny::renderUI({
       isolate(
         choices <- get_demographic_choices(filter_data()$unique_data, 
                                           get_golem_config("demography_3"))
@@ -75,7 +75,7 @@ mod_demographics_selection_server <- function(id, filter_data, data_exists) {
 
       selectInput(session$ns("select_demography_3"),
         label = paste("Select", get_golem_config("demography_3"), "(defaults to all)"),
-        choices = na.omit(choices),
+        choices = stats::na.omit(choices),
         selected = NULL, multiple = TRUE
       )
     })

@@ -74,7 +74,7 @@ get_demography_data <- function(return_data, select_demography_1, select_demogra
 get_tidy_filter_data <- function(return_data, data_exists = FALSE) {
   if (data_exists) {
     return_data <- return_data %>%
-      dplyr::mutate(across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list
+      dplyr::mutate(dplyr::across(c(category, super_category), ~ purrr::map(.x, jsonlite::fromJSON))) %>% # unserialise the category data from json into list
       tidyr::unnest(cols = c(category, super_category)) # Unnest the category and super category columns into rows and columns
   }
 

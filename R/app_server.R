@@ -44,14 +44,14 @@ app_server <- function(input, output, session) {
 
   if (!data_exists) {
     showModal(modalDialog(
-      title = strong("WELCOME!"),
+      title = htmltools::strong("WELCOME!"),
       HTML(paste(
-        h2(strong("Welcome to the Patient Experience Qualitative Data Categorisation Dashboard."),
+        h2(htmltools::strong("Welcome to the Patient Experience Qualitative Data Categorisation Dashboard."),
           style = "text-align:center"
         ),
         h4("To start Using the dashboard, you need to upload your Trust data. After doing this you will get a success message and you can
           refresh your browser to start exploring your data."),
-        h4(HTML(paste0("To get started, Please go to the", strong(em(("'Data upload and management'"))), "tab to upload your data")))
+        h4(HTML(paste0("To get started, Please go to the", htmltools::strong(htmltools::em(("'Data upload and management'"))), "tab to upload your data")))
       ))
     ))
   }
@@ -73,12 +73,12 @@ app_server <- function(input, output, session) {
   #     dplyr::pull(n) > 0
   # 
   #   showModal(modalDialog(
-  #     title = strong("Warning!"),
+  #     title = htmltools::strong("Warning!"),
   #     HTML(paste(
-  #       h5(strong("Please note that this is not the most up-to-date data")),
+  #       h5(htmltools::strong("Please note that this is not the most up-to-date data")),
   #       h6(HTML(paste0(
-  #         "A data uploaded at", strong(em((paste(latest_time, "GMT")))), "is still uploading. If you really need to access the most up-to-date data, please check back or refresh your browser in roughly",
-  #         strong(em((paste(wait_time, "minutes")))), "time"
+  #         "A data uploaded at", htmltools::strong(htmltools::em((paste(latest_time, "GMT")))), "is still uploading. If you really need to access the most up-to-date data, please check back or refresh your browser in roughly",
+  #         htmltools::strong(htmltools::em((paste(wait_time, "minutes")))), "time"
   #       )))
   #     ))
   #   ))
@@ -89,18 +89,18 @@ app_server <- function(input, output, session) {
   interpolate_date <- Sys.Date()
 
   # add date filter derived from the db data
-  output$date_filter_ui <- renderUI({
+  output$date_filter_ui <- shiny::renderUI({
     dateRangeInput(
       "date_range",
-      label = h5(strong("Select date range:")),
-      start = min(dplyr::pull(db_data, date) %>% na.omit()),
-      end = max(dplyr::pull(db_data, date) %>% na.omit())
+      label = h5(htmltools::strong("Select date range:")),
+      start = min(dplyr::pull(db_data, date) %>% stats::na.omit()),
+      end = max(dplyr::pull(db_data, date) %>% stats::na.omit())
     )
   })
 
   # render UI---
 
-  output$filter_location_1 <- renderUI({
+  output$filter_location_1 <- shiny::renderUI({
     req(get_golem_config("location_1"))
     req(data_exists)
 
@@ -111,7 +111,7 @@ app_server <- function(input, output, session) {
 
     selectInput(
       "select_location_1",
-      label = h5(strong(paste0(
+      label = h5(htmltools::strong(paste0(
         "Select ", get_golem_config("location_1"),
         " (defaults to all) :"
       ))),
@@ -121,7 +121,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-  output$filter_location_2 <- renderUI({
+  output$filter_location_2 <- shiny::renderUI({
     req(get_golem_config("location_2"))
     req(data_exists)
 
@@ -140,14 +140,14 @@ app_server <- function(input, output, session) {
 
     selectInput(
       "select_location_2",
-      label = h5(strong(paste0("Select ", get_golem_config("location_2"), " :"))),
+      label = h5(htmltools::strong(paste0("Select ", get_golem_config("location_2"), " :"))),
       choices = sort(location_2_choices %>% dplyr::pull(location_2)),
       multiple = TRUE,
       selected = NULL
     )
   })
 
-  output$filter_location_3 <- renderUI({
+  output$filter_location_3 <- shiny::renderUI({
     req(get_golem_config("location_3"))
     req(data_exists)
 
@@ -172,7 +172,7 @@ app_server <- function(input, output, session) {
 
     selectInput(
       "select_location_3",
-      label = h5(strong(paste0("Select ", get_golem_config("location_3"), " :"))),
+      label = h5(htmltools::strong(paste0("Select ", get_golem_config("location_3"), " :"))),
       choices = sort(location_3_choices %>% dplyr::pull(location_3)),
       multiple = TRUE,
       selected = NULL
@@ -199,16 +199,16 @@ app_server <- function(input, output, session) {
     req(input$date_range) # ensure input$date_range is available before attempting to run this chunk
 
 
-    start <- min(dplyr::pull(db_data, date) %>% na.omit())
-    end <- max(dplyr::pull(db_data, date) %>% na.omit())
+    start <- min(dplyr::pull(db_data, date) %>% stats::na.omit())
+    end <- max(dplyr::pull(db_data, date) %>% stats::na.omit())
 
     # ensure start date is less than end date
     if (input$date_range[1] > input$date_range[2]) {
       showModal(modalDialog(
-        title = strong("Error!"),
+        title = htmltools::strong("Error!"),
         HTML(paste(
-          p("Start date can't be after end date"),
-          p("data has default to ", strong(start), " -:- ", strong(end))
+          htmltools::p("Start date can't be after end date"),
+          htmltools::p("data has default to ", htmltools::strong(start), " -:- ", htmltools::strong(end))
         ))
       ))
 
@@ -216,12 +216,12 @@ app_server <- function(input, output, session) {
     } else if (input$date_range[1] < start |
       input$date_range[2] > end) {
       showModal(modalDialog(
-        title = strong("Error!"),
+        title = htmltools::strong("Error!"),
         HTML(paste(
-          p("START date can't be before : ", start),
-          p("and"),
-          p("END date can't be after : ", end),
-          p("DATE filter has default to ", strong(start), " -:- ", strong(end))
+          htmltools::p("START date can't be before : ", start),
+          htmltools::p("and"),
+          htmltools::p("END date can't be after : ", end),
+          htmltools::p("DATE filter has default to ", htmltools::strong(start), " -:- ", htmltools::strong(end))
         ))
       ))
 

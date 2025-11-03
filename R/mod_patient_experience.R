@@ -20,7 +20,7 @@ mod_patient_experience_server <- function(id, admin_user) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    output$dynamicUI <- renderUI({
+    output$dynamicUI <- shiny::renderUI({
       
       # key tabs to show
 

@@ -149,8 +149,8 @@ return_search_text <- function(text_data, filter_text, comment_type_filter = NUL
   }
 
   if (any(matched_rows)) {
-    paste0(hr(), comments[matched_rows])
+    paste0(htmltools::hr(), comments[matched_rows])
   } else {
-    paste0(hr(), "no matching result")
+    paste0(htmltools::hr(), "no matching result")
   }
 }

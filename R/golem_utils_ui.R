@@ -162,7 +162,7 @@ display <- function(tag) {
       grepl("display:\\s+none", tag$attribs$style)
   ) {
     tag$attribs$style <- gsub(
-      "(\\s)*display:(\\s)*none(\\s)*(;)*(\\s)*",
+      "(\\s)*display:(\\s)*purrr::none(\\s)*(;)*(\\s)*",
       "",
       tag$attribs$style
     )
