@@ -13,19 +13,20 @@ app_server <- function(input, output, session) {
   }
   cat("Trust name:", get_golem_config("trust_name"), " \n")
 
+  # TODO: reinstate
   # Create  DB connection pool
   # pool <- get_pool()
-  # 
+  #
   # onStop(function() {
   #   pool::poolClose(pool)
   # })
-
+  #
   # fetch  the data
   # db_data <- get_db_data(pool, get_golem_config("trust_name"))
 
   # get the current user
   user <- "demo user"
-  
+
   # determine if user has admin right - if to show the data-management tab
   if (!isTRUE(getOption('golem.app.prod'))) {
     admin_user <- TRUE # set to true in development env
@@ -34,7 +35,7 @@ app_server <- function(input, output, session) {
     admin_user <- is_admin_user(session$groups)
   }
   cat("Admin right:", admin_user, " \n")
-  
+
   db_data <- readr::read_csv("data-raw/phase_2_sample_data.csv")
 
   # find out if there is data in the table
@@ -56,22 +57,23 @@ app_server <- function(input, output, session) {
     ))
   }
 
+  # TODO: reinstate
   # alert the user when the trust has a pending api job
   # api_jobs <- check_api_job(pool)
   # latest_time <- api_jobs$latest_time
   # wait_time <- api_jobs$estimated_wait_time
-
+  #
   # if (!is.null(latest_time) & data_exists) {
   #   # filter out all the unfinished rows(api job time is same as last_upload_date when doing data upload)
   #   db_data <- db_data %>%
   #     dplyr::filter(last_upload_date != latest_time)
-  #   
-  #   # for first upload to the dashboard, this will ensure all the tabs are left blank 
+  #
+  #   # for first upload to the dashboard, this will ensure all the tabs are left blank
   #   # till the upload is done
   #   data_exists <- db_data %>%
   #     dplyr::tally() %>%
   #     dplyr::pull(n) > 0
-  # 
+  #
   #   showModal(modalDialog(
   #     title = htmltools::strong("Warning!"),
   #     HTML(paste(
@@ -285,18 +287,18 @@ app_server <- function(input, output, session) {
         dplyr::arrange(date)
     }
 
-    # Transform the sentiment 
-    return_data <- return_data %>% 
-      transform_sentiment() %>% 
+    # Transform the sentiment
+    return_data <- return_data %>%
+      transform_sentiment() %>%
       drop_na_by_col(c('category', 'super_category', 'sentiment'))
-    
+
     # also return a dataset with unique individuals
     unique_data <- return_data %>%
       dplyr::distinct(pt_id, .keep_all = TRUE)
 
     # return the data in single labelled form
-    tidy_filter_data <- get_tidy_filter_data(return_data, data_exists)
-
+    # tidy_filter_data <- get_tidy_filter_data(return_data, data_exists)  # TODO: reinstate
+    tidy_filter_data <- return_data
     return(list(
       "filter_data" = return_data,
       "single_labeled_filter_data" = tidy_filter_data,
@@ -307,7 +309,7 @@ app_server <- function(input, output, session) {
 
   # modules----
   ## add information to dashboard header ----
-  mod_header_message_server("messageMenu", pool, db_data, data_exists)
+  # mod_header_message_server("messageMenu", pool, db_data, data_exists)  # TODO: reinstate
 
   ## combine ALL sub-modules----
   mod_patient_experience_server("patient_experience_ui_1", admin_user)
@@ -322,7 +324,7 @@ app_server <- function(input, output, session) {
 
   mod_click_tables_server("click_tables_ui", filter_data = filter_data,
                           data_exists = data_exists)
-  
+
   mod_complex_comments_server("complex_comments_1", filter_data, data_exists)
 
   mod_search_text_server("search_text_ui_1", filter_data = filter_data)
@@ -332,6 +334,6 @@ app_server <- function(input, output, session) {
   mod_demographics_server("demographics_ui_1", filter_data, data_exists
   )
 
-  mod_data_management_server("data_management_1", db_conn = pool, 
-                             filter_data, data_exists, user)
+  # mod_data_management_server("data_management_1", db_conn = pool,
+  #                            filter_data, data_exists, user) # TODO: reinstate
 }

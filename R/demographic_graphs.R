@@ -7,12 +7,12 @@
 #' @return a plotly object
 #' @noRd
 compare_demographics <- function(pass_data, variable, score_column = "fft") {
-  
+
   if (score_column == "fft"){
     pass_data <- pass_data %>%
       dplyr::filter(.data[[score_column]] <= 5)
   }
-  
+
   p <- pass_data %>%
     dplyr::filter(!is.na(.data[[variable]])) %>%
     dplyr::group_by(.data[[variable]]) %>%
@@ -57,10 +57,11 @@ compare_demographics <- function(pass_data, variable, score_column = "fft") {
 demographic_distribution <- function(pass_data, variable, return_ggplot = FALSE) {
   p <- pass_data %>%
     dplyr::count(.data[[variable]]) %>%
-    dplyr::mutate(dplyr::across(
-      dplyr::all_of(variable),
-      ~ dplyr::coalesce(., "Unknown")
-    )) %>%
+    # TODO: reinstate
+    # dplyr::mutate(dplyr::across(
+    #   dplyr::all_of(variable),
+    #   ~ dplyr::coalesce(., "Unknown")
+    # )) %>%
     ggplot2::ggplot(ggplot2::aes(x = .data[[variable]], y = n)) +
     ggplot2::geom_col(fill = "#005EB8") +
     add_theme_nhs() +
@@ -86,8 +87,8 @@ demographic_distribution <- function(pass_data, variable, return_ggplot = FALSE)
   }
 
   p <- p +
-    ggplot2::coord_flip() 
-  
+    ggplot2::coord_flip()
+
   p %>%
     plotly::ggplotly(tooltip = c(variable, "n")) %>%
     plotly::config(

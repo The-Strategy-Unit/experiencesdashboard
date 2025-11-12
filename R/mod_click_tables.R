@@ -28,12 +28,12 @@ mod_click_tables_server <- function(id, filter_data, data_exists, comment_type =
       )
 
       fluidPage(
-        htmltools::p("The boxes below show the volume of comments/responders in the data 
+        htmltools::p("The boxes below show the volume of comments/responders in the data
         after applying the filters at the side."),
         mod_summary_record_ui("summary_record_1") |>
           shinycssloaders::withSpinner(),
         # htmltools::hr(),
-        htmltools::p("This table shows how many comments there are for each 
+        htmltools::p("This table shows how many comments there are for each
           sub-category before you drill down into the underlying comments."),
         htmltools::strong("Please click a row to see comments related to that sub-category"),
         DT::DTOutput(ns("table")) |>
