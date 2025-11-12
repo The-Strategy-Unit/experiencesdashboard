@@ -12,7 +12,7 @@ app_ui <- function(request) {
       shinydashboard::dashboardHeader(
         # title = "Qualitative Data Categorisation",
         titleWidth = 1000,
-        mod_header_message_ui("messageMenu"),
+        # mod_header_message_ui("messageMenu"), # TODO: reinstate
         header_links()
       ),
       shinydashboard::dashboardSidebar(

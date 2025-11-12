@@ -8,9 +8,11 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
   if (in_tidy_format) {
     comment_data <- comment_data %>%
       single_to_multi_label()
-  } else{
-    comment_data <- comment_data %>%
-      clean_super_category()
+  } else {
+    # TODO: reinstate
+    # comment_data <- comment_data %>%
+    #   clean_super_category()
+    comment_data
   }
 
   stopifnot("values in 'comment ID' should be unique. Did you forget to set `in_tidy_format = TRUE`?" = comment_data$comment_id %>% duplicated() %>% sum() == 0)
@@ -38,7 +40,7 @@ prep_data_for_comment_table <- function(comment_data, in_tidy_format = TRUE) {
     dplyr::mutate(
       dplyr::across(dplyr::any_of(c("comment_type", "fft")), as.factor)
     )
-  
+
   # rename the column name to be more user friendly
   colnames(comment_data) <- c(
     "Date", "FFT Question", "FFT Score", "Comment Sentiment",

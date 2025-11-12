@@ -21,7 +21,7 @@ mod_patient_experience_server <- function(id, admin_user) {
     ns <- session$ns
 
     output$dynamicUI <- shiny::renderUI({
-      
+
       # key tabs to show
 
       ui_list <- list(
@@ -37,14 +37,14 @@ mod_patient_experience_server <- function(id, admin_user) {
           "Categorised comments over time",
           mod_trend_ui("trend_ui_1")
         ),
-        
+
         # Theme categories
         tabPanel(
           "Sub-categories people are telling us about",
           mod_click_tables_ui("click_tables_ui")
         )
       )
-      
+
       # complex comment tab
       ui_list <- c(
         ui_list,
@@ -55,7 +55,7 @@ mod_patient_experience_server <- function(id, admin_user) {
           )
         )
       )
-      
+
       # Comment search tab
 
       ui_list <- c(
@@ -69,7 +69,7 @@ mod_patient_experience_server <- function(id, admin_user) {
       )
 
       # Theme Trend and overlap tab
-      
+
       if (admin_user) {
         ui_list <- c(
           ui_list,
@@ -97,20 +97,21 @@ mod_patient_experience_server <- function(id, admin_user) {
           )
         )
       }
-      
+
       # Data management tab
-      
-      if (admin_user) {
-        ui_list <- c(
-          ui_list,
-          list(
-            tabPanel(
-              "Data upload and management",
-              mod_data_management_ui("data_management_1")
-            )
-          )
-        )
-      }
+
+      # TODO: reinstate
+      # if (admin_user) {
+      #   ui_list <- c(
+      #     ui_list,
+      #     list(
+      #       tabPanel(
+      #         "Data upload and management",
+      #         mod_data_management_ui("data_management_1")
+      #       )
+      #     )
+      #   )
+      # }
 
       do.call(tabsetPanel, ui_list)
     })
